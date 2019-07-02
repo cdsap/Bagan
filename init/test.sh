@@ -61,7 +61,7 @@ gcloud container clusters get-credentials $clux --zone $zonex;"
 
  initGcloud="gcloud init;
  gcloud auth configure-docker;
- gcloud container clusters create $clux --zone $zonex;
+ gcloud container clusters create $clux --zone $zonex --machine-type=n1-standard-4;
  $loga"
 
 
