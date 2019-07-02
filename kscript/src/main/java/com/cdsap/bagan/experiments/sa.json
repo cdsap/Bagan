@@ -1,0 +1,23 @@
+{
+  "bagan": {
+    "type": "gcloud",
+    "repository": "https://github.com/cdsap/BaganSimpleProject",
+    "gradleCommand": "./gradlew clean assemble",
+    "clusterName": "kkk",
+    "zone": null,
+    "project-id": null,
+    "iterations": 10,
+    "experiments": {
+      "properties": [
+        {
+          "name": "org.gradle.jvmargs",
+          "options": ["-Xmx2g","-Xmx3g","-Xmx4g"]
+        },
+        {
+          "name": "org.gradle.caching",
+          "options": ["true","false"]
+        }
+      ]
+    }
+  }
+}

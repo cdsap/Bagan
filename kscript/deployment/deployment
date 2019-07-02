@@ -1,0 +1,12 @@
+#/bin/bash
+#define path to export binaries 
+dirBaganProvisioning=""
+dirInjector=""
+
+cd ..
+./gradlew build 
+mv kscript 
+
+
+
+

@@ -1,0 +1,1 @@
+/Users/inaki/kksreplacer/buildSrc/build/classes/kotlin/main/TaskHeaderReplacer$Element.class:/Users/inaki/kksreplacer/buildSrc/build/classes/kotlin/main/TaskHeaderReplacer$TYPEX.class:/Users/inaki/kksreplacer/buildSrc/build/classes/kotlin/main/TaskHeaderReplacer.class
