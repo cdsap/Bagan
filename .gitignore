@@ -5,5 +5,10 @@
 .DS_Store
 /build
 /captures
-kscript/buildSrc/build
 
+# creator kscript files
+kscript/buildSrc/build
+kscript/buildSrc/.gradle
+docker/installer/creator/
+kscript/.idea/
+kscript/kscript/
