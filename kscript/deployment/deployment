@@ -1,12 +1,16 @@
 #/bin/bash
 #define path to export binaries 
-dirBaganProvisioning=""
-dirInjector=""
+dirBaganProvisioning="../docker/installer"
+dirInjector="../docker/pod/"
 
 cd ..
-./gradlew build 
-mv kscript 
 
+./gradlew build 
+
+cp kscript/creator $dirBaganProvisioning
+
+cp kscript/injector $dirInjector
+cp kscript/properties $dirInjector
 
 
 

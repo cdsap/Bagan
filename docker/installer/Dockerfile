@@ -17,8 +17,18 @@ RUN set -x \
     && echo "sdkman_insecure_ssl=false" >> $SDKMAN_DIR/etc/config
 
 RUN source $SDKMAN_DIR/bin/sdkman-init.sh \
-	&& sdk install kotlin \
-	&& sdk install kscript
+    sdk install kotlin 1.3.31 \
+    sdk install kscript
+
+
+RUN echo $SDKMAN_DIR
+RUN cd $SDKMAN_DIR
+RUN cd /usr/share/sdkman
+RUN pwd
+RUN cat $SDKMAN_DIR/bin/sdkman-init.sh
+RUN ls
+
+
 RUN curl -sSL https://sdk.cloud.google.com | bash
 RUN mkdir /usr/local/gcloud
 RUN mv /root/google-cloud-sdk /usr/local/gcloud/
@@ -39,5 +49,4 @@ RUN curl -o /tmp/$FILENAME ${HELM_URL} \
   && rm -rf /tmp
 
 RUN helm init --client-only
-COPY values.yaml /usr/local
-COPY CreateHelmPods.kt  /usr/local/
+COPY creator/  /usr/local/creator

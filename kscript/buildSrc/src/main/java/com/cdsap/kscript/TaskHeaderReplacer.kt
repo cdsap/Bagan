@@ -35,6 +35,7 @@ abstract class TaskHeaderReplacer : DefaultTask() {
     fun showFile(project: Project) {
         val file = File(project.projectDir.toString() + file)
         println(file)
+        createOutput()
         println("input file: " + file.isDirectory)
         if (file.isDirectory) {
             file.walkTopDown().iterator().forEach {
@@ -49,6 +50,16 @@ abstract class TaskHeaderReplacer : DefaultTask() {
 
     }
 
+    fun createOutput(){
+        val dir = File("${project.rootDir}/kscript/")
+        println(" exists ---->1" + dir.exists())
+        if (!dir.exists()) {
+            println(" exists ---->2222")
+            val a = dir.mkdir()
+            println(" exists ---->$a")
+        }
+
+    }
 
     fun updateHeadersFile(path: String) {
         val mFile = File(path)
@@ -58,6 +69,7 @@ abstract class TaskHeaderReplacer : DefaultTask() {
         val element = lookup.filter {
             it.nameFile == nameFile
         }.map {
+
             val action = it.action
             val replace = it.dependencies
             when (it.type) {
