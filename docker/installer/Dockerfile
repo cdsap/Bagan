@@ -17,8 +17,8 @@ RUN set -x \
     && echo "sdkman_insecure_ssl=false" >> $SDKMAN_DIR/etc/config
 
 RUN source $SDKMAN_DIR/bin/sdkman-init.sh \
-    sdk install kotlin 1.3.31 \
-    sdk install kscript
+    && sdk install kotlin 1.3.31 \
+    && sdk install kscript
 
 
 RUN echo $SDKMAN_DIR

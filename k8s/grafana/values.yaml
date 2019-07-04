@@ -247,8 +247,9 @@ datasources:
     datasources:
     - name: Influxdb
       type: influxdb
-      url: http://bagan-influxdb.svc.cluster.local
+      url: http://bagan-influxdb.default:8086
       access: proxy
+      database: tracking
       isDefault: true
 
 ## Configure notifiers

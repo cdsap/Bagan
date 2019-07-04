@@ -2,10 +2,10 @@ FROM openjdk:8
 
 RUN set -x \
     && apt-get update \
-    && apt-get install -y curl wget unzip zip ca-certificates --no-install-recommends \
+    && apt-get install -y curl wget unzip zip gzip vim ca-certificates --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-ENV SDKMAN_DIR /usr/local/sdkman
+ENV SDKMAN_DIR /usr/share/sdkman
 
 SHELL [ "/bin/bash", "-c" ]
 
@@ -16,9 +16,26 @@ RUN set -x \
     && echo "sdkman_auto_selfupdate=false" >> $SDKMAN_DIR/etc/config \
     && echo "sdkman_insecure_ssl=false" >> $SDKMAN_DIR/etc/config
 
+
+RUN echo $SDKMAN_DIR
+RUN cd $SDKMAN_DIR
+RUN cd /usr/share/sdkman
+RUN pwd
+RUN cat $SDKMAN_DIR/bin/sdkman-init.sh
+RUN ls
+
+
+
 RUN source $SDKMAN_DIR/bin/sdkman-init.sh \
-	&& sdk install kotlin \
-	&& sdk install kscript
+    && sdk install kotlin 1.3.31 \
+    && sdk install kscript
+
+RUN echo $SDKMAN_DIR
+RUN cd $SDKMAN_DIR
+RUN cd /usr/share/sdkman
+RUN pwd
+RUN cat $SDKMAN_DIR/bin/sdkman-init.sh
+RUN ls
 
 
 ENV ANDROID_HOME /opt/android-sdk-linux
@@ -46,6 +63,6 @@ RUN sdkmanager 'extras;google;google_play_services'
 
 RUN mkdir -p /var/workspace
 RUN cd /var/workspace
-COPY Parser2.kt /var/workspace
-COPY ChangeProperties.kt /var/workspace
+COPY RewriteProperties.kt /var/workspace
+COPY TalaiotInjector.kt /var/workspace
 WORKDIR "var/workspace/"

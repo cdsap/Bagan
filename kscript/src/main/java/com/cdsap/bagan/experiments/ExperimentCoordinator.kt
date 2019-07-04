@@ -58,7 +58,8 @@ class ExperimentCoordinator {
                 bagan.repository,
                 bagan.gradleCommand,
                 nameConfigMap,
-                bagan.iterations
+                bagan.iterations,
+                nameExperiment
             )
 
             createTemplateFolder(nameExperiment)
@@ -71,8 +72,8 @@ class ExperimentCoordinator {
                 nameExperiment,
                 experiment
             )
-      //      Runtime.getRuntime().exec("helm package $nameExperiment").waitFor()
-      //      Runtime.getRuntime().exec("helm install $nameExperiment-$CURRENT_VERSION.tgz").waitFor()
+            Runtime.getRuntime().exec("helm install -n $nameExperiment -f $nameExperiment/values.yaml $nameExperiment/").waitFor()
+          //  Runtime.getRuntime().exec("helm install $nameExperiment-$CURRENT_VERSION.tgz").waitFor()
             println(it)
             count++
         }
@@ -115,14 +116,16 @@ class ExperimentCoordinator {
         nameRepo: String,
         gradleCommand: String,
         s2: String,
-        iterations: Int
+        iterations: Int,
+        nameExperiment: String
     ) {
         val file = File(path)
         println("creating fileValues")
         file.writeText(
             "repository: $nameRepo\n" +
                     "configMaps : $s2\n" +
-                    "image: cdsap/bagan\n" +
+                    "name : $nameExperiment\n" +
+                    "image: cdsap/bagan-pod-injector\n" +
                     "command: $gradleCommand\n" +
                     "iterations: $iterations"
         )
@@ -147,9 +150,11 @@ class ExperimentCoordinator {
                     "kind: ConfigMap\n" +
                     "metadata:\n" +
                     "  name: $s1\n" +
-                    "  labels: \n " +
+                    "  labels: \n" +
+                    "    type: experiment\n" +
                     "    experiment_id: $nameExperiment\n" +
                     "data:\n" +
+                    "  id: $nameExperiment\n" +
                     "  experiments: |\n" +
                     "     $propertyName"
         )
@@ -164,6 +169,7 @@ class ExperimentCoordinator {
                     "  name: $nameExperiment\n" +
                     "  labels: \n" +
                     "    app: experiment\n" +
+                    "    type: experiment\n" +
                     "    experimentid: $experiment\n" +
                     "  annotations:\n" +
                     "    seccomp.security.alpha.kubernetes.io/pod: 'docker/default'\n" +
@@ -202,13 +208,13 @@ class ExperimentCoordinator {
                     "                - -c\n" +
                     "                - |\n" +
                     "                  mv *.kt /repo \n" +
-                    "                  cd /usr/local/sdkman/bin \n" +
+                    "                  cd /usr/share/sdkman/bin \n" +
                     "                  source sdkman-init.sh \n" +
                     "                  cd /repo\n" +
-                    "                  kscript Parser2.kt \n" +
-                    "                  kscript ChangeProperties.kt \n" +
+                    "                  kscript TalaiotInjector.kt \n" +
+                    "                  kscript RewriteProperties.kt \n" +
                     "                  pwd >  /usr/share/message\n" +
-                    "                  for i in {1..{{ .Values.iterations }}} do {{ .Values.command }}; curl -w http://bagan-frontend.default.svc.cluster.local/$experiment/$nameExperiment/counter/;  done\n" +
+                    "                  for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done\n" +
                     "  volumes:\n" +
                     "    - name: git-repo\n" +
                     "      emptyDir: {}\n"
@@ -234,3 +240,5 @@ class ExperimentCoordinator {
         val iterations: Int
     )
 }
+
+//curl -X POST  http://bagan-frontend.default.svc.cluster.local/$experiment/$nameExperiment/counter/;

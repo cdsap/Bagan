@@ -1,6 +1,7 @@
 package com.cdsap.bagan.injector
 
 import java.io.File
+import java.io.StringReader
 
 enum class MODE {
     GROOVY,
@@ -35,7 +36,7 @@ class TalaiotInjector {
     fun appendTalaiot(mode: MODE) {
         when (mode) {
             MODE.GROOVY -> {
-                File("build.gradle").appendText("\napply from = \"talaiot.gradle.kts\"")
+                File("build.gradle").appendText("\napply from : \"talaiot.gradle.kts\"")
             }
             MODE.KTS -> {
                 File("build.gradle.kts").appendText("\napply(from = \"talaiot.gradle.kts\")")
@@ -44,6 +45,10 @@ class TalaiotInjector {
     }
 
     fun createFileTalaiot(mode: MODE) {
+        val id = System.getenv("id")
+        println(id.toString())
+        println(id)
+
         when (mode) {
             MODE.GROOVY -> {
                 val file = File("talaiot.gradle.kts")
@@ -65,6 +70,7 @@ class TalaiotInjector {
                             "apply<com.cdsap.talaiot.TalaiotPlugin>()\n" +
                             "configure<com.cdsap.talaiot.TalaiotExtension>() {\n" +
                             "    logger = com.cdsap.talaiot.logger.LogTracker.Mode.INFO\n" +
+                            "    metrics { customMetrics(\"experiment\" to  \"$id\") } \n" +
                             "    publishers {\n" +
                             "\n" +
                             "        influxDbPublisher {\n" +

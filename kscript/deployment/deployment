@@ -7,10 +7,9 @@ cd ..
 
 ./gradlew build 
 
-cp kscript/creator $dirBaganProvisioning
-
-cp kscript/injector $dirInjector
-cp kscript/properties $dirInjector
+rm -rf $dirBaganProvisioning/creator
+mv -f kscript/creator $dirBaganProvisioning
 
 
-
+mv -f kscript/injector/TalaiotInjector.kt $dirInjector
+mv -f kscript/properties/RewriteProperties.kt $dirInjector

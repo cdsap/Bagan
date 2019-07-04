@@ -4,9 +4,9 @@ cd ..
 
 ./gradlew clean build
 
-cp ./build/libs/bagan-monitor.jar deployment
+cp ./build/libs/bagan-monitor.jar ../docker/frontend/
 
-cd deployment
+cd ../docker/frontend/
 
 docker build . --tag bagan-monitor
 

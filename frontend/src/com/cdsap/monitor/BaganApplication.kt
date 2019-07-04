@@ -30,6 +30,21 @@ fun Application.main() {
     val podRepository = PodRepositoryImpl(mySqlApiImpl)
 
     routing {
+        get("/what") {
+            call.respondHtml {
+                head {
+                    title {
+                        +"Bagan: Experiments "
+                    }
+                }
+                body {
+                       p { +"Happen!"
+                       }
+                     }
+
+                }
+          }
+        }
         get("/experiments") {
             call.respondHtml {
                 val a = experimentRepository.getExperiments()
@@ -92,7 +107,7 @@ fun Application.main() {
 
 val connectionPool = MySQLConnectionBuilder.createConnectionPool {
     username = "root"
-    host = "http://bagan-mysql.default.svc.cluster.local"
+    host = "http://bagan-mysql"
     port = 3306
     password = "bagan"
     database = "bagan"

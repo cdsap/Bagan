@@ -53,15 +53,15 @@ handleServices="kubectl delete service grafana-bagan;
  source sdkman-init.sh ;
  cd /root;
  echo 'Creating Pods';
- kscript /usr/local/CreateHelmPods.kt;"
+ kscript /usr/local/creator/ExperimentCoordinator.kt;"
 #
 
 loga="gcloud components install kubectl;
-gcloud container clusters get-credentials $clux --zone $zonex;"
+gcloud container clusters get-credentials bagan --zone us-central1-a;"
 
  initGcloud="gcloud init;
  gcloud auth configure-docker;
- gcloud container clusters create $clux --zone $zonex --machine-type=n1-standard-4;
+ gcloud container clusters create $clux --zone $zonex --machine-type=n1-standard-8;
  $loga"
 
 
@@ -72,12 +72,13 @@ gcloud container clusters get-credentials $clux --zone $zonex;"
 
    docker run -ti -v $HOME/.config/gcloud:/root/.config/gcloud  \
                   -v /Users/inaki/navetes/init/sa.json:/root/files/sa.json     cdsap/initbagan  /bin/bash -c "
-                  $initGcloud
+                  $loga;
                   echo 'Grafana';
+                  $executePods
                   echo 'Influxdb';
                   kubectl get pods;
 
-kubectl get pod;
+                  kubectl get pod;
                   echo 'fin';"
 
 #fi
