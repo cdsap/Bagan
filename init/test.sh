@@ -1,84 +1,93 @@
 #!/bin/sh
+extras=$1
+echo ""
+echo "Welcome to Bagan"
+echo ""
+echo "Be sure you have included the bagan_conf.json with the desired configuration."
+echo ""
+echo -n "Do you want to continue [y/n]: "
+read ans
+
+if [ $ans != 'y' ]; then
+  exit 1
+fi;
 
 # include parse_yaml function
 . validate_json.sh
-
-# read yaml file
-
-
-clux=""
-if [ -z "$clusterName" ] | [ "$clusterName" = "null" ]
-then
-   clux="bagancluster"
-else
-   clux=$clusterName
-fi
-
-if [ -z "$zone" ] | [ "$zone" = "null" ]
-then
-   zonex="us-central1-a"
-else
-   zonex=$zone
-fi
-
-
-helmInit="helm init; \
-  kubectl --namespace kube-system create serviceaccount tiller; \
-  kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller; \
-  sleep 10; \
-  kubectl --namespace kube-system patch deploy tiller-deploy -p '{\"spec\":{\"template\":{\"spec\":{\"serviceAccount\":\"tiller\"}}}}';\
-  kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account); \
-  sleep 10; \
-  helm repo update;"
-
-helmGrafana="helm install stable/grafana \
-     --name grafana-bagan \
-     --set datasources.\"datasources\.yaml\".apiVersion=1 \
-     --set datasources.\"datasources\.yaml\".datasources[0].name=influxdb \
-     --set datasources.\"datasources\.yaml\".datasources[0].type=influxdb \
-     --set datasources.\"datasources\.yaml\".datasources[0].url=http://bagan-influxdb.default:8086 \
-     --set datasources.\"datasources\.yaml\".datasources[0].access=proxy \
-     --set datasources.\"datasources\.yaml\".datasources[0].database=tracking \
-     --set datasources.\"datasources\.yaml\".datasources[0].isDefault=true;"
-
-helmInflux="helm install --name bagan -f /usr/local/values.yaml stable/influxdb;"
-
-handleServices="kubectl delete service grafana-bagan;
-                  kubectl expose deployment grafana-bagan --type=LoadBalancer;
-                  sleep 20;
-                  kubectl port-forward \$(kubectl get pods -l app=bagan-influxdb -o jsonpath='{ .items[0].metadata.name }') 8086:8086 &
-               "
-#
- executePods="cd /usr/share/sdkman/bin;
- source sdkman-init.sh ;
- cd /root;
- echo 'Creating Pods';
- kscript /usr/local/creator/ExperimentCoordinator.kt;"
-#
-
-loga="gcloud components install kubectl;
-gcloud container clusters get-credentials bagan --zone us-central1-a;"
-
- initGcloud="gcloud init;
- gcloud auth configure-docker;
- gcloud container clusters create $clux --zone $zonex --machine-type=n1-standard-8;
- $loga"
-
-
+. commands.sh
+. gcloudinit.sh
 
 #echo $execution
 
+printf '%s\n' "Configuration file parsed."
+printf '%s\n' ""
+printf '%s\n' "Values:"
+printf '%s\n' ""
+printf '%s\n' "type: $type"
+printf '%s\n' "cluster: $cluster"
+printf '%s\n' "zone: $zone"
+printf '%s\n' "machine: $machine"
+printf '%s\n' "repository: $repository"
+printf '%s\n' "gradleCommand: $gradleCommand"
+printf '%s\n' "properties: $properties"
+printf '%s\n' ""
+printf '%s\n' "You have choosen run Bagan in $type environment"
+if [ "$extras" = "executeExperiment" ]; then
+   printf '%s\n' "You are going to execute directly experiments in cluster $cluster with zone $zone"
+fi
+printf '%s\n' ""
+echo -n "Do you want to continue [y/n]: "
+read ans2
+
+if [ $ans2 != 'y' ]; then
+  exit 1
+fi;
+
+
+printf '%s\n' "************************"
+printf '%s\n' "************************"
+printf '%s\n' "****Staring Bagan*****"
+printf '%s\n' "$type"
+
+if [ "$type" = "gcloud" ]; then
+
+  if [ -z "$extras"]; then
+    $gcloud_init
+    $gcloud_configure_docker
+    $gcloud_create_cluster
+    $helm_init
+    $helm_grafana
+    $helm_influx
+    $handleServices
+  fi
+
+  $executePods
+
+
+elif  "$type" = "gcloud_docker" ]; then
+
+    echo "This is gcloud_docker"
+
+elif  "$type" = "minikube" ]; then
+
+  echo "This is minikube"
+else
+
+  echo "error"
+fi
+
 #if [ "$type" = "gcloud" ]; then
+#    echo "error"
+#   docker run -ti -v $HOME/.config/gcloud:/root/.config/gcloud  \
+#                  -v /Users/inaki/navetes/init/sa.json:/root/files/sa.json     cdsap/initbagan  /bin/bash -c "
+#                  $loga;
+#                  echo 'Grafana';
+#                  $clean;
+#                  $executePods
+#                  echo 'Influxdb';
+#                  kubectl get pods;
 
-   docker run -ti -v $HOME/.config/gcloud:/root/.config/gcloud  \
-                  -v /Users/inaki/navetes/init/sa.json:/root/files/sa.json     cdsap/initbagan  /bin/bash -c "
-                  $loga;
-                  echo 'Grafana';
-                  $executePods
-                  echo 'Influxdb';
-                  kubectl get pods;
-
-                  kubectl get pod;
-                  echo 'fin';"
+#                  kubectl get pod;
+#                  echo 'fin';"
 
 #fi

@@ -1,0 +1,7 @@
+helm delete $(helm list --short)
+
+
+curl -G 'bagan-mysql:8086/query?pretty=true' --data-urlencode "db=tracking" --data-urlencode "q=SELECT count() FROM \"tracking\""
+
+
+helm del --purge $( kubectl get pods -l type=experiment -o custom-columns=:metadata.name --field-selector=status.phase=Running)
