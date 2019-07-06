@@ -10,10 +10,12 @@ import com.cdsap.bagan.experiments.Versions.PATH
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ThreadLocalRandom
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 
 fun checkFile() {
-    if (!File("${PATH}sa.json").exists()) {
+    if (!File("${PATH}bagan_conf.json").exists()) {
         throw Exception("Error: file not found.   ")
     }
 }
@@ -72,9 +74,27 @@ class ExperimentCoordinator {
                 nameExperiment,
                 experiment
             )
+
+//            val ps = ProcessBuilder("helm" , "install",  "-n $nameExperiment -f $nameExperiment/values.yaml $nameExperiment/")
+//            ps.redirectErrorStream(true)
+//
+//            val pr = ps.start()
+//
+//            val aa = BufferedReader(InputStreamReader(pr.inputStream))
+//            var line = aa.readLine()
+//            while (line != null) {
+//                println(line)
+//                line = aa.readLine()
+//            }
+//            pr.waitFor()
+//            aa.close()
+            println("helm install -n $nameExperiment -f $nameExperiment/values.yaml $nameExperiment/")
             Runtime.getRuntime().exec("helm install -n $nameExperiment -f $nameExperiment/values.yaml $nameExperiment/").waitFor()
-          //  Runtime.getRuntime().exec("helm install $nameExperiment-$CURRENT_VERSION.tgz").waitFor()
-            println(it)
+         //   System.exit(0)
+       //     val a = execCmd("helm install -n $nameExperiment -f $nameExperiment/values.yaml $nameExperiment/")
+        //    Runtime.getRuntime().exec("helm install -n $nameExperiment -f $nameExperiment/values.yaml $nameExperiment/").waitFor()
+            //  Runtime.getRuntime().exec("helm install $nameExperiment-$CURRENT_VERSION.tgz").waitFor()
+         //   println(a)
             count++
         }
     }
@@ -87,7 +107,7 @@ class ExperimentCoordinator {
 
         val baganJson: BaganJson =
             jsonAdapter.fromJson(
-                String(Files.readAllBytes(Paths.get("${PATH}sa.json")), StandardCharsets.US_ASCII)
+                String(Files.readAllBytes(Paths.get("${PATH}bagan_conf.json")), StandardCharsets.US_ASCII)
             ) ?: throw Exception("Error parsing json file")
 
         return baganJson.bagan
@@ -239,6 +259,12 @@ class ExperimentCoordinator {
         val configMap: String,
         val iterations: Int
     )
+}
+
+@Throws(java.io.IOException::class)
+fun execCmd(cmd: String): String {
+    val s = java.util.Scanner(Runtime.getRuntime().exec(cmd).inputStream).useDelimiter("\\A")
+    return if (s.hasNext()) s.next() else ""
 }
 
 //curl -X POST  http://bagan-frontend.default.svc.cluster.local/$experiment/$nameExperiment/counter/;

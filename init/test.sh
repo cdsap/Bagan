@@ -3,12 +3,29 @@ extras=$1
 echo ""
 echo "Welcome to Bagan"
 echo ""
-echo "Be sure you have included the bagan_conf.json with the desired configuration."
 echo ""
+echo "Requeriments:
+Installation with Gcloud:
+   -- jq: https://stedolan.github.io/jq/
+   -- gcloud: https://cloud.google.com/sdk/
+   -- docker: https://www.docker.com/
+   -- kscript: https://github.com/holgerbrandl/kscript
+
+Installation with Docker:
+   -- jq: https://stedolan.github.io/jq/
+   -- docker: https://www.docker.com/
+
+Installation with Minikube:
+   -- jq: https://stedolan.github.io/jq/
+   -- minikube: https://cloud.google.com/sdk/
+   -- docker: https://www.docker.com/
+   -- kscript: https://github.com/holgerbrandl/kscript
+"
+echo "Be sure you have included the bagan_conf.json with the desired configuration."
 echo -n "Do you want to continue [y/n]: "
 read ans
 
-if [ $ans != 'y' ]; then
+if [ "$ans" != "y" ] | [ -z "$ans" ]; then
   exit 1
 fi;
 
@@ -16,6 +33,8 @@ fi;
 . validate_json.sh
 . commands.sh
 . gcloudinit.sh
+. helm.sh
+
 
 #echo $execution
 
@@ -39,7 +58,7 @@ printf '%s\n' ""
 echo -n "Do you want to continue [y/n]: "
 read ans2
 
-if [ $ans2 != 'y' ]; then
+if [ "$ans2" != "y" ] | [ -z "$ans2" ]; then
   exit 1
 fi;
 
@@ -50,7 +69,45 @@ printf '%s\n' "****Staring Bagan*****"
 printf '%s\n' "$type"
 
 if [ "$type" = "gcloud" ]; then
+   echo "1"
+  if [ -z "$extras" ]; then
+    echo "2"
+    $gcloud_init
+    echo "3"
+    $gcloud_configure_docker
+    echo "4"
+    $gcloud_create_cluster
+    echo "5"
+    $helmInit
+    echo "6"
+    $helmServiceAccount
+    echo "7"
+    $helmClusterRole
+    echo "8"
+    sleep 10
+    $helmPatchDeploy
+    echo $helmPatchDeploy
+    eval $helmPatchDeploy
+    echo "9"
+    sleep 10
+    $helmClusterRole2
+    echo "10"
+    sleep 10
+    $helmRepoUpdate
+    echo "11"
+    $helmGrafana
+    echo "12"
+    $helmInflux
+    echo "13"
+    eval $handleServices
+  fi
+echo "3"
+cp bagan_conf.json ../docker/installer/creator/
+cd ../docker/installer/creator/
+$executePodsLocally
 
+
+elif  "$type" = "gcloud_docker" ]; then
   if [ -z "$extras"]; then
     $gcloud_init
     $gcloud_configure_docker
@@ -60,11 +117,6 @@ if [ "$type" = "gcloud" ]; then
     $helm_influx
     $handleServices
   fi
-
-  $executePods
-
-
-elif  "$type" = "gcloud_docker" ]; then
 
     echo "This is gcloud_docker"
 

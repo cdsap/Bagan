@@ -11,15 +11,11 @@
          "properties": [
             {
                "name": "org.gradle.jvmargs",
-               "options": ["-Xmx2g","-Xmx3g","-Xmx4g"]
-            },
-            {
-               "name": "org.gradle.parallel",
-               "options": ["true","false"]
+               "options": ["-Xmx3g","-Xmx4g"]
             },
             {
                "name": "org.gradle.workers.max",
-               "options": ["2","4","6"]
+               "options": ["4","6"]
             }
          ]
       }

@@ -9,11 +9,9 @@ helmInit="helm init; \
   sleep 10; \
   helm repo update;"
 
-helmGrafana="helm install -n bagan-grafana -f k8s/grafana/values.yaml k8s/grafana/;"
-helmInflux="helm install -name bagan-influxdb -f k8s/influxdb/values.yaml k8s/influxdb/;"
 
-handleServices="kubectl delete service grafana-bagan;
-                    kubectl expose deployment grafana-bagan --type=LoadBalancer;
+handleServices="kubectl delete service bagan-grafana-experiments;
+                    kubectl expose deployment bagan-grafana-experiments --type=LoadBalancer;
                     sleep 20;
                     kubectl port-forward \$(kubectl get pods -l app=bagan-influxdb -o jsonpath='{ .items[0].metadata.name }') 8086:8086 &
                  "
@@ -23,6 +21,10 @@ source sdkman-init.sh ;
 cd /root;
 echo 'Creating Pods';
 kscript /usr/local/creator/ExperimentCoordinator.kt;"
+
+
+executePodsLocally="
+kscript ExperimentCoordinator.kt"
 
 
 clean="helm del --purge \$( kubectl get pods -l type=experiment -o custom-columns=:metadata.name --field-selector=status.phase=Running)"
