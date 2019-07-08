@@ -1,10 +1,26 @@
 package com.cdsap.bagan.experiments
 
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
 
-class ExperimentGenerator(val bagan: Bagan) {
 
+class ExperimentProvider(private val moshiProvider: MoshiProvider) {
 
-    private fun getExperiments(bagan: Bagan): MutableList<List<String>> {
+    val bagan by lazy {
+        val jsonAdapter = moshiProvider.adapter(BaganJson::class.java)
+
+        val baganJson: BaganJson =
+            jsonAdapter.fromJson(
+                String(Files.readAllBytes(Paths.get("${Versions.PATH}bagan_conf.json")), StandardCharsets.US_ASCII)
+            ) ?: throw Exception("Error parsing json file")
+        baganJson.bagan
+    }
+
+    fun getExperiments(): List<String> = getExperiments(bagan)
+
+    private fun getExperiments(bagan: Bagan): List<String> {
+
         val experiments = mutableListOf<List<String>>()
 
         bagan.experiments.properties.forEach {
@@ -15,13 +31,13 @@ class ExperimentGenerator(val bagan: Bagan) {
             }
             experiments.add(experiment)
         }
-        return experiments
+        return getExperimentsPermutations(experiments)
     }
 
 
-    fun getExperiments(): List<String> {
+    private fun getExperimentsPermutations(experiments: MutableList<List<String>>): List<String> {
         val experimentsPermuted = mutableListOf<String>()
-        generatePermutations(getExperiments(bagan), experimentsPermuted, 0, "")
+        generatePermutations(experiments, experimentsPermuted, 0, "")
         return experimentsPermuted
     }
 
