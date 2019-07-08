@@ -1,8 +1,7 @@
 package com.cdsap.bagan.experiments
 
 
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.cdsap.bagan.experiments.Versions.CONF_FILE
 import java.nio.file.Files
 import java.nio.file.Paths
 import com.cdsap.bagan.experiments.Versions.CURRENT_VERSION
@@ -10,49 +9,47 @@ import com.cdsap.bagan.experiments.Versions.PATH
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ThreadLocalRandom
-import java.io.BufferedReader
-import java.io.InputStreamReader
 
-
-fun checkFile() {
-    if (!File("${PATH}bagan_conf.json").exists()) {
-        throw Exception("Error: file not found.   ")
-    }
-}
 
 fun main() {
-    ExperimentCoordinator().init()
+    val moshiProvider = MoshiProvider()
+    val commandExecutor = CommandExecutor()
+    val monitor = MonitorReporting(moshiProvider, commandExecutor)
+
+    ExperimentCoordinator(moshiProvider, commandExecutor, monitor).init()
 }
 
 
-class ExperimentCoordinator {
+class ExperimentCoordinator(
+    val moshiProvider: MoshiProvider,
+    private val commandExecutor: CommandExecutor,
+    private val monitorReporting: MonitorReporting
+) {
+
     fun init() {
 
         checkFile()
-
         val bagan = getBagan()
-        val monitor = MonitorReporting()
         val experimentsPermuted = ExperimentGenerator(bagan).getExperiments()
         var count = 0
         val experiment = registerExperiment()
-        monitor.insertExperiment(experiment)
+        monitorReporting.insertExperiment(experiment)
 
         experimentsPermuted.forEach {
 
             val nameExperiment = "experiment$count".toLowerCase()
             val nameConfigMap = "configmap$nameExperiment"
             val namePod = "$nameExperiment/templates/pod$nameExperiment.yaml"
-            val request = PodRequest(
+            monitorReporting.insertPod(
                 values = it.replace("\n     ", "\n"),
                 iterations = bagan.iterations,
-                configMap = nameConfigMap
+                configMap = nameConfigMap,
+                experiment = experiment,
+                pod = nameExperiment
+
             )
-            val moshi = Moshi.Builder()
-                .add(KotlinJsonAdapterFactory())
-                .build()
-            val jsonAdapter = moshi.adapter(PodRequest::class.java)
-            val x = jsonAdapter.toJson(request)
-            monitor.insertPod(experiment, nameExperiment, x)
+
+
             createFolder(nameExperiment)
             createChartFile("$nameExperiment/Chart.yaml", nameExperiment)
             createFileValues(
@@ -74,36 +71,14 @@ class ExperimentCoordinator {
                 nameExperiment,
                 experiment
             )
-
-//            val ps = ProcessBuilder("helm" , "install",  "-n $nameExperiment -f $nameExperiment/values.yaml $nameExperiment/")
-//            ps.redirectErrorStream(true)
-//
-//            val pr = ps.start()
-//
-//            val aa = BufferedReader(InputStreamReader(pr.inputStream))
-//            var line = aa.readLine()
-//            while (line != null) {
-//                println(line)
-//                line = aa.readLine()
-//            }
-//            pr.waitFor()
-//            aa.close()
-            println("helm install -n $nameExperiment -f $nameExperiment/values.yaml $nameExperiment/")
-            Runtime.getRuntime().exec("helm install -n $nameExperiment -f $nameExperiment/values.yaml $nameExperiment/").waitFor()
-         //   System.exit(0)
-       //     val a = execCmd("helm install -n $nameExperiment -f $nameExperiment/values.yaml $nameExperiment/")
-        //    Runtime.getRuntime().exec("helm install -n $nameExperiment -f $nameExperiment/values.yaml $nameExperiment/").waitFor()
-            //  Runtime.getRuntime().exec("helm install $nameExperiment-$CURRENT_VERSION.tgz").waitFor()
-         //   println(a)
+            commandExecutor.execute("helm install -n $nameExperiment -f $nameExperiment/values.yaml $nameExperiment/")
             count++
         }
     }
 
     fun getBagan(): Bagan {
-        val moshi = Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
-            .build()
-        val jsonAdapter = moshi.adapter(BaganJson::class.java)
+
+        val jsonAdapter = moshiProvider.adapter(BaganJson::class.java)
 
         val baganJson: BaganJson =
             jsonAdapter.fromJson(
@@ -244,27 +219,19 @@ class ExperimentCoordinator {
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 
 
-    fun registerExperiment(): String {
+    private fun registerExperiment(): String {
         return getStringExperiment()
     }
 
-    fun getStringExperiment() = (1..20)
+    private fun getStringExperiment() = (1..20)
         .map { i -> ThreadLocalRandom.current().nextInt(0, charPool.size) }
         .map(charPool::get)
         .joinToString("")
 
 
-    data class PodRequest(
-        val values: String,
-        val configMap: String,
-        val iterations: Int
-    )
+    private fun checkFile() {
+        if (!File(CONF_FILE).exists()) {
+            throw Exception("Error: file not found.")
+        }
+    }
 }
-
-@Throws(java.io.IOException::class)
-fun execCmd(cmd: String): String {
-    val s = java.util.Scanner(Runtime.getRuntime().exec(cmd).inputStream).useDelimiter("\\A")
-    return if (s.hasNext()) s.next() else ""
-}
-
-//curl -X POST  http://bagan-frontend.default.svc.cluster.local/$experiment/$nameExperiment/counter/;
