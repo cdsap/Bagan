@@ -2,21 +2,18 @@ package com.cdsap.bagan.experiments
 
 
 import com.cdsap.bagan.experiments.Versions.CONF_FILE
-import java.nio.file.Files
-import java.nio.file.Paths
-import com.cdsap.bagan.experiments.Versions.CURRENT_VERSION
 import java.io.File
 import java.util.concurrent.ThreadLocalRandom
 
 
 fun main() {
+    val logger = Logger()
     val moshiProvider = MoshiProvider()
-    val commandExecutor = CommandExecutor()
+    val commandExecutor = CommandExecutor(logger, true)
     val monitor = MonitorReporting(moshiProvider, commandExecutor)
     val experimentCoordinator = ExperimentCoordinator(moshiProvider, commandExecutor, monitor)
     experimentCoordinator.generate()
 }
-
 
 class ExperimentCoordinator(
     val moshiProvider: MoshiProvider,
@@ -28,9 +25,11 @@ class ExperimentCoordinator(
         checkFile()
         val experimentGenerator = ExperimentProvider(moshiProvider)
         val sessionExperiment = registerExperiment()
-        val baganFileGenerator = BaganFileGenerator(sessionExperiment, monitorReporting)
+        val logger = Logger()
+        val baganFileGenerator = BaganFileGenerator(sessionExperiment, monitorReporting, logger)
         var count = 0
 
+        logger.log("Bagan Experiment Session $sessionExperiment")
         monitorReporting.insertExperiment(sessionExperiment)
 
         experimentGenerator.getExperiments().forEach {
@@ -41,9 +40,7 @@ class ExperimentCoordinator(
         }
     }
 
-
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-
 
     private fun registerExperiment(): String {
         return getStringExperiment()
