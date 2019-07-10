@@ -9,7 +9,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: $nameExperiment
-  labels: 
+  labels:
     app: experiment
     type: experiment
     experimentid: $experiment
@@ -49,16 +49,16 @@ spec:
                 - bash
                 - -c
                 - |
-                  mv *.kt /repo 
-                  cd /usr/share/sdkman/bin 
+                  mv *.kt /repo
+                  cd /usr/share/sdkman/bin
                   source sdkman-generate.sh
                   cd /repo
-                  kscript TalaiotInjector.kt 
-                  kscript RewriteProperties.kt 
+                  kscript TalaiotInjector.kt
+                  kscript RewriteProperties.kt
                   pwd >  /usr/share/message
                   for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done
   volumes:
     - name: git-repo
-      emptyDir: {}\n"
+      emptyDir: {}
     """.trimIndent()
 }

@@ -7,34 +7,35 @@ import java.util.concurrent.ThreadLocalRandom
 
 
 fun main() {
-    val logger = Logger()
+    val logger = LoggerImpl()
     val moshiProvider = MoshiProvider()
     val commandExecutor = CommandExecutor(logger, true)
     val monitor = MonitorReporting(moshiProvider, commandExecutor)
-    val experimentCoordinator = ExperimentCoordinator(moshiProvider, commandExecutor, monitor)
+    val experimentCoordinator = ExperimentCoordinator(moshiProvider, commandExecutor, monitor, logger)
     experimentCoordinator.generate()
 }
 
 class ExperimentCoordinator(
     val moshiProvider: MoshiProvider,
     private val commandExecutor: CommandExecutor,
-    private val monitorReporting: MonitorReporting
+    private val monitorReporting: MonitorReporting,
+    private val logger: Logger
 ) {
 
     fun generate() {
         checkFile()
-        val experimentGenerator = ExperimentProvider(moshiProvider)
+        val baganConfFileProvider = BaganConfFileProviderImpl(moshiProvider)
+        val experimentProvider = ExperimentProvider(baganConfFileProvider)
         val sessionExperiment = registerExperiment()
-        val logger = Logger()
         val baganFileGenerator = BaganFileGenerator(sessionExperiment, monitorReporting, logger)
         var count = 0
 
         logger.log("Bagan Experiment Session $sessionExperiment")
         monitorReporting.insertExperiment(sessionExperiment)
 
-        experimentGenerator.getExperiments().forEach {
+        experimentProvider.getExperiments().forEach {
             val experiment = "experiment$count".toLowerCase()
-            baganFileGenerator.createExperiment(experiment, it, experimentGenerator.bagan)
+            baganFileGenerator.createExperiment(experiment, it, baganConfFileProvider.getBaganConf())
             commandExecutor.execute("helm install -n $experiment -f $experiment/values.yaml $experiment/")
             count++
         }
@@ -54,7 +55,7 @@ class ExperimentCoordinator(
     }
 
     private fun getStringExperiment() = (1..20)
-        .map { i -> ThreadLocalRandom.current().nextInt(0, charPool.size) }
+        .map { _ -> ThreadLocalRandom.current().nextInt(0, charPool.size) }
         .map(charPool::get)
         .joinToString("")
 }

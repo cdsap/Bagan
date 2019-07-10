@@ -1,23 +1,8 @@
 package com.cdsap.bagan.experiments
 
-import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.nio.file.Paths
+class ExperimentProvider(private val baganConfFileProvider: BaganConfFileProvider) {
 
-
-class ExperimentProvider(private val moshiProvider: MoshiProvider) {
-
-    val bagan by lazy {
-        val jsonAdapter = moshiProvider.adapter(BaganJson::class.java)
-
-        val baganJson: BaganJson =
-            jsonAdapter.fromJson(
-                String(Files.readAllBytes(Paths.get("${Versions.PATH}bagan_conf.json")), StandardCharsets.US_ASCII)
-            ) ?: throw Exception("Error parsing json file")
-        baganJson.bagan
-    }
-
-    fun getExperiments(): List<String> = getExperiments(bagan)
+    fun getExperiments(): List<String> = getExperiments(baganConfFileProvider.getBaganConf())
 
     private fun getExperiments(bagan: Bagan): List<String> {
 
