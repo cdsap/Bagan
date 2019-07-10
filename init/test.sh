@@ -107,20 +107,50 @@ cd ../docker/installer/creator/
 $executePodsLocally
 
 
-elif  "$type" = "gcloud_docker" ]; then
-  if [ -z "$extras"]; then
-    $gcloud_init
-    $gcloud_configure_docker
-    $gcloud_create_cluster
-    $helm_init
-    $helm_grafana
-    $helm_influx
-    $handleServices
+elif [ "$type" = "gcloud_docker" ]; then
+
+   echo 1;
+#   $gcloud_init;
+#   echo 3;#
+#   $gcloud_configure_docker;
+#  $gcloud_create_cluster;
+#$helmInit;
+#echo 5;
+#$helmServiceAccount;
+#echo 6;
+#$helmClusterRole;
+#echo 7;
+#$helmPatchDeploy;
+#echo 8;
+#sleep 10;
+#$helmClusterRole2;
+#echo 10;
+#sleep 10;
+#$helmRepoUpdate;
+#echo 11;
+#$helmGrafana;
+#echo 12;
+#$helmInflux;
+#echo 14;
+#$handleServices;
+
+
+  if [ -z "$extras" ]; then
+     a="echo 1111;
+      $loga
+      ls;
+      pwd;
+      echo 4;
+    $executePods"
   fi
-
-    echo "This is gcloud_docker"
-
+   echo "oposososososososososo";
+     docker run -ti -v $HOME/.config/gcloud:/root/.config/gcloud  \
+                    -v /Users/inaki/bagan_deployment/k8s/:/root/files/k8s \
+                    -v /Users/inaki/bagan_deployment/init/bagan_conf.json:/usr/local/creator/bagan_conf.json    cdsap/bagan-init  /bin/bash -c "
+                    $a;
+                    "
 elif  "$type" = "minikube" ]; then
+
 
   echo "This is minikube"
 else

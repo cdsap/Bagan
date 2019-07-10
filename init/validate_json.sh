@@ -56,7 +56,7 @@ if [ "$extras" = "executeExperiment" ]; then
    if [ "$typeJson" = "gcloud" ] | [ "$typeJson" = "gcloud_docker" ]; then
      if [ -z "$clusterJson" ] | [ -z "$zoneJson" ]
      then
-         printf '%s\n' "Error: you have selected to execute experiments in Gcloud without Cluster and Zone Information"
+         printf '%s\n' "Error: you have selected to execute experiments in G without Cluster and Zone Information"
          exit 1
      fi
    fi

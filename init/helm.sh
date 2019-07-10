@@ -17,5 +17,5 @@ helmInitc="helm init; \
   helm repo update;"
 
 
-  helmGrafana="helm install -n bagan-grafana -f ../k8s/grafana/values.yaml ../k8s/grafana/"
-  helmInflux="helm install -n bagan-influxdb -f ../k8s/influxdb/values.yaml ../k8s/influxdb/"
+  helmGrafana="helm install -n bagan-grafana -f /root/files/k8s/grafana/values.yaml /root/files/k8s/grafana/"
+  helmInflux="helm install -n bagan-influxdb -f /root/files/k8s/influxdb/values.yaml /root/files/k8s/influxdb/"

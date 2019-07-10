@@ -1,6 +1,6 @@
 {
    "bagan": {
-      "type": "gcloud",
+      "type": "gcloud_docker",
       "repository": "https://github.com/android/plaid",
       "gradleCommand": "./gradlew clean assembleDebug",
       "clusterName": "kkk",

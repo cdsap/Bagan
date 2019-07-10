@@ -16,11 +16,12 @@ handleServices="kubectl delete service bagan-grafana-experiments;
                     kubectl port-forward \$(kubectl get pods -l app=bagan-influxdb -o jsonpath='{ .items[0].metadata.name }') 8086:8086 &
                  "
 
-executePods="echo 1;cd /usr/share/sdkman/bin;
+executePods="echo 1;
+cd /usr/share/sdkman/bin;
 source sdkman-init.sh ;
-cd /root;
-echo 'Creating Pods';
-kscript /usr/local/creator/ExperimentCoordinator.kt;"
+cd /usr/local/creator/;
+ls;
+kscript ExperimentCoordinator.kt"
 
 
 executePodsLocally="
@@ -30,7 +31,7 @@ kscript ExperimentCoordinator.kt"
 clean="helm del --purge \$( kubectl get pods -l type=experiment -o custom-columns=:metadata.name --field-selector=status.phase=Running)"
 
 
-loga="gcloud components install kubectl gcloud container clusters get-credentials $cluster --zone $zone;"
+loga="gcloud container clusters get-credentials $cluster --zone $zone;"
 
 # \n
 #gcloud auth configure-docker \n
