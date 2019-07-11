@@ -30,19 +30,12 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.squareup.moshi:moshi-kotlin:1.8.0")
-    testCompile("junit", "junit", "4.12")
+    testImplementation("io.kotlintest:kotlintest-runner-junit5:3.1.11")
+    testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0-RC1")
 }
 
 
-//
-//tasks.withType<TaskHeaderReplacer> {
-//    dependsOn(tasks.getByPath(":compileKotlin"))
-//    println("dkdkdk")
-//    showFile()
-//}
-
-tasks.register("aaaaa", TaskHeaderReplacer::class.java) {
-    // this.input = ""
+tasks.register("convertFiles", TaskHeaderReplacer::class.java) {
     doLast {
         println("dkdkdk")
         showFile(project)
@@ -51,5 +44,5 @@ tasks.register("aaaaa", TaskHeaderReplacer::class.java) {
 }
 
 val x = tasks.getByName("build") {
-    this.dependsOn("aaaaa")
+    this.dependsOn("convertFiles")
 }

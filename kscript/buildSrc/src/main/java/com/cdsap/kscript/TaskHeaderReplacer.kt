@@ -125,7 +125,7 @@ abstract class TaskHeaderReplacer : DefaultTask() {
         listOf(
             Element(
                 "BaganFileGenerator.kt",
-                "@file:Include(\"Bagan.kt\")\n"+
+                "@file:Include(\"Bagan.kt\")\n" +
                         "@file:Include(\"Chart.kt\")\n" +
                         "@file:Include(\"ConfigMap.kt\")\n" +
                         "@file:Include(\"Pod.kt\")\n" +
@@ -137,12 +137,12 @@ abstract class TaskHeaderReplacer : DefaultTask() {
             ),
             Element(
                 "BaganGenerator.kt",
-                "//DEPS com.squareup.moshi:moshi-kotlin:1.8.0\n" +
-                        "@file:Include(\"MonitorReporting.kt\")\n" +
+                "@file:Include(\"MonitorReporting.kt\")\n" +
                         "@file:Include(\"GradleExperimentsProperties.kt\")\n" +
                         "@file:Include(\"Bagan.kt\")\n" +
                         "@file:Include(\"Logger.kt\")\n" +
                         "@file:Include(\"ExperimentProvider.kt\")\n" +
+                        "@file:Include(\"BaganConfFileProvider.kt\")\n" +
                         "@file:Include(\"BaganFileGenerator.kt\")\n" +
                         "@file:Include(\"CommandExecutor.kt\")\n" +
                         "@file:Include(\"MoshiProvider.kt\")\n" +
@@ -160,10 +160,16 @@ abstract class TaskHeaderReplacer : DefaultTask() {
                 "kscript/creator"
             ),
             Element("Chart.kt", "", Type.CREATOR, Action.MOVE, "kscript/creator"),
+            Element("Bootstraping.kt", "", Type.CREATOR, Action.MOVE, "kscript/creator"),
             Element("Values.kt", "", Type.CREATOR, Action.MOVE, "kscript/creator"),
             Element("Pod.kt", "", Type.CREATOR, Action.MOVE, "kscript/creator"),
             Element("CommandExecutor.kt", "", Type.CREATOR, Action.MOVE, "kscript/creator"),
-            Element("ExperimentProvider.kt", "", Type.CREATOR, Action.MOVE, "kscript/creator"),
+            Element(
+                "ExperimentProvider.kt",
+                "@file:Include(\"BaganConfFileProvider.kt\")\n",
+
+                Type.CREATOR, Action.MOVE, "kscript/creator"
+            ),
             Element("ConfigMap.kt", "", Type.CREATOR, Action.MOVE, "kscript/creator"),
             Element(
                 "MoshiProvider",
@@ -172,6 +178,8 @@ abstract class TaskHeaderReplacer : DefaultTask() {
                 Action.REPLACE,
                 "kscript/creator"
             ),
+            Element("BaganConfFileProviderImpl.kt", "", Type.CREATOR, Action.MOVE, "kscript/creator"),
+            Element("BaganConfFileProvider.kt", "", Type.CREATOR, Action.MOVE, "kscript/creator"),
             Element("BaganJson.kt", "", Type.CREATOR, Action.MOVE, "kscript/creator"),
             Element("Versions.kt", "", Type.CREATOR, Action.MOVE, "kscript/creator"),
             Element("GradleExperimentsProperties.kt", "", Type.CREATOR, Action.MOVE, "kscript/creator"),

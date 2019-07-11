@@ -11,11 +11,11 @@ fun main() {
     val moshiProvider = MoshiProvider()
     val commandExecutor = CommandExecutor(logger, true)
     val monitor = MonitorReporting(moshiProvider, commandExecutor)
-    val experimentCoordinator = ExperimentCoordinator(moshiProvider, commandExecutor, monitor, logger)
+    val experimentCoordinator = BaganGenerator(moshiProvider, commandExecutor, monitor, logger)
     experimentCoordinator.generate()
 }
 
-class ExperimentCoordinator(
+class BaganGenerator(
     val moshiProvider: MoshiProvider,
     private val commandExecutor: CommandExecutor,
     private val monitorReporting: MonitorReporting,
