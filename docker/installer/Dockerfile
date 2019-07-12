@@ -49,4 +49,4 @@ RUN curl -o /tmp/$FILENAME ${HELM_URL} \
   && rm -rf /tmp
 
 RUN helm init --client-only
-COPY creator/  /usr/local/creator
+COPY ../../bin/creator/  /usr/local/creator

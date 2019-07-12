@@ -63,6 +63,6 @@ RUN sdkmanager 'extras;google;google_play_services'
 
 RUN mkdir -p /var/workspace
 RUN cd /var/workspace
-COPY RewriteProperties.kt /var/workspace
-COPY TalaiotInjector.kt /var/workspace
+COPY ../../bin/properties/RewriteProperties.kt /var/workspace
+COPY ../../bin/injector/TalaiotInjector.kt /var/workspace
 WORKDIR "var/workspace/"
