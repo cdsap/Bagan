@@ -1,7 +1,7 @@
 #/bin/bash
 
 function gcloudBagan(){
-  PATH_GCLOUD_BAGAN=""
+  PATH_GCLOUD_BAGAN="docker/installer/bin"
   gcloud_bagan="kscript $PATH_GCLOUD_BAGAN/Bagan.kt"
   echo "$gcloud_bagan;"
 }
@@ -14,7 +14,7 @@ function gcloudDockerBagan(){
 }
 
 function minikubeBagan(){
-  PATH_MINIKUBE_BAGAN="."
+  PATH_MINIKUBE_BAGAN="docker/installer/bin"
   minikube_bagan="kscript $PATH_MINIKUBE_BAGAN/Bagan.kt"
   echo $minikube_bagan
 }

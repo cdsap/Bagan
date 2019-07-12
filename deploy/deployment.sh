@@ -4,18 +4,23 @@ IMAGE=""
 #master deployment
 
 # 1- Generate files
-cd kscript
+cd ../kscript
 ./gradlew build
-mv kscript/ ../bin
+rm -rf ../docker/installer/bin/*
+rm -rf ../docker/pod/bin/*
+rm -rf ../docker/pod/bin/*
+mv  kscript/creator ../docker/installer/bin
+mv  kscript/properties/ ../docker/pod/bin
+mv  kscript/injector/ ../docker/pod/bin
 
 # 2- Generate docker images
-
 # 2.1- Bagan Installer
 cd ../docker/installer
+echo 1
 docker build . --tag=bagan-init
+echo 2
 docker tag bagan-init cdsap/bagan-init
 docker push cdsap/bagan-init
-
 # 2.2- Bagan Pod
 cd ../pod
 docker build . --tag=bagan-pod-injector
