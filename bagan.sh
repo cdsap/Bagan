@@ -1,7 +1,11 @@
 #/bin/bash
+. scripts/log.sh
+. scripts/command_helm.sh
+. scripts/command_bagan.sh
+. scripts/command_init_credentials.sh
+
 type=$1
 mode=$2
-infra_type=$3
 
 if [ ! "$type" = "gcloud" ] && [ ! "$type" = "minikube" ] && [ ! "$type" = "gcloud_docker" ]; then
   printf '%s\n' "Error: type not supported. Current clusters environments supported are minikube, gcloud and gcloud_docker."
@@ -56,9 +60,7 @@ if [ "$ans" != "y" ] | [ -z "$ans" ]; then
 fi;
 
 . scripts/validate_json.sh
-. scripts/command_helm.sh
-. scripts/command_bagan.sh
-. scripts/command_init_credentials.sh
+
 
 
 printf '%s\n' "Values:"
@@ -82,12 +84,6 @@ printf '%s\n' "************************"
 printf '%s\n' "************************"
 printf '%s\n' "****Staring Bagan*****"
 printf '%s\n' "$type"
-
-
-function log() {
-  echo "[LOG]: $1"
-}
-
 
 if [ $type == "gcloud" ]; then
   if [ $mode == "cluster" ]; then

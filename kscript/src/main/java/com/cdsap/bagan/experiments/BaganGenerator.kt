@@ -5,6 +5,7 @@ import com.cdsap.bagan.experiments.Versions.CONF_FILE
 import java.io.File
 import java.util.concurrent.ThreadLocalRandom
 
+data class Experiment(val name: String, val values: String)
 
 fun main() {
     val logger = LoggerImpl()
@@ -29,14 +30,17 @@ class BaganGenerator(
         val sessionExperiment = registerExperiment()
         val baganFileGenerator = BaganFileGenerator(sessionExperiment, monitorReporting, logger)
         var count = 0
+        val experiments = experimentProvider.getExperiments().flatMap {
+            count++
+            listOf(Experiment("experiment$count".toLowerCase(), it))
+        }
 
         logger.log("Bagan Experiment Session $sessionExperiment")
         monitorReporting.insertExperiment(sessionExperiment)
 
-        experimentProvider.getExperiments().forEach {
-            val experiment = "experiment$count".toLowerCase()
-            baganFileGenerator.createExperiment(experiment, it, baganConfFileProvider.getBaganConf())
-            commandExecutor.execute("helm install -n $experiment -f $experiment/values.yaml $experiment/")
+        experiments.forEach {
+            baganFileGenerator.createExperiment(it.name, it.values, baganConfFileProvider.getBaganConf())
+            commandExecutor.execute("helm install -n ${it.name} -f ${it.name}/values.yaml ${it.name}/")
             count++
         }
     }
