@@ -8,6 +8,8 @@
 
 # creator kscript files
 kscript/buildSrc/build
+kscript/build
+kscript/out
 kscript/buildSrc/.gradle
 docker/installer/creator/
 kscript/.idea/
