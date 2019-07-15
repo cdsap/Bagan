@@ -35,14 +35,13 @@ dependencies {
 }
 
 
-tasks.register("convertFiles", TaskHeaderReplacer::class.java) {
-    doLast {
-        println("dkdkdk")
-        showFile(project)
-
-    }
+tasks.register("convertFiles", TaskHeaderReplacer::class.java){
+    input.set("src/file/")
+    showFile()
 }
 
+
+//{}
 val x = tasks.getByName("build") {
     this.dependsOn("convertFiles")
 }

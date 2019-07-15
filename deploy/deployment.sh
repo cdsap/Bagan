@@ -1,7 +1,7 @@
 #/bin/bash
 VERSION="0.1.0"
 IMAGE=""
-#master deployment
+
 
 # 1- Generate files
 cd ../kscript
@@ -9,9 +9,9 @@ cd ../kscript
 rm -rf ../docker/installer/bin/*
 rm -rf ../docker/pod/bin/*
 rm -rf ../docker/pod/bin/*
-mv  kscript/creator ../docker/installer/bin
-mv  kscript/properties/ ../docker/pod/bin
-mv  kscript/injector/ ../docker/pod/bin
+mv  kscript/build/creator ../docker/installer/bin
+mv  kscript/build/properties/ ../docker/pod/bin
+mv  kscript/build/injector/ ../docker/pod/bin
 
 # 2- Generate docker images
 # 2.1- Bagan Installer
