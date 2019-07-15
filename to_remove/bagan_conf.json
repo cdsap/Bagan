@@ -1,0 +1,21 @@
+{
+   "bagan": {
+      "repository": "https://github.com/android/plaid",
+      "gradleCommand": "./gradlew clean assembleDebug",
+      "clusterName": "kkk",
+      "zone": null,
+      "iterations": 10,
+      "experiments": {
+         "properties": [
+            {
+               "name": "org.gradle.jvmargs",
+               "options": ["-Xmx3g","-Xmx4g"]
+            },
+            {
+               "name": "org.gradle.workers.max",
+               "options": ["4","6"]
+            }
+         ]
+      }
+   }
+}

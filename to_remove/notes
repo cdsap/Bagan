@@ -1,0 +1,27 @@
+helm delete $(helm list --short)
+ helm del --purge $( kubectl get pods -l type=experiment -o custom-columns=:metadata.name --field-selector=status.phase=Running)
+
+curl -G 'bagan-mysql:8086/query?pretty=true' --data-urlencode "db=tracking" --data-urlencode "q=SELECT count() FROM \"tracking\""
+
+
+helm del --purge $( kubectl get pods -l type=experiment -o custom-columns=:metadata.name --field-selector=status.phase=Running)
+
+
+# todo
+# think if is this is suitable for our --man or --help
+#printf '%s\n' "Experiment:"
+#printf '%s\n' "Example: ./bagan gcloud experiment --> This command will execute Bagan in the cluster defined in bagan_conf.json with gcloud tool"
+#printf '%s\n' "Example: ./bagan gcloud_docker experiment --> This command will execute Bagan in the cluster defined in bagan_conf.json with docker"
+#printf '%s\n' "Example: ./bagan minikube experiment --> This command will execute Bagan in the cluster defined in bagan_conf.json within minikube"
+#printf '%s\n' "Infrastucture:"
+#printf '%s\n' "Example: ./bagan gcloud infrastrucure --> This command will initialize helm and will install the charts for Grafana and InfluxDb with gcloud tool"
+#printf '%s\n' "Example: ./bagan gcloud_docker infrastrucure --> This command will initialize helm and will install the charts for Grafana and InfluxDb within docker"
+#printf '%s\n' "Example: ./bagan minikube infrastrucure --> This command will initialize helm and will install the charts for Grafana and InfluxDb within minikube"
+
+
+# pending define ifra logic
+# should something like if is defined and the parameterr is not null(infra_type)
+# we need to check if is helm or grafana
+#if [ "$mode" = "infrastructure" ]; then
+
+#fi

@@ -55,7 +55,6 @@ spec:
                   cd /repo
                   kscript TalaiotInjector.kt
                   kscript RewriteProperties.kt
-                  pwd >  /usr/share/message
                   for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done
   volumes:
     - name: git-repo

@@ -16,9 +16,7 @@ mv  kscript/injector/ ../docker/pod/bin
 # 2- Generate docker images
 # 2.1- Bagan Installer
 cd ../docker/installer
-echo 1
 docker build . --tag=bagan-init
-echo 2
 docker tag bagan-init cdsap/bagan-init
 docker push cdsap/bagan-init
 # 2.2- Bagan Pod
