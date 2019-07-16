@@ -1,27 +1,16 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-
 buildscript {
     repositories {
         jcenter()
     }
-    dependencies {
-        classpath("com.novoda:bintray-release:0.9")
-    }
 }
-
 
 plugins {
     `java-gradle-plugin`
     `kotlin-dsl`
-    `maven-publish`
     groovy
     kotlin("jvm")
 
 }
-
-group = "com.cdsap"
-version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -35,13 +24,11 @@ dependencies {
 }
 
 
-tasks.register("convertFiles", TaskHeaderReplacer::class.java){
-    input.set("src/file/")
-    showFile()
+tasks.register("convertFiles", TaskHeaderReplacer::class.java) {
+    input.set(File("$projectDir/src/main/java"))
+    output.set(File("$buildDir"))
+
 }
-
-
-//{}
-val x = tasks.getByName("build") {
+tasks.getByName("build") {
     this.dependsOn("convertFiles")
 }

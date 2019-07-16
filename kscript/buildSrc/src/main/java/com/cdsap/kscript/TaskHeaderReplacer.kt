@@ -1,16 +1,10 @@
 import com.cdsap.kscript.LookupFilesDependencies
 import org.gradle.api.DefaultTask
-import org.gradle.api.Project
-import com.cdsap.kscript.entities.Element
 import com.cdsap.kscript.entities.Type
 import com.cdsap.kscript.entities.Action
-import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.SourceTask
 import org.gradle.api.tasks.TaskAction
 import java.io.*
 
@@ -18,39 +12,24 @@ abstract class TaskHeaderReplacer : DefaultTask() {
     @get:InputDirectory
     abstract val input: DirectoryProperty
     @get:OutputDirectory
-    abstract val output: DirectoryProperty = Dire
-
-    -rwxr-xr-x
-    -rw-r--r--
-    private val file = "/src/main/java/"
-    //    @getOup
+    abstract val output: DirectoryProperty
     private val lookup = LookupFilesDependencies.getFilesDependencies()
 
-
     @TaskAction
-    fun showFile() {
-        val file = File(project.projectDir.toString() + file)
-        createOutput()
-        if (file.isDirectory) {
-            file.walkTopDown().iterator().forEach {
-                if (it.isFile) {
-                    println(it.path)
-                    updateHeadersFile(it.path)
-
-                }
+    fun replacer() {
+        createOutputFolder()
+        input.get().asFileTree.forEach {
+            if (it.isFile) {
+                updateHeadersFile(it.path)
             }
         }
     }
 
-    private fun createOutput() {
-        val output = "${project.buildDir}/kscript/"
-        val dir = File(output)
-        if (!dir.exists()) {
-            dir.mkdir()
-        }
-        val dirCreator = File("$output/creator")
-        val dirInjector = File("$output/kscript/injector")
-        val dirProperties = File("$output/kscript/properties")
+    private fun createOutputFolder() {
+        val dir = output.get().asFile.path
+        val dirCreator = File("$dir/creator")
+        val dirInjector = File("$dir/kscript/injector")
+        val dirProperties = File("$dir/kscript/properties")
         if (!dirCreator.exists()) {
             dirCreator.mkdir()
         }
@@ -65,12 +44,15 @@ abstract class TaskHeaderReplacer : DefaultTask() {
     private fun updateHeadersFile(path: String) {
         val file = File(path)
         val nameFile = file.name
+
+        val dir = output.get().asFile.path
         lookup.filter {
             it.nameFile == nameFile
         }.map {
+
             when (it.action) {
                 Action.MOVE -> {
-                    copyFile(file.path, "${it.dir}/${file.name}")
+                    copyFile(file.path, "$dir/${it.dir}/${file.name}")
                 }
                 Action.REPLACE -> {
                     if (it.type == Type.CREATOR) {
@@ -85,8 +67,8 @@ abstract class TaskHeaderReplacer : DefaultTask() {
                         val v = it.dependencies
                         result = "$v\n\n$result"
 
-                        File("${it.dir}/${file.name}").createNewFile()
-                        val file = File("${it.dir}/${file.name}")
+                        File("$dir/${it.dir}/${file.name}").createNewFile()
+                        val file = File("$dir/${it.dir}/${file.name}")
                         val fos = FileOutputStream(file)
 
                         fos.write(result.toByteArray())
@@ -116,5 +98,4 @@ abstract class TaskHeaderReplacer : DefaultTask() {
         _in.close()
         out.close()
     }
-
 }
