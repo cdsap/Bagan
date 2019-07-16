@@ -27,9 +27,14 @@ abstract class TaskHeaderReplacer : DefaultTask() {
 
     private fun createOutputFolder() {
         val dir = output.get().asFile.path
-        val dirCreator = File("$dir/creator")
-        val dirInjector = File("$dir/kscript/injector")
-        val dirProperties = File("$dir/kscript/properties")
+        val kscriptOutput = "$dir/kscript"
+        val dirKscript = File(kscriptOutput)
+        val dirCreator = File("$kscriptOutput/creator")
+        val dirInjector = File("$kscriptOutput/injector")
+        val dirProperties = File("$kscriptOutput/properties")
+        if (!dirKscript.exists()) {
+            dirKscript.mkdir()
+        }
         if (!dirCreator.exists()) {
             dirCreator.mkdir()
         }
@@ -46,6 +51,7 @@ abstract class TaskHeaderReplacer : DefaultTask() {
         val nameFile = file.name
 
         val dir = output.get().asFile.path
+
         lookup.filter {
             it.nameFile == nameFile
         }.map {
@@ -81,7 +87,6 @@ abstract class TaskHeaderReplacer : DefaultTask() {
 
     private fun copyFile(input: String, output: String) {
         val _in = FileInputStream(input)
-        println(output)
         val out = FileOutputStream(output)
 
         val buf = ByteArray(1024)

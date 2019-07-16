@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/sh
 
 function log() {
   if [ "$debug" ]; then

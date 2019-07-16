@@ -2,7 +2,7 @@
    "bagan": {
       "repository": "https://github.com/android/plaid",
       "gradleCommand": "./gradlew clean assembleDebug",
-      "clusterName": "kkk",
+      "clusterName": "",
       "zone": null,
       "iterations": 10,
       "experiments": {

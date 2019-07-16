@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/sh
 
 function gcloudBagan(){
   PATH_GCLOUD_BAGAN="docker/installer/bin"

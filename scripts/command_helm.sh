@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/sh
 
 function gcloudHelm(){
   sleep10="sleep 10"

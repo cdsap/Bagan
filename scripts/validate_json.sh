@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 printf '%s\n' "Parsing Json..."
 FILE="bagan_conf.json"
