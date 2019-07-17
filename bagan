@@ -103,16 +103,18 @@ if [ $type == "gcloud" ]; then
   fi
 elif [ $type == "gcloud_docker" ]; then
   if [ $mode == "cluster" ]; then
-    execution="$(gcloudInit); $(gcloudCredentials); $(gcloudHelm); $(gcloudInfraPods); $(gcloudDockerBagan);"
+    execution="$(gcloudInit) $(gcloudCredentials) $(gcloudHelm) $(gcloudInfraPods) $(gcloudDockerBagan)"
+    eval $execution
   elif [ $mode == "infrastructure" ]; then
-    execution="$(gcloudCredentials); $(gcloudHelm); $(gcloudInfraPods); $(gcloudDockerBagan)"
+    execution="$(gcloudCredentials) $(gcloudHelm) $(gcloudInfraPods) $(gcloudDockerBagan)"
+    eval $execution
   elif [ $mode == "experiment" ]; then
     execution="$(gcloudCredentials) $(gcloudDockerBagan) "
+    eval $execution
   else
     printf '%s\n' "Error no mode parsed properly for gcloud_docker"
     exit 1
   fi
-  echo $execution
 elif [ $type == "minikube" ]; then
   if [ $mode == "cluster"] || [ $mode == "infrastrucure" ]; then
     eval "$(gcloudHelm)"
