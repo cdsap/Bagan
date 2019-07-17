@@ -13,7 +13,7 @@ machineJson=$(cat $FILE | jq -c -r  '.bagan.machine' | tr -d '\r')
 printf '%s\n' "Json File parsed OK"
 printf '%s\n' "Validating Json..."
 
-if  [ -z "$repositoryJson" ] | [ -z "$gradleCommandJson" ]
+if  [ -z "$repositoryJson" ] || [ -z "$gradleCommandJson" ]
 then
      printf '%s\n' "Error: repository, gradleCommand are required "
      exit 1
@@ -35,8 +35,8 @@ fi
 
 
 if [ "$extras" = "executeExperiment" ]; then
-   if [ "$typeJson" = "gcloud" ] | [ "$typeJson" = "gcloud_docker" ]; then
-     if [ -z "$clusterJson" ] | [ -z "$zoneJson" ]
+   if [ "$typeJson" = "gcloud" ] || [ "$typeJson" = "gcloud_docker" ]; then
+     if [ -z "$clusterJson" ] || [ -z "$zoneJson" ]
      then
          printf '%s\n' "Error: you have selected to execute experiments in G without Cluster and Zone Information"
          exit 1
@@ -47,21 +47,21 @@ fi
 printf '%s\n' "Json File validated OK"
 
 cluster=""
-if [ -z "$clusterJson" ] | [ "$clusterJson" = "null" ]
+if [ -z "$clusterJson" ] || [ "$clusterJson" = "null" ]
 then
    cluster="bagan"
 else
    cluster=$clusterJson
 fi
-
-if [ -z "$zoneJson" ] | [ "$zoneJson" = "null" ]
+echo $cluster
+if [ -z "$zoneJson" ] || [ "$zoneJson" = "null" ]
 then
    zone="us-central1-a"
 else
    zone=$zoneJson
 fi
 
-if [ -z "$machineJson" ] | [ "$machineJson" = "null" ]
+if [ -z "$machineJson" ] || [ "$machineJson" = "null" ]
 then
    machine="n1-standard-1"
 else

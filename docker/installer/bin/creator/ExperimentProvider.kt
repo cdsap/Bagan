@@ -38,7 +38,7 @@ class ExperimentProvider(private val baganConfFileProvider: BaganConfFileProvide
         }
 
         for (i in 0 until lists[depth].size) {
-            generatePermutations(lists, result, depth + 1, current + "${lists[depth][i]}\n     ")
+            generatePermutations(lists, result, depth + 1, current + "${lists[depth][i]}\n               ")
         }
     }
 

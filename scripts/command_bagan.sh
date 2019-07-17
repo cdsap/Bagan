@@ -1,8 +1,8 @@
 #!/bin/sh
 
 function gcloudBagan(){
-  PATH_GCLOUD_BAGAN="docker/installer/bin"
-  gcloud_bagan="kscript $PATH_GCLOUD_BAGAN/Bagan.kt"
+  PATH_GCLOUD_BAGAN="docker/installer/bin/creator"
+  gcloud_bagan="kscript $PATH_GCLOUD_BAGAN/BaganGenerator.kt"
   echo "$gcloud_bagan;"
 }
 
@@ -15,6 +15,6 @@ function gcloudDockerBagan(){
 
 function minikubeBagan(){
   PATH_MINIKUBE_BAGAN="docker/installer/bin"
-  minikube_bagan="kscript $PATH_MINIKUBE_BAGAN/Bagan.kt"
-  echo $minikube_bagan
+  minikube_bagan="kscript $PATH_MINIKUBE_BAGAN/BaganGenerator.kt"
+  echo $minikube_bagan;
 }

@@ -50,12 +50,11 @@ spec:
                 - -c
                 - |
                   mv *.kt /repo
-                  cd /usr/share/sdkman/bin
-                  source sdkman-generate.sh
                   cd /repo
+                  source /usr/share/sdkman/bin/sdkman-init.sh
+                  source /root/.bashrc
                   kscript TalaiotInjector.kt
                   kscript RewriteProperties.kt
-                  pwd >  /usr/share/message
                   for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done
   volumes:
     - name: git-repo

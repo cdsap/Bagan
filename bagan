@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 . scripts/log.sh
 . scripts/command_helm.sh
 . scripts/command_bagan.sh
@@ -89,7 +89,7 @@ if [ $type == "gcloud" ]; then
     eval "$(gcloudHelm)"
     eval "$(gcloudInfraPods)"
     eval "$(gcloudBagan)"
-  elif [ $mode == "infrastrucure" ]; then
+  elif [ $mode == "infrastructure" ]; then
     eval "$(gcloudCredentials)"
     eval "$(gcloudHelm)"
     eval "$(gcloudInfraPods)"

@@ -65,4 +65,5 @@ RUN mkdir -p /var/workspace
 RUN cd /var/workspace
 COPY bin/properties/RewriteProperties.kt /var/workspace
 COPY bin/injector/TalaiotInjector.kt /var/workspace
+COPY bin/Bootstraping.kt /var/workspace
 WORKDIR "var/workspace/"

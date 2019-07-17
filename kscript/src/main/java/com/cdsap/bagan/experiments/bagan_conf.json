@@ -11,7 +11,7 @@
       "properties": [
         {
           "name": "org.gradle.jvmargs",
-          "options": ["-Xmx2g","-Xmx3g","-Xmx4g"]
+          "options": ["-Xmx3g","-Xmx4g"]
         },
         {
           "name": "org.gradle.caching",

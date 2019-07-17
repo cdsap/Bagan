@@ -23,7 +23,7 @@ data class Experiment(val name: String, val values: String)
 fun main() {
     val logger = LoggerImpl()
     val moshiProvider = MoshiProvider()
-    val commandExecutor = CommandExecutor(logger, true)
+    val commandExecutor = CommandExecutor(logger, false)
     val monitor = MonitorReporting(moshiProvider, commandExecutor)
     val experimentCoordinator = BaganGenerator(moshiProvider, commandExecutor, monitor, logger)
     experimentCoordinator.generate()
