@@ -20,8 +20,11 @@ function gcloudHelm(){
 }
 
 function minikubeHelm(){
-  helm_minikube_init="$helm_init"
-  helm_minikube_repo_update="helm_repo_update"
+  helm_minikube_init="helm init"
+  helm_minikube_repo_update="helm repo update"
+  echo "$helm_minikube_init"
+  echo "$sleep15;"
+  echo "$helm_minikube_repo_update"
 }
 
 function gcloudInfraPods(){

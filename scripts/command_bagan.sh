@@ -11,7 +11,7 @@ function gcloudDockerBagan(){
   gcloud_docker_bagan="kscript BaganGenerator.kt"
   init="source /usr/share/sdkman/bin/sdkman-init.sh"
   bashrc="source /root/.bashrc"
-  change="cd /usr/local/creator"
+  change="cd creator"
   echo "$init;"
   echo "$bashrc;"
   echo "$change;"
