@@ -59,7 +59,6 @@ fi;
 . scripts/validate_json.sh
 
 
-
 printf '%s\n' "Values:"
 printf '%s\n' "type: $type"
 printf '%s\n' "cluster: $cluster"
@@ -104,17 +103,22 @@ if [ $type == "gcloud" ]; then
 elif [ $type == "gcloud_docker" ]; then
   if [ $mode == "cluster" ]; then
     execution="$(gcloudInit) $(gcloudCredentials) $(gcloudHelm) $(gcloudInfraPods) $(gcloudDockerBagan)"
-    eval $execution
   elif [ $mode == "infrastructure" ]; then
     execution="$(gcloudCredentials) $(gcloudHelm) $(gcloudInfraPods) $(gcloudDockerBagan)"
-    eval $execution
   elif [ $mode == "experiment" ]; then
     execution="$(gcloudCredentials) $(gcloudDockerBagan) "
-    eval $execution
   else
     printf '%s\n' "Error no mode parsed properly for gcloud_docker"
     exit 1
   fi
+  echo $execution
+  docker run -ti -v $HOME/.config/gcloud:/root/.config/gcloud \
+                 -v $PWD/k8s:/usr/local/k8s \
+                 -v $PWD/bagan_conf.json:/usr/local/creator/bagan_conf.json \
+                    cdsap/bagan-init:0.1.1 /bin/bash -c "
+                    export PATH=$PATH:/usr/local/gcloud/google-cloud-sdk/bin/;
+                    $execution"
+
 elif [ $type == "minikube" ]; then
   if [ $mode == "cluster"] || [ $mode == "infrastrucure" ]; then
     eval "$(gcloudHelm)"

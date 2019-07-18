@@ -6,7 +6,7 @@ IMAGE_BAGAN_POD="cdsap/bagan-pod-injector"
 set -e
 # 1- Removing previous binaries on docker bin folders
 rm -rf ../docker/installer/bin/*
-#rm -rf ../docker/pod/bin/*
+rm -rf ../docker/pod/bin/*
 
 # 2- Execute build of kscript to generated formatted files
 cd ../kscript
@@ -15,8 +15,8 @@ cd ../kscript
 
 # 3- Move files to binary files
 mv  build/kscript/creator/ ../docker/installer/bin/
-#mv  build/kscript/properties/ ../docker/pod/bin
-#mv  build/kscript/injector/ ../docker/pod/bin
+mv  build/kscript/properties/ ../docker/pod/bin
+mv  build/kscript/injector/ ../docker/pod/bin
 
 
 # 4- Generate docker images

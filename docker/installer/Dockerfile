@@ -21,7 +21,6 @@ RUN source $SDKMAN_DIR/bin/sdkman-init.sh \
     && sdk install kscript
 
 
-RUN echo $SDKMAN_DIR
 RUN cd $SDKMAN_DIR
 RUN cd /usr/share/sdkman
 RUN pwd
@@ -31,7 +30,9 @@ RUN ls
 
 RUN curl -sSL https://sdk.cloud.google.com | bash
 RUN mkdir /usr/local/gcloud
+RUN mkdir /usr/local/k8s
 RUN mv /root/google-cloud-sdk /usr/local/gcloud/
+
 ENV PATH $PATH:usr/local/gcloud/google-cloud-sdk/bin
 
 ENV VERSION v2.14.1

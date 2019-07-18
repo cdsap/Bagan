@@ -9,6 +9,12 @@ function gcloudBagan(){
 function gcloudDockerBagan(){
   gcloud_docker_bootstrap_bagan="kscript Bootstraping.kt"
   gcloud_docker_bagan="kscript BaganGenerator.kt"
+  init="source /usr/share/sdkman/bin/sdkman-init.sh"
+  bashrc="source /root/.bashrc"
+  change="cd /usr/local/creator"
+  echo "$init;"
+  echo "$bashrc;"
+  echo "$change;"
   echo "$gcloud_docker_bootstrap_bagan;"
   echo "$gcloud_docker_bagan;"
 }
