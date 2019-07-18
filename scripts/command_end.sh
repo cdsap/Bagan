@@ -1,7 +1,7 @@
 #!/bin/sh
 
 function endGcloud(){
-   grafana_service=$(kubectl get services bagan-grafana-experiments  -o custom-columns=:status.loadBalancer.ingress[0].ip)
+   grafana_service=$(kubectl get services bagan-grafana  -o custom-columns=:status.loadBalancer.ingress[0].ip)
    cluster_ip=kubectl cluster-info | grep 'Kubernetes master' | awk '/http/ {print $NF}'
    sleep 10
    echo "Bagan setup finished"
