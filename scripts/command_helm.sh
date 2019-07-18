@@ -31,8 +31,8 @@ function gcloudInfraPods(){
   PATH_GCLOUD_CHARTS="k8s"
   gcloud_grafana="helm install -n bagan-grafana -f $PATH_GCLOUD_CHARTS/grafana/values.yaml $PATH_GCLOUD_CHARTS/grafana/"
   gcloud_influx="helm install -n bagan-influxdb -f $PATH_GCLOUD_CHARTS/influxdb/values.yaml $PATH_GCLOUD_CHARTS/influxdb/"
-  kubectl_bagan_service_grafana_remove="kubectl delete service bagan-grafana-experiments"
-  kubectl_bagan_service_grafana_insert="kubectl expose deployment bagan-grafana-experiments --type=LoadBalancer"
+  kubectl_bagan_service_grafana_remove="kubectl delete service bagan-grafana"
+  kubectl_bagan_service_grafana_insert="kubectl expose deployment bagan-grafana --type=LoadBalancer"
 
   echo "$gcloud_grafana;"
   echo "$gcloud_influx;"

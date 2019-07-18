@@ -14,7 +14,7 @@
             },
             {
                "name": "org.gradle.workers.max",
-               "options": ["4","6"]
+               "options": ["2","3"]
             }
          ]
       }
