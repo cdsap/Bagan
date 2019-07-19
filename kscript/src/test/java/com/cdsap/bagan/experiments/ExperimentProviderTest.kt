@@ -10,7 +10,6 @@ class ExperimentProviderTest : BehaviorSpec({
             val baganConf = mock<BaganConfFileProvider>()
             whenever(baganConf.getBaganConf()).thenReturn(
                 Bagan(
-                    type = "gcloud",
                     repository = "http://git.com",
                     gradleCommand = "./gradlew assemble",
                     clusterName = "myCluster",
@@ -31,7 +30,6 @@ class ExperimentProviderTest : BehaviorSpec({
             val baganConf = mock<BaganConfFileProvider>()
             whenever(baganConf.getBaganConf()).thenReturn(
                 Bagan(
-                    type = "gcloud",
                     repository = "http://git.com",
                     gradleCommand = "./gradlew assemble",
                     clusterName = "myCluster",

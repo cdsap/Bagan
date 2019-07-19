@@ -1,7 +1,6 @@
 package com.cdsap.bagan.injector
 
 import java.io.File
-import java.io.StringReader
 
 enum class MODE {
     GROOVY,
@@ -15,25 +14,24 @@ fun main() {
 }
 
 class TalaiotInjector {
+
     fun init() {
         val mode = checkMode()
         appendTalaiot(mode)
-        createFileTalaiot(mode)
+        createFileTalaiot()
     }
 
-    fun checkMode(): MODE {
-        if (gradleFileExists("build.gradle.kts")) {
-            return MODE.KTS
-        } else if (gradleFileExists("build.gradle")) {
-            return MODE.GROOVY
-        } else {
-            throw java.lang.Exception("Main Build Gradle not found, looking for build.gradle / build.gradlew.kts")
+    private fun checkMode(): MODE {
+        return when {
+            gradleFileExists("build.gradle.kts") -> MODE.KTS
+            gradleFileExists("build.gradle") -> MODE.GROOVY
+            else -> throw java.lang.Exception("Main Build Gradle not found, looking for build.gradle / build.gradlew.kts")
         }
     }
 
-    fun gradleFileExists(path: String) = File(path).exists()
+    private fun gradleFileExists(path: String) = File(path).exists()
 
-    fun appendTalaiot(mode: MODE) {
+    private fun appendTalaiot(mode: MODE) {
         when (mode) {
             MODE.GROOVY -> {
                 File("build.gradle").appendText("\napply from : \"talaiot.gradle.kts\"")
@@ -44,77 +42,42 @@ class TalaiotInjector {
         }
     }
 
-    fun createFileTalaiot(mode: MODE) {
+    private fun createFileTalaiot() {
         val id = System.getenv("id")
         println(id.toString())
         println(id)
 
-        when (mode) {
-            MODE.GROOVY -> {
-                val file = File("talaiot.gradle.kts")
-                file.writeText(
-                    "" +
-                            "buildscript {\n" +
-                            "    repositories {\n" +
-                            "        mavenCentral()\n" +
-                            "        google()\n" +
-                            "        mavenLocal()\n" +
-                            "        jcenter()\n" +
-                            "\n" +
-                            "    }\n" +
-                            "    dependencies {\n" +
-                            "        classpath(\"com.cdsap:talaiot:0.4.0\")\n" +
-                            "    }\n" +
-                            "}\n" +
-                            "\n" +
-                            "apply<com.cdsap.talaiot.TalaiotPlugin>()\n" +
-                            "configure<com.cdsap.talaiot.TalaiotExtension>() {\n" +
-                            "    logger = com.cdsap.talaiot.logger.LogTracker.Mode.INFO\n" +
-                            "    metrics { customMetrics(\"experiment\" to  \"$id\") } \n" +
-                            "    publishers {\n" +
-                            "\n" +
-                            "        influxDbPublisher {\n" +
-                            "            dbName = \"tracking\"\n" +
-                            "            url = \"http://bagan-influxdb.default:8086\"\n" +
-                            "            urlMetric = \"tracking\"\n" +
-                            "        }\n" +
-                            "    }\n" +
-                            "}"
-                )
-            }
-            MODE.KTS -> {
-                val file = File("talaiot.gradle.kts")
-                file.writeText(
-                    "" +
-                            "buildscript {\n" +
-                            "    repositories {\n" +
-                            "        mavenCentral()\n" +
-                            "        google()\n" +
-                            "        mavenLocal()\n" +
-                            "        jcenter()\n" +
-                            "\n" +
-                            "    }\n" +
-                            "    dependencies {\n" +
-                            "        classpath(\"com.cdsap:talaiot:0.4.0\")\n" +
-                            "    }\n" +
-                            "}\n" +
-                            "\n" +
-                            "apply<com.cdsap.talaiot.TalaiotPlugin>()\n" +
-                            "configure<com.cdsap.talaiot.TalaiotExtension>() {\n" +
-                            "    logger = com.cdsap.talaiot.logger.LogTracker.Mode.INFO\n" +
-                            "    publishers {\n" +
-                            "\n" +
-                            "        influxDbPublisher {\n" +
-                            "            dbName = \"tracking\"\n" +
-                            "            url = \"http://bagan-influxdb.default:8086\"\n" +
-                            "            urlMetric = \"tracking\"\n" +
-                            "        }\n" +
-                            "    }\n" +
-                            "}"
-                )
-            }
-        }
+
+        val file = File("talaiot.gradle.kts")
+        file.writeText(
+            "" +
+                    "buildscript {\n" +
+                    "    repositories {\n" +
+                    "        mavenCentral()\n" +
+                    "        google()\n" +
+                    "        mavenLocal()\n" +
+                    "        jcenter()\n" +
+                    "\n" +
+                    "    }\n" +
+                    "    dependencies {\n" +
+                    "        classpath(\"com.cdsap:talaiot:0.4.0\")\n" +
+                    "    }\n" +
+                    "}\n" +
+                    "\n" +
+                    "apply<com.cdsap.talaiot.TalaiotPlugin>()\n" +
+                    "configure<com.cdsap.talaiot.TalaiotExtension>() {\n" +
+                    "    logger = com.cdsap.talaiot.logger.LogTracker.Mode.INFO\n" +
+                    "    metrics { customMetrics(\"experiment\" to  \"$id\") } \n" +
+                    "    publishers {\n" +
+                    "\n" +
+                    "        influxDbPublisher {\n" +
+                    "            dbName = \"tracking\"\n" +
+                    "            url = \"http://bagan-influxdb.default:8086\"\n" +
+                    "            urlMetric = \"tracking\"\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}"
+        )
+
     }
-
-
 }

@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/sh
 
 function gcloudHelm(){
   sleep10="sleep 10"
@@ -20,14 +20,22 @@ function gcloudHelm(){
 }
 
 function minikubeHelm(){
-  helm_minikube_init="$helm_init"
-  helm_minikube_repo_update="helm_repo_update"
+  helm_minikube_init="helm init"
+  helm_minikube_repo_update="helm repo update"
+  echo "$helm_minikube_init"
+  echo "$sleep15;"
+  echo "$helm_minikube_repo_update"
 }
 
 function gcloudInfraPods(){
-  PATH_GCLOUD_CHARTS="."
-  gcloud_grafana="helm install -n bagan-grafana -f $PATH_GCLOUD_CHARTS/grafana/values.yaml $PATH__GCLOUD_CHARTS/grafana/"
+  PATH_GCLOUD_CHARTS="k8s"
+  gcloud_grafana="helm install -n bagan-grafana -f $PATH_GCLOUD_CHARTS/grafana/values.yaml $PATH_GCLOUD_CHARTS/grafana/"
   gcloud_influx="helm install -n bagan-influxdb -f $PATH_GCLOUD_CHARTS/influxdb/values.yaml $PATH_GCLOUD_CHARTS/influxdb/"
+  kubectl_bagan_service_grafana_remove="kubectl delete service bagan-grafana"
+  kubectl_bagan_service_grafana_insert="kubectl expose deployment bagan-grafana --type=LoadBalancer"
+
   echo "$gcloud_grafana;"
   echo "$gcloud_influx;"
+  echo "$kubectl_bagan_service_grafana_remove;"
+  echo "$kubectl_bagan_service_grafana_insert;"
 }

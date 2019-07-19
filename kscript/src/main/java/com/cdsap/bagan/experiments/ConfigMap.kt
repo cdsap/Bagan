@@ -9,14 +9,12 @@ class ConfigMap {
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: $nameConfigMap
+  name: $nameExperiment
   labels:
     type: experiment
     experiment_id: $nameExperiment
 data:
-  id: $nameExperiment
+  id: $nameConfigMap
   experiments: |
-               $properties
-
-    """.trimIndent()
+               $properties""".trimIndent()
 }

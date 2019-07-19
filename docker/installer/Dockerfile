@@ -21,7 +21,6 @@ RUN source $SDKMAN_DIR/bin/sdkman-init.sh \
     && sdk install kscript
 
 
-RUN echo $SDKMAN_DIR
 RUN cd $SDKMAN_DIR
 RUN cd /usr/share/sdkman
 RUN pwd
@@ -31,17 +30,15 @@ RUN ls
 
 RUN curl -sSL https://sdk.cloud.google.com | bash
 RUN mkdir /usr/local/gcloud
+RUN mkdir /usr/local/k8s
 RUN mv /root/google-cloud-sdk /usr/local/gcloud/
+
 ENV PATH $PATH:usr/local/gcloud/google-cloud-sdk/bin
 
-# Install Helm
 ENV VERSION v2.14.1
-
 ENV FILENAME helm-${VERSION}-linux-amd64.tar.gz
 ENV HELM_URL https://storage.googleapis.com/kubernetes-helm/${FILENAME}
 
-
-RUN echo $HELM_URL
 RUN gcloud components install kubectl
 RUN curl -o /tmp/$FILENAME ${HELM_URL} \
   && tar -zxvf /tmp/${FILENAME} -C /tmp \
