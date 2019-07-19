@@ -9,7 +9,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 fun main() {
     val dashboardProvider = DashboardProvider(
         listOf(
-            Experiment("experiment0", "org.gradle.caching=4g"),
+            Experiment("experiment0", "org.gradle.caching=4g\norg.gradke.ddd=23g"),
             Experiment("experiment1", "org.gradke.caching=6g"),
             Experiment("experiment2", "org.gradle.caching=8g")
         ), listOf("assembleDebug")
@@ -82,7 +82,8 @@ class DashboardProvider(
     private fun buildLegend(): Panel {
         var content = ""
         experiments.forEach {
-            content += it.name + it.values + "\n"
+            val contentExperiment = "### ${it.name} ###\n\n${it.values}\n\n\n"
+            content += contentExperiment
         }
         return Markdown(content = content, id = 99, title = "Experiments", gridPos = Gridpos(16, 5, 19, 0))
     }
