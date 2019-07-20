@@ -6,8 +6,10 @@ data class Target2(
     val policy: String = "default",
     val refId: String = "A",
     val resultFormat: String = "table",
+    val query : String? = null,
+    val rawQuery : Boolean = false,
     val groupBy: Array<Query> = arrayOf(Query(arrayOf("experiment"), type = "tag")),
-    val select: Array<Query> = arrayOf(Query(arrayOf("value"), type = "field")),
+    val select: Array<Array<Query>> = arrayOf(arrayOf(Query(arrayOf("value"), type = "field"))),
     val tags: Array<Tags>
 )
 

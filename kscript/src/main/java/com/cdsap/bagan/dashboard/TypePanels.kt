@@ -65,7 +65,8 @@ data class Winner(
         MappingType(name = "range to text", value = 2)
     ),
     val rangeMaps: Array<RangeMap> = arrayOf(RangeMap()),
-    val sparkLine: SparkLine = SparkLine()
+    val sparkLine: SparkLine = SparkLine(),
+    val targets: Array<Target2>
 ) : Panel(PanelType.singlestat)
 
 
@@ -74,15 +75,15 @@ data class Graph(
     var bars: Boolean = false,
     val dashLength: Int = 10,
     val dashes: Boolean = false,
-    val dataSource: String = "InfluxDb",
-    val fill: Int = 1,
+    val dataSource: String = "influxdb",
+    val fill: Int = 2,
     val id: Int,
     val lines: Boolean = true,
     val lineWidth: Int = 1,
-    val nullPointMode: String = "null",
+    val nullPointMode: String = "connected",
     val percentage: Boolean = false,
     val pointradius: Int = 2,
-    val points: Boolean = false,
+    val points: Boolean = true,
     val renderer: String = "flot",
     val spaceLength: Int = 10,
     val steppedLine: Boolean = false,
@@ -96,8 +97,9 @@ data class Graph(
     val timeRegions: Array<String> = emptyArray(),
     val tooltip: Tooltip = Tooltip(),
     val xaxis: Xaxis = Xaxis(),
-    val yaxes: Array<Yaxes> = arrayOf(Yaxes()),
-    val yaxis: Yaxis = Yaxis()
+    val yaxes: Array<Yaxes> = arrayOf(Yaxes(format = "ms"),Yaxes()),
+    val yaxis: Yaxis = Yaxis(),
+    val targets: Array<Target2>
 ) : Panel(panelType = PanelType.graph)
 
 

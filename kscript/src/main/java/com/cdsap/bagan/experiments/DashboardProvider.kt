@@ -69,7 +69,7 @@ class DashboardProvider(
             )
 
             panels.add(generateGraphs(title = it, gridPos = Gridpos(w = 19, h = 8, x = 0, y = 8), id = 200))
-            panels.add(generateTable())
+            panels.add(generateTable(title = "Min build times $it", command = it))
             y += 14
             counter++
         }
@@ -104,6 +104,24 @@ class DashboardProvider(
         gauge = Gauge(
             maxValue = maxValue,
             minValue = minValue
+        ),
+        targets = arrayOf(
+            Target2(
+                query = "select experiment from (select min(\"mean\"), experiment from ( select mean(value) from \"tracking\" WHERE \"task\" = ':app:assembleDebug' GROUP BY experiment))",
+                rawQuery = true,
+                resultFormat = "time_series",
+                groupBy = arrayOf(
+                    Query(type = "time", params = arrayOf("\$interval"))
+                    //       Query(type = "fill", params = arrayOf("null")),
+                ),
+                select = arrayOf(
+                    arrayOf(
+                        Query(type = "field", params = arrayOf("value")),
+                        Query(type = "mean", params = arrayOf("value"))
+                    )
+                ),
+                tags = arrayOf(Tags(key = "task", operator = "=", value = ":app:assembleDebug"))
+            )
         )
     )
 
@@ -114,14 +132,34 @@ class DashboardProvider(
     ) = Graph(
         title = title,
         id = id,
-        gridPos = gridPos
+        gridPos = gridPos,
+        targets = arrayOf(
+            Target2(
+                resultFormat = "time_series",
+                groupBy = arrayOf(
+                    Query(type = "time", params = arrayOf("\$interval")),
+             //       Query(type = "fill", params = arrayOf("null")),
+                    Query(type = "tag", params = arrayOf("experiment"))
+                ),
+                select = arrayOf(
+                    arrayOf(
+                        Query(type = "field", params = arrayOf("value")),
+                        Query(type = "percentile", params = arrayOf("99"))
+                    )
+                ),
+                tags = arrayOf(Tags(key = "task", operator = "=", value = ":app:assembleDebug"))
+            )
+        )
     )
 
-    private fun generateTable() = Table(
+    private fun generateTable(command: String, title: String) = Table(
         id = 100,
         gridPos = Gridpos(x = 0, y = 8, w = 12, h = 10),
-        title = "xxxxx",
-        targets = arrayOf(Target2(tags = arrayOf(Tags(key = "task", operator = "=", value = ":app:assembleDebug"))))
+        title = title,
+        targets = arrayOf(Target2(
+            groupBy = arrayOf(Query(type = "tag",params = arrayOf("experiment"))),
+            select = arrayOf(arrayOf(Query(type = "field",params = arrayOf("value")))),
+            tags = arrayOf(Tags(key = "task", operator = "=", value = ":app:assembleDebug"))))
     )
 
 }
