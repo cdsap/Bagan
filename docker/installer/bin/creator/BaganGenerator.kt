@@ -15,6 +15,7 @@ package com.cdsap.bagan.experiments
 
 
 import com.cdsap.bagan.experiments.Versions.CONF_FILE
+import com.cdsap.bagan.experiments.Versions.TEMP_FOLDER
 import java.io.File
 import java.util.concurrent.ThreadLocalRandom
 
@@ -24,24 +25,23 @@ fun main() {
     val logger = LoggerImpl()
     val moshiProvider = MoshiProvider()
     val commandExecutor = CommandExecutor(logger, false)
-    val monitor = MonitorReporting(moshiProvider, commandExecutor)
-    val experimentCoordinator = BaganGenerator(moshiProvider, commandExecutor, monitor, logger)
+    val experimentCoordinator = BaganGenerator(moshiProvider, commandExecutor, logger)
     experimentCoordinator.generate()
 }
 
 class BaganGenerator(
     val moshiProvider: MoshiProvider,
     private val commandExecutor: CommandExecutor,
-    private val monitorReporting: MonitorReporting,
     private val logger: Logger
 ) {
 
     fun generate() {
         checkFile()
+        createTmpFolder()
         val baganConfFileProvider = BaganConfFileProviderImpl(moshiProvider)
         val experimentProvider = ExperimentProvider(baganConfFileProvider)
         val sessionExperiment = registerExperiment()
-        val baganFileGenerator = BaganFileGenerator(sessionExperiment, monitorReporting, logger)
+        val baganFileGenerator = BaganFileGenerator(sessionExperiment, logger, commandExecutor)
         var count = 0
         val experiments = experimentProvider.getExperiments().flatMap {
             count++
@@ -49,12 +49,9 @@ class BaganGenerator(
         }
 
         logger.log("Bagan Experiment Session $sessionExperiment")
-        monitorReporting.insertExperiment(sessionExperiment)
 
         experiments.forEach {
             baganFileGenerator.createExperiment(it.name, it.values, baganConfFileProvider.getBaganConf())
-            commandExecutor.execute("helm install -n ${it.name} -f ${it.name}/values.yaml ${it.name}/")
-            count++
         }
     }
 
@@ -75,4 +72,14 @@ class BaganGenerator(
         .map { _ -> ThreadLocalRandom.current().nextInt(0, charPool.size) }
         .map(charPool::get)
         .joinToString("")
+
+    private fun createTmpFolder() {
+        val tmpFolder = File(TEMP_FOLDER)
+        if (tmpFolder.exists()) {
+            tmpFolder.deleteRecursively()
+        }
+
+        tmpFolder.mkdir()
+
+    }
 }
