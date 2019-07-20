@@ -1,23 +1,25 @@
 package com.cdsap.bagan.experiments
 
+import com.cdsap.bagan.experiments.Versions.TEMP_FOLDER
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 
 class BaganFileGenerator(
     private val sessionExperiment: String,
-    private val monitorReporting: MonitorReporting,
-    private val logger: Logger
+    private val logger: Logger,
+    private val commandExecutor: CommandExecutor
 ) {
 
     fun createExperiment(experiment: String, values: String, bagan: Bagan) {
         val nameConfigMap = "configmap$experiment"
-        val namePod = "$experiment/templates/pod$experiment.yaml"
-
-        createFolder(experiment)
-        createChartFile("$experiment/Chart.yaml", experiment)
+        val path = "$TEMP_FOLDER/$experiment"
+        val namePod = "$path/templates/pod$experiment.yaml"
+        logger.log("Experiment $experiment")
+        createFolder(path)
+        createChartFile("$path/Chart.yaml", experiment)
         createFileValues(
-            "$experiment/values.yaml",
+            "$path/values.yaml",
             bagan.repository,
             bagan.gradleCommand,
             nameConfigMap,
@@ -25,18 +27,11 @@ class BaganFileGenerator(
             experiment
         )
 
-        createTemplateFolder(experiment)
-        createConfigMaps(experiment, nameConfigMap, values)
+        createTemplateFolder(path)
+        createConfigMaps(path, nameConfigMap, values)
         createPods(namePod, experiment, sessionExperiment)
-
-        monitorReporting.insertPod(
-            values = values.replace("\n     ", "\n"),
-            iterations = bagan.iterations,
-            configMap = nameConfigMap,
-            experiment = sessionExperiment,
-            pod = namePod
-        )
-
+        commandExecutor.execute("helm install -n $experiment -f $path/values.yaml $path/")
+        logger.log("\n")
     }
 
     private fun createChartFile(path: String, id: String) {
