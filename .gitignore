@@ -10,6 +10,8 @@
 kscript/buildSrc/build
 kscript/build
 kscript/out
+kscript/tmp
+tmp/
 kscript/buildSrc/.gradle
 docker/installer/creator/
 kscript/.idea/
