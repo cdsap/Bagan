@@ -1,18 +1,17 @@
 package com.cdsap.bagan.dashboard
 
-data class Target2(
+data class Target(
     val measurement: String = "tracking",
     val orderByTime: String = "ASC",
     val policy: String = "default",
     val refId: String = "A",
     val resultFormat: String = "table",
-    val query : String? = null,
-    val rawQuery : Boolean = false,
-    val groupBy: Array<Query> = arrayOf(Query(arrayOf("experiment"), type = "tag")),
-    val select: Array<Array<Query>> = arrayOf(arrayOf(Query(arrayOf("value"), type = "field"))),
+    val query: String? = null,
+    val rawQuery: Boolean = false,
+    val groupBy: Array<Query>,
+    val select: Array<Array<Query>>,
     val tags: Array<Tags>
 )
-
 
 data class Tags(
     val key: String,
@@ -20,14 +19,12 @@ data class Tags(
     val value: String
 )
 
-
 data class Gridpos(
     val h: Int,
     val w: Int,
     val x: Int,
     val y: Int
 )
-
 
 data class Legend(
     val avg: Boolean = false,
@@ -40,17 +37,6 @@ data class Legend(
 )
 
 data class Query(val params: Array<String>, val type: String)
-
-
-
-data class Target(
-    val name: String,
-    val orderByTime: String = "ASC",
-    val policy: String = "default",
-    val refId: String = "A",
-    val resultFormat: String = "time_series",
-    val tags: Array<Any> = emptyArray()
-)
 
 data class SparkLine(
     val fillColor: String = "rgba(31,118,189,0.18)",
@@ -71,8 +57,8 @@ data class MappingType(
 )
 
 data class Gauge(
-    val maxValue: Int,
-    val minValue: Int,
+    val maxValue: Int = 200,
+    val minValue: Int = 0,
     val show: Boolean = true,
     val thresholdLabels: Boolean = false,
     val thresholdMarkers: Boolean = true
@@ -129,12 +115,7 @@ data class Dashboard(
 )
 
 
-
-
 data class Sort(val col: Int, val desc: Boolean)
-
-
-
 
 
 data class TimePicker(

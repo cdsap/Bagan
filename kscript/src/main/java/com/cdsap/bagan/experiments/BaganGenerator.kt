@@ -1,6 +1,8 @@
 package com.cdsap.bagan.experiments
 
 
+import com.cdsap.bagan.dashboard.Dashboard
+import com.cdsap.bagan.dashboard.DashboardProvider
 import com.cdsap.bagan.experiments.Versions.CONF_FILE
 import com.cdsap.bagan.experiments.Versions.TEMP_FOLDER
 import java.io.File
@@ -26,8 +28,12 @@ class BaganGenerator(
         checkFile()
         createTmpFolder()
         val baganConfFileProvider = BaganConfFileProviderImpl(moshiProvider)
+        val dashBoardProvider = DashboardProvider(commandExecutor)
+
         val experimentProvider = ExperimentProvider(baganConfFileProvider)
         val sessionExperiment = registerExperiment()
+
+
         val baganFileGenerator = BaganFileGenerator(sessionExperiment, logger, commandExecutor)
         var count = 0
         val experiments = experimentProvider.getExperiments().flatMap {
@@ -37,9 +43,18 @@ class BaganGenerator(
 
         logger.log("Bagan Experiment Session $sessionExperiment")
 
+        dashBoardProvider.generate(experiments, getCommands(baganConfFileProvider.getBaganConf().gradleCommand))
         experiments.forEach {
             baganFileGenerator.createExperiment(it.name, it.values, baganConfFileProvider.getBaganConf())
         }
+    }
+
+    private fun getCommands(command: String): List<String> {
+        val values = command.split(" ")
+        return values.filter {
+            it != "./gradlew"
+                    && it != "clean"
+        }.toList()
     }
 
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')

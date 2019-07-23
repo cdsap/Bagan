@@ -28,7 +28,7 @@ data class Table(
     val sort: Sort = Sort(2, false),
     val title: String,
     val transform: String = "table",
-    val targets: Array<Target2>
+    val targets: Array<Target>
 ) : Panel(
     panelType = PanelType.table
 )
@@ -59,14 +59,14 @@ data class Winner(
     val colors: Array<String> = arrayOf(
         "#299c46", "rgba(237, 129, 40, 0.89)", "#d44a3a"
     ),
-    val gauge: Gauge,
+    val gauge: Gauge = Gauge(),
     val mappingTypes: Array<MappingType> = arrayOf(
         MappingType(name = "value to text", value = 1),
         MappingType(name = "range to text", value = 2)
     ),
     val rangeMaps: Array<RangeMap> = arrayOf(RangeMap()),
     val sparkLine: SparkLine = SparkLine(),
-    val targets: Array<Target2>
+    val targets: Array<Target>
 ) : Panel(PanelType.singlestat)
 
 
@@ -99,7 +99,7 @@ data class Graph(
     val xaxis: Xaxis = Xaxis(),
     val yaxes: Array<Yaxes> = arrayOf(Yaxes(format = "ms"),Yaxes()),
     val yaxis: Yaxis = Yaxis(),
-    val targets: Array<Target2>
+    val targets: Array<Target>
 ) : Panel(panelType = PanelType.graph)
 
 

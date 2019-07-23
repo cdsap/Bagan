@@ -79,6 +79,7 @@ if [ "$ans2" != "y" ] || [ -z "$ans2" ]; then
 fi;
 
 
+
 printf '%s\n' "************************"
 printf '%s\n' "************************"
 printf '%s\n' "****Staring Bagan*****"
@@ -138,10 +139,10 @@ elif [ $type == "minikube" ]; then
   elif [ $mode == "experiment" ]; then
     eval "$(gcloudBagan)"
   else
-    printf '%s\n' "Error ;s;sno mode parsed properly for minikube"
+    printf '%s\n' "Error: no mode parsed properly for minikube"
     exit 1
   fi
 else
-  printf '%s\n' "Error no type parsed properly "
+  printf '%s\n' "Error: no type parsed properly "
   exit 1
 fi
