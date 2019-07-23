@@ -1,14 +1,10 @@
 package com.cdsap.bagan.experiments
 
 
-import com.cdsap.bagan.dashboard.Dashboard
-import com.cdsap.bagan.dashboard.DashboardProvider
 import com.cdsap.bagan.experiments.Versions.CONF_FILE
 import com.cdsap.bagan.experiments.Versions.TEMP_FOLDER
 import java.io.File
 import java.util.concurrent.ThreadLocalRandom
-
-data class Experiment(val name: String, val values: String)
 
 fun main() {
     val logger = LoggerImpl()
@@ -26,7 +22,7 @@ class BaganGenerator(
 
     fun generate() {
         checkFile()
-        createTmpFolder()
+        checkTmpFolder()
         val baganConfFileProvider = BaganConfFileProviderImpl(moshiProvider)
         val dashBoardProvider = DashboardProvider(commandExecutor)
 
@@ -75,13 +71,14 @@ class BaganGenerator(
         .map(charPool::get)
         .joinToString("")
 
-    private fun createTmpFolder() {
+    private fun checkTmpFolder() {
         val tmpFolder = File(TEMP_FOLDER)
-        if (tmpFolder.exists()) {
-            tmpFolder.deleteRecursively()
+        if (!tmpFolder.exists()) {
+            tmpFolder.mkdir()
+
         }
 
-        tmpFolder.mkdir()
+
 
     }
 }

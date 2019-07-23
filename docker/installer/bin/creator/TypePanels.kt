@@ -1,4 +1,4 @@
-package com.cdsap.bagan.dashboard
+package com.cdsap.bagan.experiments
 
 import com.squareup.moshi.Json
 
@@ -17,8 +17,6 @@ sealed class Panel(
     val links: Array<String>? = emptyArray()
 )
 
-
-
 data class Table(
     val pageSize: Any? = null,
     val scroll: Boolean = true,
@@ -28,11 +26,33 @@ data class Table(
     val sort: Sort = Sort(2, false),
     val title: String,
     val transform: String = "table",
-    val targets: Array<Target>
+    val targets: Array<Target>,
+    val style: Array<Any> = arrayOf(Style(), Style2())
 ) : Panel(
     panelType = PanelType.table
 )
 
+data class Style(
+    val alias: String = "Time",
+    val dateFormat: String? = null,
+    val pattern: String = "Time",
+    val type: String = "date"
+)
+
+data class Style2(
+    val alias: String = "",
+    val colorMode: String? = null,
+    val colors: Array<String> = arrayOf(
+        "rgba(245, 54, 54, 0.9)",
+        "rgba(237, 129, 40, 0.89)",
+        "rgba(50, 172, 45, 0.97)"
+    ),
+    val decimals: Int = 2,
+    val pattern: String = "/.*/",
+    val thresholds: Array<String> = emptyArray(),
+    val type: String = "number",
+    val unit: String = "ms"
+)
 
 data class Winner(
     val cacheTimeout: Boolean = false,
@@ -53,7 +73,7 @@ data class Winner(
     val thresholds: String = "",
     val title: String,
     val type: String = "singlestat",
-    val valueFontSize: String = "80%",
+    val valueFontSize: String = "50%",
     val valueName: String,
     val gridPos: Gridpos,
     val colors: Array<String> = arrayOf(
@@ -97,7 +117,10 @@ data class Graph(
     val timeRegions: Array<String> = emptyArray(),
     val tooltip: Tooltip = Tooltip(),
     val xaxis: Xaxis = Xaxis(),
-    val yaxes: Array<Yaxes> = arrayOf(Yaxes(format = "ms"),Yaxes()),
+    val yaxes: Array<Yaxes> = arrayOf(
+        Yaxes(format = "ms"),
+        Yaxes()
+    ),
     val yaxis: Yaxis = Yaxis(),
     val targets: Array<Target>
 ) : Panel(panelType = PanelType.graph)

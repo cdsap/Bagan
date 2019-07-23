@@ -1,23 +1,21 @@
-package com.cdsap.bagan.dashboard
+package com.cdsap.bagan.experiments
 
-import com.cdsap.bagan.experiments.CommandExecutor
-import com.cdsap.bagan.experiments.Experiment
-import com.cdsap.bagan.experiments.LoggerImpl
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import java.io.File
 
-fun main() {
-    val dashboardProvider = DashboardProvider(CommandExecutor(LoggerImpl(), true))
-    dashboardProvider.generate(
-        listOf(
-            Experiment("experiment0", "org.gradle.caching=4g\norg.gradke.ddd=23g"),
-            Experiment("experiment1", "org.gradke.caching=6g"),
-            Experiment("experiment2", "org.gradle.caching=8g")
-        ), listOf(":app:assembleDebug")
-    )
-}
+//fun main() {
+//    val dashboardProvider = DashboardProvider(CommandExecutor(LoggerImpl(), true))
+//    dashboardProvider.generate(
+//        listOf(
+//            Experiment("experiment0", "org.gradle.caching=4g\norg.gradke.ddd=23g"),
+//            Experiment("experiment1", "org.gradke.caching=6g"),
+//            Experiment("experiment2", "org.gradle.caching=8g")
+//        ), listOf(":app:assembleDebug")
+//    )
+//}
 
 class DashboardProvider(
     val commandExecutor: CommandExecutor
@@ -48,11 +46,13 @@ class DashboardProvider(
         val adapter = moshi.adapter<Any>(Dashboard::class.java)
         val dashboard = Dashboard(panels = calculatePannels(experiments, commands))
         val dashBoardString = adapter.toJson(dashboard)
-        println(dashBoardString.toString())
+        val file = File("tmp/grafana/dashboards/dashboard.json")
+        file.writeText(dashBoardString.toString())
+
     }
 
     private fun executeUpgradeHelm() {
-        //  commandExecutor.execute("helm upgrade bagan-grafana myhelmchartplanet")
+          commandExecutor.execute("helm upgrade bagan-grafana tmp/grafana")
     }
 
     private fun calculatePannels(
@@ -119,7 +119,7 @@ class DashboardProvider(
 
     private fun generateTable(command: String, title: String, id: Int) = Table(
         id = id,
-        gridPos = Gridpos(x = 0, y = 8, w = 12, h = 10),
+        gridPos = Gridpos(x = 12, y = 0, w = 7, h = 8),
         title = title,
         targets = targetTable(command)
     )
@@ -145,7 +145,12 @@ fun targetGraph(command: String) = arrayOf(
     Target(
         resultFormat = "time_series",
         groupBy = arrayOf(queryInterval(), groupByExperiment()),
-        select = arrayOf(arrayOf(queryValue(), query("percentile", "99"))),
+        select = arrayOf(
+            arrayOf(
+                queryValue(),
+                query("percentile", "99")
+            )
+        ),
         tags = arrayOf(tagCommand(command))
     )
 )
@@ -156,7 +161,12 @@ fun targetIndicator(command: String) = arrayOf(
         rawQuery = true,
         resultFormat = "time_series",
         groupBy = arrayOf(queryInterval()),
-        select = arrayOf(arrayOf(queryValue(), query("mean", "value"))),
+        select = arrayOf(
+            arrayOf(
+                queryValue(),
+                query("mean", "value")
+            )
+        ),
         tags = arrayOf(tagCommand(command))
     )
 )

@@ -1,28 +1,24 @@
-FROM openjdk:8
+FROM alpine:3.10
 
-RUN set -x \
-    && apt-get update \
-    && apt-get install -y curl wget unzip zip gzip vim ca-certificates --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
+ENV SDKMAN_DIR=/root/.sdkman
 
-ENV SDKMAN_DIR /usr/share/sdkman
+RUN apk upgrade --update && \
+    apk add --no-cache --update libstdc++ curl ca-certificates bash zip unzip openssl && \
+    update-ca-certificates && \
+    curl -s "https://get.sdkman.io" | bash && \
+    rm -rf /var/lib/apt/lists/* && \
+    echo "sdkman_auto_answer=true" > $SDKMAN_DIR/etc/config && \
+    echo "sdkman_auto_selfupdate=false" >> $SDKMAN_DIR/etc/config && \
+    echo "sdkman_insecure_ssl=true" >> $SDKMAN_DIR/etc/config
 
-SHELL [ "/bin/bash", "-c" ]
-
-RUN curl 'https://get.sdkman.io' | bash
-
-RUN set -x \
-    && echo "sdkman_auto_answer=true" > $SDKMAN_DIR/etc/config \
-    && echo "sdkman_auto_selfupdate=false" >> $SDKMAN_DIR/etc/config \
-    && echo "sdkman_insecure_ssl=false" >> $SDKMAN_DIR/etc/config
 
 RUN source $SDKMAN_DIR/bin/sdkman-init.sh \
     && sdk install kotlin 1.3.31 \
     && sdk install kscript
 
 
-RUN cd $SDKMAN_DIR
-RUN cd /usr/share/sdkman
+
+
 RUN pwd
 RUN cat $SDKMAN_DIR/bin/sdkman-init.sh
 RUN ls

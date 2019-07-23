@@ -11,6 +11,8 @@ SHELL [ "/bin/bash", "-c" ]
 
 RUN curl 'https://get.sdkman.io' | bash
 
+RUN echo $SDKMAN_DIR
+
 RUN set -x \
     && echo "sdkman_auto_answer=true" > $SDKMAN_DIR/etc/config \
     && echo "sdkman_auto_selfupdate=false" >> $SDKMAN_DIR/etc/config \

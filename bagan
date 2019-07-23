@@ -11,18 +11,21 @@ type=$1
 mode=$2
 
 if [ ! "$type" = "gcloud" ] && [ ! "$type" = "minikube" ] && [ ! "$type" = "gcloud_docker" ]; then
-  printf '%s\n' "Error: type not supported. Current clusters environments supported are minikube, gcloud and gcloud_docker."
+  printf '%s\n' "Error: type not supported. Current clusters environments supported are minikube, gcloud and gcloud_docker:"
   printf '%s\n' "Example: ./bagan gcloud cluster"
   printf '%s\n' "Example: ./bagan gcloud_docker infrastructure"
   printf '%s\n' "Example: ./bagan minkube experiment"
+  printf '%s\n' ""
   exit 1
 fi
 
 if [ ! "$mode" = "cluster" ] && [ ! "$mode" = "infrastructure" ] && [ ! "$mode" = "experiment" ]; then
-  printf '%s\n' "Error: mode not supported. Current modes supported are cluster, experiment and infrastructure."
+  printf '%s\n' ""
+  printf '%s\n' "Error: mode not supported. Current modes supported are cluster, experiment and infrastructure:"
   printf '%s\n' "cluster: create cluster in gcloud, initalizing the infrastructure and finally executing Bagan to generate the experiments"
   printf '%s\n' "infrastrucure: initialize the infrastrucure with helm and required charts of Grafana and InfluxDb"
   printf '%s\n' "experiment: execute Bagan to generate experiments in the environment selected"
+  printf '%s\n' ""
   exit 1
 fi
 
@@ -30,38 +33,31 @@ echo ""
 echo "Welcome to Bagan"
 echo ""
 
-echo "Requeriments for your $type environment selection:"
-
 if [ "$type" == "gcloud" ]; then
-echo "   -- jq: https://stedolan.github.io/jq/
+ requeriments="   -- jq: https://stedolan.github.io/jq/
    -- gcloud: https://cloud.google.com/sdk/
    -- docker: https://www.docker.com/
    -- kscript: https://github.com/holgerbrandl/kscript"
 
 elif [ "$type" == "gcloud_docker" ]; then
-  echo "     -- jq: https://stedolan.github.io/jq/
+  requeriments="     -- jq: https://stedolan.github.io/jq/
      -- docker: https://www.docker.com/"
 
 elif [ "$type" == "minikube" ]; then
-  echo "   -- jq: https://stedolan.github.io/jq/
+  requeriments="   -- jq: https://stedolan.github.io/jq/
      -- minikube: https://cloud.google.com/sdk/
      -- docker: https://www.docker.com/
      -- kscript: https://github.com/holgerbrandl/kscript"
 else
-  echo "error"
+  echo "error : Be sure you have included the bagan_conf.json with the desired configuration."
 fi
-
-echo ""
-echo "Be sure you have included the bagan_conf.json with the desired configuration."
-echo -n "Do you want to continue [y/n]: "
-read ans
-if [ "$ans" != "y" ] || [ -z "$ans" ]; then
-  exit 1
-fi;
 
 . scripts/validate_json.sh
 
-
+printf '%s\n' ""
+printf '%s\n' "Requeriments for your $type environment selection:"
+printf '%s\n' "$requeriments"
+printf '%s\n' ""
 printf '%s\n' "Values:"
 printf '%s\n' "type: $type"
 printf '%s\n' "cluster: $cluster"
@@ -78,12 +74,18 @@ if [ "$ans2" != "y" ] || [ -z "$ans2" ]; then
   exit 1
 fi;
 
-
-
 printf '%s\n' "************************"
 printf '%s\n' "************************"
 printf '%s\n' "****Staring Bagan*****"
 printf '%s\n' "$type"
+
+rm -rf tmp
+mkdir tmp
+
+cp -r k8s/grafana tmp/
+cp -r k8s/influxdb tmp/
+cp -r docker/installer/bin/creator tmp/
+cp -r docker/pod/bin/ tmp
 
 if [ $type == "gcloud" ]; then
   if [ $mode == "cluster" ]; then
@@ -119,7 +121,7 @@ elif [ $type == "gcloud_docker" ]; then
     exit 1
   fi
   docker run -ti -v $HOME/.config/gcloud:/root/.config/gcloud \
-                 -v $PWD/k8s:/usr/local/k8s \
+                 -v $PWD/tmp:/usr/local/k8s \
                  -v $PWD/bagan_conf.json:/usr/local/creator/bagan_conf.json \
                     cdsap/bagan-init:0.1.1 /bin/bash -c "
                     export PATH=$PATH:/usr/local/gcloud/google-cloud-sdk/bin/;

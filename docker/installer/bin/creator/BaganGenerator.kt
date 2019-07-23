@@ -2,9 +2,11 @@
 @file:Include("GradleExperimentsProperties.kt")
 @file:Include("Bagan.kt")
 @file:Include("Logger.kt")
+@file:Include("Experiment.kt")
 @file:Include("ExperimentProvider.kt")
 @file:Include("BaganConfFileProvider.kt")
 @file:Include("BaganFileGenerator.kt")
+@file:Include("DashboardProvider.kt")
 @file:Include("CommandExecutor.kt")
 @file:Include("MoshiProvider.kt")
 @file:Include("BaganJson.kt")
@@ -18,8 +20,6 @@ import com.cdsap.bagan.experiments.Versions.CONF_FILE
 import com.cdsap.bagan.experiments.Versions.TEMP_FOLDER
 import java.io.File
 import java.util.concurrent.ThreadLocalRandom
-
-data class Experiment(val name: String, val values: String)
 
 fun main() {
     val logger = LoggerImpl()
@@ -37,10 +37,14 @@ class BaganGenerator(
 
     fun generate() {
         checkFile()
-        createTmpFolder()
+        checkTmpFolder()
         val baganConfFileProvider = BaganConfFileProviderImpl(moshiProvider)
+        val dashBoardProvider = DashboardProvider(commandExecutor)
+
         val experimentProvider = ExperimentProvider(baganConfFileProvider)
         val sessionExperiment = registerExperiment()
+
+
         val baganFileGenerator = BaganFileGenerator(sessionExperiment, logger, commandExecutor)
         var count = 0
         val experiments = experimentProvider.getExperiments().flatMap {
@@ -50,9 +54,18 @@ class BaganGenerator(
 
         logger.log("Bagan Experiment Session $sessionExperiment")
 
+        dashBoardProvider.generate(experiments, getCommands(baganConfFileProvider.getBaganConf().gradleCommand))
         experiments.forEach {
             baganFileGenerator.createExperiment(it.name, it.values, baganConfFileProvider.getBaganConf())
         }
+    }
+
+    private fun getCommands(command: String): List<String> {
+        val values = command.split(" ")
+        return values.filter {
+            it != "./gradlew"
+                    && it != "clean"
+        }.toList()
     }
 
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
@@ -73,13 +86,14 @@ class BaganGenerator(
         .map(charPool::get)
         .joinToString("")
 
-    private fun createTmpFolder() {
+    private fun checkTmpFolder() {
         val tmpFolder = File(TEMP_FOLDER)
-        if (tmpFolder.exists()) {
-            tmpFolder.deleteRecursively()
+        if (!tmpFolder.exists()) {
+            tmpFolder.mkdir()
+
         }
 
-        tmpFolder.mkdir()
+
 
     }
 }

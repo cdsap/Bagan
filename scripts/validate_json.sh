@@ -53,7 +53,6 @@ then
 else
    cluster=$clusterJson
 fi
-echo $cluster
 if [ -z "$zoneJson" ] || [ "$zoneJson" = "null" ]
 then
    zone="us-central1-a"

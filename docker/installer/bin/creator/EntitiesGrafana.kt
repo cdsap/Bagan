@@ -1,4 +1,4 @@
-package com.cdsap.bagan.dashboard
+package com.cdsap.bagan.experiments
 
 data class Target(
     val measurement: String = "tracking",
@@ -59,7 +59,7 @@ data class MappingType(
 data class Gauge(
     val maxValue: Int = 200,
     val minValue: Int = 0,
-    val show: Boolean = true,
+    val show: Boolean = false,
     val thresholdLabels: Boolean = false,
     val thresholdMarkers: Boolean = true
 )
