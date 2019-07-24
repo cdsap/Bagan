@@ -12,7 +12,7 @@ class CommandExecutorTest : BehaviorSpec({
             val commandExecutor = CommandExecutor(logger, dryrun)
             then("chart template have been placed") {
                 commandExecutor.execute("ls")
-                verify(logger).log("[CommandExecutor]: executing ls")
+                verify(logger).log("CommandExecutor","executing ls")
             }
         }
         `when`("we apply dryrun") {
@@ -21,7 +21,7 @@ class CommandExecutorTest : BehaviorSpec({
             val commandExecutor = CommandExecutor(logger, dryrun)
             then("chart template have been placed") {
                 commandExecutor.execute("ls")
-                verify(logger).log("[CommandExecutor]-[dry-run]: executing ls")
+                verify(logger).log("CommandExecutor","[dry-run]: executing ls")
             }
         }
     }

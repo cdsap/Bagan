@@ -10,7 +10,6 @@ class ConfigMapTest : BehaviorSpec({
                 "    org.gradle.caching=true"
         `when`("Parameters are defined") {
             val values = ConfigMap().transform(
-                nameConfigMap = nameConfigMap,
                 nameExperiment = nameExperiment,
                 properties = properties
             )
@@ -20,7 +19,7 @@ class ConfigMapTest : BehaviorSpec({
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: $nameConfigMap
+  name: $nameExperiment
   labels:
     type: experiment
     experiment_id: $nameExperiment

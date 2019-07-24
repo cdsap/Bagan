@@ -28,7 +28,7 @@ function minikubeHelm(){
 }
 
 function gcloudInfraPods(){
-  PATH_GCLOUD_CHARTS="k8s"
+  PATH_GCLOUD_CHARTS="tmp"
   gcloud_grafana="helm install -n bagan-grafana -f $PATH_GCLOUD_CHARTS/grafana/values.yaml $PATH_GCLOUD_CHARTS/grafana/"
   gcloud_influx="helm install -n bagan-influxdb -f $PATH_GCLOUD_CHARTS/influxdb/values.yaml $PATH_GCLOUD_CHARTS/influxdb/"
   kubectl_bagan_service_grafana_remove="kubectl delete service bagan-grafana"

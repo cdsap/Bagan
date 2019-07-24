@@ -1,5 +1,19 @@
 package com.cdsap.bagan.experiments
 
+class Chart {
+    fun transform(
+        id: String,
+        version: String
+    ) = """
+apiVersion: v1
+appVersion: "1.0"
+description: Chart, used for Bagan resource
+name: $id
+version: $version"
+    """.trimIndent()
+
+}
+
 class Pod {
     fun transform(
         nameExperiment: String,
@@ -60,4 +74,39 @@ spec:
     - name: git-repo
       emptyDir: {}
     """.trimIndent()
+}
+
+class Values {
+    fun transform(
+        repository: String,
+        configMap: String,
+        name: String,
+        command: String,
+        iterations: Int
+    ) = """
+repository: $repository
+configMaps : configmap$name
+name : $name
+image: cdsap/bagan-pod-injector
+command: $command
+iterations: $iterations
+""".trimIndent()
+}
+
+class ConfigMap {
+    fun transform(
+        nameExperiment: String,
+        properties: String
+    ) = """
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap$nameExperiment
+  labels:
+    type: experiment
+    experiment_id: $nameExperiment
+data:
+  id: $nameExperiment
+  experiments: |
+               $properties""".trimIndent()
 }

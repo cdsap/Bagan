@@ -3,11 +3,9 @@ package com.cdsap.bagan.properties
 import java.io.*
 import java.util.*
 
-
 fun main() {
     RewriteProperties().init()
 }
-
 
 class RewriteProperties {
 
@@ -18,7 +16,6 @@ class RewriteProperties {
 
         val inProperties = FileInputStream("gradle.properties")
         val props = Properties()
-
         props.load(inProperties)
         inProperties.close()
 
@@ -29,6 +26,4 @@ class RewriteProperties {
         props.store(outProperties, null)
         outProperties.close()
     }
-
-
 }
