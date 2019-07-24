@@ -13,8 +13,16 @@
                "options": ["-Xmx3g","-Xmx4g"]
             },
             {
-               "name": "org.gradle.workers.max",
-               "options": ["2","3"]
+               "name": "kapt.incremental.apt",
+               "options": ["true","false"]
+            },
+            {
+               "name": "kapt.use.worker.api",
+               "options": ["true","false"]
+            },
+            {
+               "name": "org.gradle.caching  ",
+               "options": ["true","false"]
             }
          ]
       }

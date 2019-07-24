@@ -14,3 +14,15 @@ data class Bagan(
     val experiments: GradleExperimentsProperties,
     val iterations: Int
 )
+
+data class BaganJson(val bagan: Bagan)
+
+data class Experiment(val name: String, val values: String)
+
+data class GradleExperimentsProperties(
+    val properties: Array<Property>,
+    val agp: Array<String>? = null,
+    val gradleVersion: Array<String>? = null
+)
+
+data class Property(val name: String, val options: Array<String>)

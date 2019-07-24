@@ -1,8 +1,5 @@
 @file:Include("Bagan.kt")
-@file:Include("Chart.kt")
-@file:Include("ConfigMap.kt")
-@file:Include("Pod.kt")
-@file:Include("Values.kt")
+@file:Include("K8Template.kt")
 
 
 package com.cdsap.bagan.experiments
@@ -17,12 +14,12 @@ class BaganFileGenerator(
     private val logger: Logger,
     private val commandExecutor: CommandExecutor
 ) {
-
+    val TAG = "BaganFileGenerator"
     fun createExperiment(experiment: String, values: String, bagan: Bagan) {
-        val nameConfigMap = "configmap$experiment"
         val path = "$TEMP_FOLDER/$experiment"
+        val nameConfigMap = "$path/templates/configmap$experiment.yaml"
         val namePod = "$path/templates/pod$experiment.yaml"
-        logger.log("Experiment $experiment")
+        logger.log(TAG, "Experiment $experiment")
         createFolder(path)
         createChartFile("$path/Chart.yaml", experiment)
         createFileValues(
@@ -35,27 +32,26 @@ class BaganFileGenerator(
         )
 
         createTemplateFolder(path)
-        createConfigMaps(path, nameConfigMap, values)
         createPods(namePod, experiment, sessionExperiment)
+        createConfigMaps(nameConfigMap, experiment, values)
         commandExecutor.execute("helm install -n $experiment -f $path/values.yaml $path/")
-        logger.log("\n")
     }
 
     private fun createChartFile(path: String, id: String) {
-        logger.log("creating Chart file $path")
+        logger.log(TAG, "creating Chart file $path")
         val file = File(path)
         file.writeText(Chart().transform(id, Versions.CURRENT_VERSION))
     }
 
     private fun createFolder(path: String) {
-        logger.log("creating  folder $path")
+        logger.log(TAG, "creating  folder $path")
         removeExistingFolder(path)
         Files.createDirectory(Paths.get(path))
     }
 
     private fun removeExistingFolder(path: String) {
         if (Files.exists(Paths.get(path))) {
-            logger.log("removing existing experiment folder $path")
+            logger.log(TAG, "removing existing experiment folder $path")
             val file = File(path)
             file.deleteRecursively()
         }
@@ -69,29 +65,29 @@ class BaganFileGenerator(
         iterations: Int,
         nameExperiment: String
     ) {
-        logger.log("creating Values file $path")
+        logger.log(TAG, "creating Values file $path")
         val file = File(path)
         file.writeText(Values().transform(nameRepo, s2, nameExperiment, gradleCommand, iterations))
     }
 
     private fun createTemplateFolder(path: String) {
-        logger.log("creating template folder $path")
+        logger.log(TAG, "creating template folder $path")
         Files.createDirectory(Paths.get("$path/templates"))
     }
 
     private fun createConfigMaps(
-        nameExperiment: String,
-        s1: String,
+        nameConfigMap: String,
+        experiment: String,
         propertyName: String
 
     ) {
-        logger.log("creating configmap file $nameExperiment/templates/$s1.yaml")
-        val file = File("$nameExperiment/templates/$s1.yaml")
-        file.writeText(ConfigMap().transform(nameExperiment, s1, propertyName))
+        logger.log(TAG, "creating configmap file $nameConfigMap")
+        val file = File(nameConfigMap)
+        file.writeText(ConfigMap().transform(experiment, propertyName))
     }
 
     private fun createPods(path: String, nameExperiment: String, experiment: String) {
-        logger.log("creating pod file $path")
+        logger.log(TAG, "creating pod file $path")
         val file = File(path)
         file.writeText(Pod().transform(nameExperiment, experiment))
     }

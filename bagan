@@ -77,7 +77,6 @@ fi;
 printf '%s\n' "************************"
 printf '%s\n' "************************"
 printf '%s\n' "****Staring Bagan*****"
-printf '%s\n' "$type"
 
 rm -rf tmp
 mkdir tmp
@@ -111,22 +110,23 @@ if [ $type == "gcloud" ]; then
   fi
 elif [ $type == "gcloud_docker" ]; then
   if [ $mode == "cluster" ]; then
-    execution="$(gcloudInit) $(gcloudCredentials) $(gcloudHelm) $(gcloudInfraPods) $(gcloudDockerBagan) $(endGcloud)"
+    execution="$(gcloudInit) $(gcloudCredentials) $(gcloudHelm) $(gcloudInfraPods) $(gcloudDockerBagan)"
   elif [ $mode == "infrastructure" ]; then
-    execution="$(gcloudCredentials) $(gcloudHelmBagan) $(gcloudInfraPods) $(gcloudDockerBagan) $(endGcloud)"
+    execution="$(gcloudCredentials) $(gcloudHelm) $(gcloudInfraPods) $(gcloudDockerBagan) "
   elif [ $mode == "experiment" ]; then
-    execution="$(gcloudCredentials) $(gcloudDockerBagan) $(endGcloud)"
+    execution="$(gcloudCredentials) $(gcloudDockerBagan)"
   else
     printf '%s\n' "Error no mode parsed properly for gcloud_docker"
     exit 1
   fi
   docker run -ti -v $HOME/.config/gcloud:/root/.config/gcloud \
-                 -v $PWD/tmp:/usr/local/k8s \
-                 -v $PWD/bagan_conf.json:/usr/local/creator/bagan_conf.json \
+                 -v $PWD/tmp:/usr/local/tmp \
+                 -v $PWD/bagan_conf.json:/usr/local/tmp/creator/bagan_conf.json \
                     cdsap/bagan-init:0.1.1 /bin/bash -c "
                     export PATH=$PATH:/usr/local/gcloud/google-cloud-sdk/bin/;
                     cd /usr/local;
-                    $execution"
+                    $execution;
+                    "
 
 elif [ $type == "minikube" ]; then
   output=(`minikube status`)

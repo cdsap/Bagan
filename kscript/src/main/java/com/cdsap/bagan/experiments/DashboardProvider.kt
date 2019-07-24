@@ -6,21 +6,12 @@ import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import java.io.File
 
-//fun main() {
-//    val dashboardProvider = DashboardProvider(CommandExecutor(LoggerImpl(), true))
-//    dashboardProvider.generate(
-//        listOf(
-//            Experiment("experiment0", "org.gradle.caching=4g\norg.gradke.ddd=23g"),
-//            Experiment("experiment1", "org.gradke.caching=6g"),
-//            Experiment("experiment2", "org.gradle.caching=8g")
-//        ), listOf(":app:assembleDebug")
-//    )
-//}
 
 class DashboardProvider(
-    val commandExecutor: CommandExecutor
+    private val commandExecutor: CommandExecutor,
+    private val path: String
 ) {
-    val moshi: Moshi = Moshi.Builder()
+    private val moshi: Moshi = Moshi.Builder()
         .add(
             PolymorphicJsonAdapterFactory.of(Panel::class.java, "type")
                 .withSubtype(Graph::class.java, PanelType.graph.name)
@@ -46,13 +37,13 @@ class DashboardProvider(
         val adapter = moshi.adapter<Any>(Dashboard::class.java)
         val dashboard = Dashboard(panels = calculatePannels(experiments, commands))
         val dashBoardString = adapter.toJson(dashboard)
-        val file = File("tmp/grafana/dashboards/dashboard.json")
+        val file = File("$path/grafana/dashboards/dashboard.json")
         file.writeText(dashBoardString.toString())
 
     }
 
     private fun executeUpgradeHelm() {
-          commandExecutor.execute("helm upgrade bagan-grafana tmp/grafana")
+          commandExecutor.execute("helm upgrade bagan-grafana $path/grafana")
     }
 
     private fun calculatePannels(
@@ -119,7 +110,7 @@ class DashboardProvider(
 
     private fun generateTable(command: String, title: String, id: Int) = Table(
         id = id,
-        gridPos = Gridpos(x = 12, y = 0, w = 7, h = 8),
+        gridPos = Gridpos(x = 0, y = 0, w = 19, h = 8),
         title = title,
         targets = targetTable(command)
     )
@@ -157,7 +148,7 @@ fun targetGraph(command: String) = arrayOf(
 
 fun targetIndicator(command: String) = arrayOf(
     Target(
-        query = "select experiment from (select min(\"mean\"), experiment from ( select mean(value) from \"tracking\" WHERE \"task\" = '$command' GROUP BY experiment))",
+        query = "select experiment from (select min(\"mean\"), experiment from ( select mean(value) from \"tracking\" WHERE \"task\" = '$command' GROUP BY  time(\$interval), experiment) GROUP BY  time(\$interval))",
         rawQuery = true,
         resultFormat = "time_series",
         groupBy = arrayOf(queryInterval()),

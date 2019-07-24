@@ -8,9 +8,7 @@ enum class MODE {
 }
 
 fun main() {
-
     TalaiotInjector().init()
-
 }
 
 class TalaiotInjector {
@@ -44,9 +42,6 @@ class TalaiotInjector {
 
     private fun createFileTalaiot() {
         val id = System.getenv("id")
-        println(id.toString())
-        println(id)
-
 
         val file = File("talaiot.gradle.kts")
         file.writeText(
@@ -78,6 +73,5 @@ class TalaiotInjector {
                     "    }\n" +
                     "}"
         )
-
     }
 }

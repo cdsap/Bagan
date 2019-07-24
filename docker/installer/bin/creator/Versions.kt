@@ -6,5 +6,4 @@ object Versions {
     const val PATH = ""
     const val TEMP_FOLDER = "tmp"
     const val CONF_FILE = "${PATH}bagan_conf.json"
-    const val URL_2 = "http://bagan-frontend.default.svc.cluster.local"
 }

@@ -27,7 +27,8 @@ data class Table(
     val title: String,
     val transform: String = "table",
     val targets: Array<Target>,
-    val style: Array<Any> = arrayOf(Style(), Style2())
+    val style: Array<Any> = arrayOf(Style(), Style2()),
+    val styles: Array<Any> = arrayOf(Style(), Style2())
 ) : Panel(
     panelType = PanelType.table
 )
