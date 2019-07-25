@@ -2,10 +2,14 @@
 
 function gcloudBagan(){
   PATH_GCLOUD_BAGAN="tmp/creator"
-  removingPreviousExperiments="helm del --purge \$( kubectl get pods -l type=experiment -o custom-columns=:metadata.name)"
-  gcloud_bagan="kscript $PATH_GCLOUD_BAGAN/BaganGenerator.kt"
-  echo "$removingPreviousExperiments;"
+  gcloud_bagan="kscript $PATH_GCLOUD_BAGAN/BaganGenerator.kt tmp"
   echo "$gcloud_bagan;"
+}
+
+
+function removeExperiments(){
+  removingPreviousExperiments="helm del --purge \$( kubectl get pods -l type=experiment -o custom-columns=:metadata.name)"
+  echo "$removingPreviousExperiments;"
 }
 
 function gcloudDockerBagan(){

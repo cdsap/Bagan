@@ -3,26 +3,14 @@
       "repository": "https://github.com/android/plaid",
       "gradleCommand": "./gradlew clean :app:assembleDebug",
       "clusterName": "",
-      "machine": "n1-standard-4",
+      "machine": "n1-standard-1",
       "zone": null,
-      "iterations": 10,
+      "iterations": 5,
       "experiments": {
          "properties": [
             {
                "name": "org.gradle.jvmargs",
                "options": ["-Xmx3g","-Xmx4g"]
-            },
-            {
-               "name": "kapt.incremental.apt",
-               "options": ["true","false"]
-            },
-            {
-               "name": "kapt.use.worker.api",
-               "options": ["true","false"]
-            },
-            {
-               "name": "org.gradle.caching  ",
-               "options": ["true","false"]
             }
          ]
       }
