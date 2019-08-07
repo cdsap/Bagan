@@ -14,9 +14,12 @@ fun main() {
 class TalaiotInjector {
 
     fun init() {
+        println("[TalaiotInjector]: Begin process")
         val mode = checkMode()
+        println("[TalaiotInjector]: Mode $mode")
         appendTalaiot(mode)
         createFileTalaiot()
+        println("[TalaiotInjector]: End process")
     }
 
     private fun checkMode(): MODE {

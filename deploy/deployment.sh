@@ -18,16 +18,15 @@ mv  build/kscript/creator/ ../docker/installer/bin/
 mv  build/kscript/properties/ ../docker/pod/bin
 mv  build/kscript/injector/ ../docker/pod/bin
 
-
 # 4- Generate docker images
 # 4.1- Bagan Installer
 cd ../docker/installer
-docker build . --tag=bagan-init
+docker build . --tag=bagan-init --no-cache
 docker tag bagan-init $IMAGE_BAGAN_INIT:$VERSION
 docker push $IMAGE_BAGAN_INIT:$VERSION
 
 # 4.2- Bagan Pod
-cd ../pod
+cd ../docker/pod
 docker build . --tag=bagan-pod-injector
 docker tag bagan-pod-injector $IMAGE_BAGAN_POD:$VERSION
 docker push $IMAGE_BAGAN_POD:$VERSION

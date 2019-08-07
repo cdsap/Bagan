@@ -35,7 +35,8 @@ function gcloudInfraPods(){
   kubectl_bagan_service_grafana_insert="kubectl expose deployment bagan-grafana --type=LoadBalancer"
 
   echo "$gcloud_grafana;"
-  echo "$gcloud_influx;"
   echo "$kubectl_bagan_service_grafana_remove;"
   echo "$kubectl_bagan_service_grafana_insert;"
+  echo "$gcloud_influx;"
+
 }

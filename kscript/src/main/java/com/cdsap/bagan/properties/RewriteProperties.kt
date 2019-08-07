@@ -10,6 +10,7 @@ fun main() {
 class RewriteProperties {
 
     fun init() {
+        println("[RewriteProperties]: Begin process")
         val b = StringReader(System.getenv("experiments"))
         val newProps = Properties()
         newProps.load(b)
@@ -21,9 +22,12 @@ class RewriteProperties {
 
         val outProperties = FileOutputStream("gradle.properties")
         newProps.forEach {
+            println("[RewriteProperties]: Writing property ${it.key}-${it.value}")
             props.setProperty(it.key.toString(), it.value.toString())
         }
         props.store(outProperties, null)
         outProperties.close()
+        println("[RewriteProperties]: End process")
+
     }
 }
