@@ -107,7 +107,7 @@ if [ $type == "gcloud" ]; then
     checkPreviousExperiments
     eval "$(gcloudBagan)"
   elif [ $mode == "experiment" ]; then
-    printf '%s\n' "Mode infrastrucure"
+    printf '%s\n' "Mode expreriment"
     eval "$(gcloudCredentials)"
     eval "$(gcloudBagan)"
   else
@@ -134,7 +134,7 @@ elif [ $type == "gcloud_docker" ]; then
   docker run -ti -v $HOME/.config/gcloud:/root/.config/gcloud \
                  -v $PWD/tmp:/usr/local/tmp \
                  -v $PWD/bagan_conf.json:/usr/local/tmp/creator/bagan_conf.json \
-                    cdsap/bagan-init:0.1.1 /bin/bash -c "
+                    cdsap/bagan-init:0.1.4 /bin/bash -c "
                     export PATH=$PATH:/usr/local/gcloud/google-cloud-sdk/bin/;
                     cd /usr/local;
                     $execution;"

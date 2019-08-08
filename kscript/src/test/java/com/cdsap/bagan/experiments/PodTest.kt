@@ -44,6 +44,7 @@ spec:
   containers:
     - name:  agent
       image: {{ .Values.image }}
+      command: ["/bin/sh"]
       args: ["-c", "mv *.kt /repo; cd /repo;  cat /root/.bashrc;  source /root/.bashrc;  ls; source /usr/share/sdkman/bin/sdkman-init.sh; source /root/.bashrc;  kscript TalaiotInjector.kt;  kscript RewriteProperties.kt; for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done; "]
       securityContext:
         runAsUser: 0

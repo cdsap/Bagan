@@ -30,6 +30,7 @@ metadata:
   annotations:
     seccomp.security.alpha.kubernetes.io/pod: 'docker/default'
 spec:
+  restartPolicy: Never
   initContainers:
     - name: git-clone
       image: alpine/git
@@ -49,7 +50,8 @@ spec:
   containers:
     - name:  agent
       image: {{ .Values.image }}
-      args: ["-c", "mv *.kt /repo; cd /repo;  cat /root/.bashrc;  source /root/.bashrc;  ls; source /usr/share/sdkman/bin/sdkman-init.sh; source /root/.bashrc;  kscript TalaiotInjector.kt;  kscript RewriteProperties.kt; for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done; "]
+      command: ["/bin/bash"]
+      args: ["-c", "mv *.kt /repo; cd /repo; source /root/.bashrc; source /usr/share/sdkman/bin/sdkman-init.sh; source /root/.bashrc;  kscript TalaiotInjector.kt;  kscript RewriteProperties.kt; for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done; "]
       securityContext:
         runAsUser: 0
         allowPrivilegeEscalation: true
@@ -72,12 +74,13 @@ class Values {
         configMap: String,
         name: String,
         command: String,
-        iterations: Int
+        iterations: Int,
+        image : String
     ) = """
 repository: $repository
 configMaps : configmap$name
 name : $name
-image: cdsap/bagan-pod-injector
+image: $image
 command: $command
 iterations: $iterations
 """.trimIndent()
