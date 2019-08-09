@@ -43,7 +43,7 @@ class DashboardProvider(
     }
 
     private fun executeUpgradeHelm() {
-          commandExecutor.execute("helm upgrade bagan-grafana $path/grafana")
+        commandExecutor.execute("helm upgrade bagan-grafana $path/grafana")
     }
 
     private fun calculatePannels(
@@ -58,16 +58,15 @@ class DashboardProvider(
                 generateWinner(
                     id = counter++,
                     title = "Experiment Winner $it",
-                    gridPos = Gridpos(w = 7, h = 8, x = 12, y = 0),
-                    valueName = "Name",
-                    command = it
+                    gridPos = Gridpos(w = 7, h = 7, x = 12, y = 7),
+                    valueName = "Name"
                 )
             )
             panels.add(
                 generateGraphs
-                    (title = it, gridPos = Gridpos(w = 19, h = 8, x = 0, y = 8), id = counter++, command = it)
+                    (title = it, gridPos = Gridpos(w = 19, h = 7, x = 0, y = 0), id = counter++)
             )
-            panels.add(generateTable(title = "Min build times $it", command = it, id = counter))
+            panels.add(generateTable(title = "Min build times $it", id = counter))
 
         }
         val array = arrayOfNulls<Panel>(panels.size)
@@ -86,79 +85,71 @@ class DashboardProvider(
         id: Int,
         title: String,
         gridPos: Gridpos,
-        valueName: String,
-        command: String
+        valueName: String
     ) = Winner(
         id = id,
         title = title,
         gridPos = gridPos,
         valueName = valueName,
-        targets = targetIndicator(command)
+        targets = targetIndicator()
     )
 
     private fun generateGraphs(
         title: String,
         id: Int,
-        gridPos: Gridpos,
-        command: String
+        gridPos: Gridpos
     ) = Graph(
         title = title,
         id = id,
         gridPos = gridPos,
-        targets = targetGraph(command)
+        targets = targetGraph()
     )
 
-    private fun generateTable(command: String, title: String, id: Int) = Table(
+    private fun generateTable(title: String, id: Int) = Table(
         id = id,
-        gridPos = Gridpos(x = 0, y = 0, w = 19, h = 8),
+        gridPos = Gridpos(x = 0, y = 7, w = 12, h = 7),
         title = title,
-        targets = targetTable(command)
+        targets = targetTable()
     )
 }
 
-
-fun groupByExperiment() = query("tag", "experiment")
-fun queryValue() = query("field", "value")
-fun queryInterval() = query("time", "\$interval")
-fun tagCommand(command: String) = Tags(key = "task", operator = "=", value = command)
-
-fun query(type: String, value: String) = Query(type = type, params = arrayOf(value))
-
-fun targetTable(command: String) = arrayOf(
+fun targetTable() = arrayOf(
     Target(
-        groupBy = arrayOf(groupByExperiment()),
-        select = arrayOf(arrayOf(queryValue())),
-        tags = arrayOf(tagCommand(command))
+        measurement = "tracking",
+        orderByTime = "ASC",
+        policy = "default",
+        resultFormat = "table",
+        query = "SELECT \"duration\", \"experiment\" FROM \"tracking\".\"rpTalaiot\".\"build\" WHERE \$timeFilter",
+        rawQuery = true,
+        groupBy = emptyArray(),
+        select = emptyArray(),
+        tags = emptyArray()
     )
 )
 
-fun targetGraph(command: String) = arrayOf(
+fun targetGraph() = arrayOf(
     Target(
+        measurement = "tracking",
+        orderByTime = "ASC",
+        policy = "default",
         resultFormat = "time_series",
-        groupBy = arrayOf(queryInterval(), groupByExperiment()),
-        select = arrayOf(
-            arrayOf(
-                queryValue(),
-                query("percentile", "99")
-            )
-        ),
-        tags = arrayOf(tagCommand(command))
+        query = "SELECT percentile(\"duration\", 99) FROM \"tracking\".\"rpTalaiot\".\"build\" WHERE \$timeFilter GROUP BY time(\$interval), \"experiment\"",
+        rawQuery = true,
+        groupBy = emptyArray(),
+        select = emptyArray(),
+        tags = emptyArray()
     )
 )
 
-fun targetIndicator(command: String) = arrayOf(
+
+fun targetIndicator() = arrayOf(
     Target(
-        query = "select experiment from (select min(\"mean\"), experiment from ( select mean(value) from \"tracking\" WHERE \"task\" = '$command' GROUP BY  time(\$interval), experiment) GROUP BY  time(\$interval))",
+        query = "select \"experiment\" from (select min(\"mean\"), experiment from ( select mean(\"duration\") from \"tracking\".\"rpTalaiot\".\"build\" GROUP BY time(\$interval), experiment) GROUP BY time(\$interval))",
         rawQuery = true,
         resultFormat = "time_series",
-        groupBy = arrayOf(queryInterval()),
-        select = arrayOf(
-            arrayOf(
-                queryValue(),
-                query("mean", "value")
-            )
-        ),
-        tags = arrayOf(tagCommand(command))
+        groupBy = emptyArray(),
+        select = emptyArray(),
+        tags = emptyArray()
     )
 )
 

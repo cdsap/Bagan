@@ -258,7 +258,7 @@ config:
 # /docker-entrypoint-initdb.d folder, it will execute them. The order they are
 # executed in is determined by the shell. This is usually alphabetical order.
 initScripts:
-  enabled: true
+  enabled: false
   scripts:
     init.iql: |+
-      CREATE DATABASE "tracking"
+      SHOW DATABASES
