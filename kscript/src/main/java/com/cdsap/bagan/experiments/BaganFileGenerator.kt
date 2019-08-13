@@ -22,7 +22,6 @@ class BaganFileGenerator(
             path = "$path/values.yaml",
             nameRepo = bagan.repository,
             gradleCommand = bagan.gradleCommand,
-            configmap = nameConfigMap,
             iterations = bagan.iterations,
             nameExperiment = experiment,
             image = Versions.POD_INJECTOR
@@ -58,7 +57,6 @@ class BaganFileGenerator(
         path: String,
         nameRepo: String,
         gradleCommand: String,
-        configmap: String,
         iterations: Int,
         nameExperiment: String,
         image: String
@@ -68,7 +66,6 @@ class BaganFileGenerator(
         file.writeText(
             Values().transform(
                 repository = nameRepo,
-                configMap = configmap,
                 name = nameExperiment,
                 command = gradleCommand,
                 iterations = iterations,

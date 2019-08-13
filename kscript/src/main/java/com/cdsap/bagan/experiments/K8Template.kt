@@ -85,7 +85,6 @@ spec:
 class Values {
     fun transform(
         repository: String,
-        configMap: String,
         name: String,
         command: String,
         iterations: Int,
@@ -115,5 +114,6 @@ metadata:
 data:
   id: $nameExperiment
   experiments: |
-               $properties""".trimIndent()
+               $properties
+""".trimIndent()
 }
