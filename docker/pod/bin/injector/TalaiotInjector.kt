@@ -65,7 +65,10 @@ class TalaiotInjector {
                     "apply<com.cdsap.talaiot.TalaiotPlugin>()\n" +
                     "configure<com.cdsap.talaiot.TalaiotExtension>() {\n" +
                     "    logger = com.cdsap.talaiot.logger.LogTracker.Mode.INFO\n" +
-                    "    metrics { customBuildMetrics(\"experiment\" to  \"$id\") } \n" +
+                    "    metrics { " +
+                    "        customBuildMetrics(\"experiment\" to  \"$id\")\n " +
+                    "        customTaskMetrics(\"experiment\" to  \"$id\")\n " +
+                    "     } \n" +
                     "    publishers {\n" +
                     "\n" +
                     "        influxDbPublisher {\n" +

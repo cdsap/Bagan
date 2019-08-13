@@ -1,21 +1,16 @@
 {
   "bagan": {
-    "type": "gcloud",
-    "repository": "https://github.com/cdsap/BaganSimpleProject",
-    "gradleCommand": "./gradlew clean assemble",
-    "clusterName": "kkk",
+    "repository": "https://github.com/android/plaid",
+    "gradleCommand": "./gradlew clean :app:assembleDebug",
+    "clusterName": "",
+    "machine": "n1-standard-1",
     "zone": null,
-    "project-id": null,
-    "iterations": 10,
+    "iterations": 5,
     "experiments": {
       "properties": [
         {
           "name": "org.gradle.jvmargs",
-          "options": ["-Xmx4g"]
-        },
-        {
-          "name": "org.gradle.caching",
-          "options": ["false"]
+          "options": ["-Xmx3g","-Xmx4g"]
         }
       ]
     }

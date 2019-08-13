@@ -1,11 +1,11 @@
 {
    "bagan": {
-      "repository": "https://github.com/android/plaid",
-      "gradleCommand": "./gradlew clean :app:assembleDebug",
+      "repository": "git@github.com:cdsap/TestPrivateRepository.git",
+      "gradleCommand": "./gradlew clean",
       "clusterName": "",
       "machine": "n1-standard-1",
       "zone": null,
-      "iterations": 5,
+      "iterations": 1,
       "experiments": {
          "properties": [
             {

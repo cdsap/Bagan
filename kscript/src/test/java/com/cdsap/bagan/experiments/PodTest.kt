@@ -25,27 +25,37 @@ metadata:
   annotations:
     seccomp.security.alpha.kubernetes.io/pod: 'docker/default'
 spec:
-  initContainers:
-    - name: git-clone
-      image: alpine/git
-      args:
-        - clone
-        - --single-branch
-        - --
-        - {{ .Values.repository }}
-        - /repo
-      securityContext:
-        runAsUser: 1
-        allowPrivilegeEscalation: false
-        readOnlyRootFilesystem: true
+  restartPolicy: Never
+    - name: git-sync
+      image: k8s.gcr.io/git-sync-amd64:v2.0.6
+      imagePullPolicy: Always
       volumeMounts:
-        - name: git-repo
-          mountPath: /repo
+      - name: service
+        mountPath: /repo
+      - name: git-secret
+        mountPath: /etc/git-secret
+      env:
+      - name: GIT_SYNC_REPO
+        value: {{ .Values.repository }}
+      - name: GIT_SYNC_BRANCH
+        value: master
+      - name: GIT_SYNC_ROOT
+        value: /repo
+      - name: GIT_SYNC_DEST
+        value: "workspace"
+      - name: GIT_SYNC_PERMISSIONS
+        value: "0777"
+      - name: GIT_SYNC_ONE_TIME
+        value: "true"
+      - name: GIT_SYNC_SSH
+        value: "true"
+      securityContext:
+        runAsUser: 0
   containers:
     - name:  agent
       image: {{ .Values.image }}
-      command: ["/bin/sh"]
-      args: ["-c", "mv *.kt /repo; cd /repo;  cat /root/.bashrc;  source /root/.bashrc;  ls; source /usr/share/sdkman/bin/sdkman-init.sh; source /root/.bashrc;  kscript TalaiotInjector.kt;  kscript RewriteProperties.kt; for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done; "]
+      command: ["/bin/bash"]
+      args: ["-c", "mv *.kt /repo; cd /repo/workspace; source /root/.bashrc; source /usr/share/sdkman/bin/sdkman-init.sh; source /root/.bashrc;  kscript TalaiotInjector.kt;  kscript RewriteProperties.kt; for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done; "]
       securityContext:
         runAsUser: 0
         allowPrivilegeEscalation: true
@@ -54,12 +64,16 @@ spec:
         - configMapRef:
             name: {{ .Values.configMaps }}
       volumeMounts:
-        - name: git-repo
+        - name: service
           mountPath: /repo
   volumes:
-    - name: git-repo
-      emptyDir: {}
-    """.trimIndent()
+      - name: service
+        emptyDir: {}
+      - name: git-secret
+        secret:
+          defaultMode: 256
+          secretName: git-creds
+""".trimIndent()
                 )
             }
 
