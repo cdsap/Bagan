@@ -23,12 +23,13 @@ class BaganFileGenerator(
         createFolder(path)
         createChartFile("$path/Chart.yaml", experiment)
         createFileValues(
-            "$path/values.yaml",
-            bagan.repository,
-            bagan.gradleCommand,
-            nameConfigMap,
-            bagan.iterations,
-            experiment
+            path = "$path/values.yaml",
+            nameRepo = bagan.repository,
+            gradleCommand = bagan.gradleCommand,
+            configmap = nameConfigMap,
+            iterations = bagan.iterations,
+            nameExperiment = experiment,
+            image = Versions.POD_INJECTOR
         )
 
         createTemplateFolder(path)
@@ -40,7 +41,7 @@ class BaganFileGenerator(
     private fun createChartFile(path: String, id: String) {
         logger.log(TAG, "creating Chart file $path")
         val file = File(path)
-        file.writeText(Chart().transform(id, Versions.CURRENT_VERSION))
+        file.writeText(Chart().transform(id, Versions.CHART_EXPERIMENT))
     }
 
     private fun createFolder(path: String) {
@@ -61,13 +62,23 @@ class BaganFileGenerator(
         path: String,
         nameRepo: String,
         gradleCommand: String,
-        s2: String,
+        configmap: String,
         iterations: Int,
-        nameExperiment: String
+        nameExperiment: String,
+        image: String
     ) {
         logger.log(TAG, "creating Values file $path")
         val file = File(path)
-        file.writeText(Values().transform(nameRepo, s2, nameExperiment, gradleCommand, iterations))
+        file.writeText(
+            Values().transform(
+                repository = nameRepo,
+                configMap = configmap,
+                name = nameExperiment,
+                command = gradleCommand,
+                iterations = iterations,
+                image = image
+            )
+        )
     }
 
     private fun createTemplateFolder(path: String) {

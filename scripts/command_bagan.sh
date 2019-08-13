@@ -6,24 +6,19 @@ function gcloudBagan(){
   echo "$gcloud_bagan;"
 }
 
-
 function removeExperiments(){
-  removingPreviousExperiments="helm del --purge \$( kubectl get pods -l type=experiment -o custom-columns=:metadata.name)"
+  removingPreviousExperiments="helm del --purge \$( helm ls --all experimen* --short)"
   echo "$removingPreviousExperiments;"
 }
 
 function gcloudDockerBagan(){
-  removingPreviousExperiments="helm del --purge \$( kubectl get pods -l type=experiment -o custom-columns=:metadata.name)"
   gcloud_docker_bootstrap_bagan="kscript Bootstraping.kt"
   gcloud_docker_bagan="kscript BaganGenerator.kt .."
   bashrc="source /root/.bashrc"
-  change="cd tmp/creator"
-  echo "pwd;"
-  echo "$removingPreviousExperiments;"
+  changeFolder="cd tmp/creator"
   echo "$bashrc;"
-  echo "$change;"
+  echo "$changeFolder;"
   echo "$gcloud_docker_bootstrap_bagan;"
-  echo "pwd;"
   echo "$gcloud_docker_bagan"
 }
 

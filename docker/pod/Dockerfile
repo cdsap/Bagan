@@ -15,7 +15,7 @@ RUN set -x \
 
 RUN source "$HOME/.sdkman/bin/sdkman-init.sh" \
     && sdk install kotlin 1.3.31
-    
+
 
 SHELL [ "/bin/bash", "-c" ]
 
@@ -24,33 +24,14 @@ RUN curl -s 'https://get.sdkman.io' | bash
 RUN chmod a+x "$HOME/.sdkman/bin/sdkman-init.sh"
 RUN source "$HOME/.sdkman/bin/sdkman-init.sh"
 
-RUN echo $SDKMAN_DIR
-
 RUN echo "sdkman_auto_answer=true" > $SDKMAN_DIR/etc/config \
     && echo "sdkman_auto_selfupdate=false" >> $SDKMAN_DIR/etc/config \
     && echo "sdkman_insecure_ssl=false" >> $SDKMAN_DIR/etc/config
 
 
-RUN echo $SDKMAN_DIR
-RUN cd $SDKMAN_DIR
-RUN cd /usr/share/sdkman
-RUN pwd
-RUN cat $SDKMAN_DIR/bin/sdkman-init.sh
-RUN ls
-
-
-
-RUN source $SDKMAN_DIR/bin/sdkman-init.sh \
+RUN source "$HOME/.sdkman/bin/sdkman-init.sh" \
     && sdk install kotlin 1.3.31 \
     && sdk install kscript
-
-RUN echo $SDKMAN_DIR
-RUN cd $SDKMAN_DIR
-RUN cd /usr/share/sdkman
-RUN pwd
-RUN cat $SDKMAN_DIR/bin/sdkman-init.sh
-RUN ls
-
 
 ENV ANDROID_HOME /opt/android-sdk-linux
 RUN echo ANDROID_HOME
@@ -79,5 +60,4 @@ RUN mkdir -p /var/workspace
 RUN cd /var/workspace
 COPY bin/properties/RewriteProperties.kt /var/workspace
 COPY bin/injector/TalaiotInjector.kt /var/workspace
-COPY bin/Bootstraping.kt /var/workspace
 WORKDIR "var/workspace/"

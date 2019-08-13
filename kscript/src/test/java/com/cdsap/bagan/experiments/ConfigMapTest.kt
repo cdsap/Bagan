@@ -5,7 +5,7 @@ import io.kotlintest.specs.BehaviorSpec
 class ConfigMapTest : BehaviorSpec({
     given("ConfigMap file") {
         val nameConfigMap = "experiment0configmap"
-        val nameExperiment = "exoeriment0"
+        val nameExperiment = "experiment0"
         val properties = "org.jvm.arg=1v" +
                 "    org.gradle.caching=true"
         `when`("Parameters are defined") {
@@ -19,7 +19,7 @@ class ConfigMapTest : BehaviorSpec({
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: $nameExperiment
+  name: configmap$nameExperiment
   labels:
     type: experiment
     experiment_id: $nameExperiment
@@ -27,8 +27,7 @@ data:
   id: $nameExperiment
   experiments: |
                $properties
-
-    """.trimIndent()
+""".trimIndent()
                 )
             }
 

@@ -20,10 +20,11 @@ function gcloudHelm(){
 }
 
 function minikubeHelm(){
+  sleep10="sleep 10"
   helm_minikube_init="helm init"
   helm_minikube_repo_update="helm repo update"
   echo "$helm_minikube_init"
-  echo "$sleep15;"
+  echo "$sleep10;"
   echo "$helm_minikube_repo_update"
 }
 
@@ -35,7 +36,8 @@ function gcloudInfraPods(){
   kubectl_bagan_service_grafana_insert="kubectl expose deployment bagan-grafana --type=LoadBalancer"
 
   echo "$gcloud_grafana;"
-  echo "$gcloud_influx;"
   echo "$kubectl_bagan_service_grafana_remove;"
   echo "$kubectl_bagan_service_grafana_insert;"
+  echo "$gcloud_influx;"
+
 }

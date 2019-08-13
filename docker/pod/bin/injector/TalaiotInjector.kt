@@ -8,17 +8,18 @@ enum class MODE {
 }
 
 fun main() {
-
     TalaiotInjector().init()
-
 }
 
 class TalaiotInjector {
 
     fun init() {
+        println("[TalaiotInjector]: Begin process")
         val mode = checkMode()
+        println("[TalaiotInjector]: Mode $mode")
         appendTalaiot(mode)
         createFileTalaiot()
+        println("[TalaiotInjector]: End process")
     }
 
     private fun checkMode(): MODE {
@@ -44,9 +45,6 @@ class TalaiotInjector {
 
     private fun createFileTalaiot() {
         val id = System.getenv("id")
-        println(id.toString())
-        println(id)
-
 
         val file = File("talaiot.gradle.kts")
         file.writeText(
@@ -60,24 +58,27 @@ class TalaiotInjector {
                     "\n" +
                     "    }\n" +
                     "    dependencies {\n" +
-                    "        classpath(\"com.cdsap:talaiot:0.4.0\")\n" +
+                    "        classpath(\"com.cdsap:talaiot:1.0.2\")\n" +
                     "    }\n" +
                     "}\n" +
                     "\n" +
                     "apply<com.cdsap.talaiot.TalaiotPlugin>()\n" +
                     "configure<com.cdsap.talaiot.TalaiotExtension>() {\n" +
                     "    logger = com.cdsap.talaiot.logger.LogTracker.Mode.INFO\n" +
-                    "    metrics { customMetrics(\"experiment\" to  \"$id\") } \n" +
+                    "    metrics { " +
+                    "        customBuildMetrics(\"experiment\" to  \"$id\")\n " +
+                    "        customTaskMetrics(\"experiment\" to  \"$id\")\n " +
+                    "     } \n" +
                     "    publishers {\n" +
                     "\n" +
                     "        influxDbPublisher {\n" +
                     "            dbName = \"tracking\"\n" +
                     "            url = \"http://bagan-influxdb.default:8086\"\n" +
-                    "            urlMetric = \"tracking\"\n" +
+                    "            taskMetricName = \"tracking\"\n" +
+                    "            buildMetricName = \"build\"\n" +
                     "        }\n" +
                     "    }\n" +
                     "}"
         )
-
     }
 }

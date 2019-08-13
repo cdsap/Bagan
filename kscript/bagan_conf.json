@@ -2,7 +2,7 @@
   "bagan": {
     "type": "gcloud",
     "repository": "https://github.com/cdsap/BaganSimpleProject",
-    "gradleCommand": "./gradlew clean assemble",
+    "gradleCommand": "./gradlew clean :app:assembleDebug",
     "clusterName": "kkk",
     "zone": null,
     "project-id": null,

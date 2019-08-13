@@ -19,12 +19,12 @@ then
      exit 1
 fi
 
-regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
-if [[ ! $repositoryJson =~ $regex ]]
-then
-  printf '%s\n' "Error: url repository is not correct "
-  exit 1
-fi
+#regex='(https?|ftp|file)://[-A-Za-z0-9\+&@#/%?=~_|!:,.;]*[-A-Za-z0-9\+&@#/%=~_|]'
+#if [[ ! $repositoryJson =~ $regex ]]
+#then
+#  printf '%s\n' "Error: url repository is not correct "
+#  exit 1
+#fi
 
 
 if [ -z "$propertiesJson" ]

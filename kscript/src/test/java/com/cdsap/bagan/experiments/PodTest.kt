@@ -25,51 +25,56 @@ metadata:
   annotations:
     seccomp.security.alpha.kubernetes.io/pod: 'docker/default'
 spec:
+  restartPolicy: Never
   initContainers:
-    - name: git-clone
-      image: alpine/git
-      args:
-        - clone
-        - --single-branch
-        - --
-        - {{ .Values.repository }}
-        - /repo
-      securityContext:
-        runAsUser: 1
-        allowPrivilegeEscalation: false
-        readOnlyRootFilesystem: true
-      volumeMounts:
-        - name: git-repo
-          mountPath: /repo
+  - name: git-sync
+    image: k8s.gcr.io/git-sync-amd64:v2.0.6
+    imagePullPolicy: Always
+    volumeMounts:
+    - name: service
+      mountPath: /repo
+    - name: git-secret
+      mountPath: /etc/git-secret
+    env:
+    - name: GIT_SYNC_REPO
+      value: {{ .Values.repository }}
+    - name: GIT_SYNC_BRANCH
+      value: master
+    - name: GIT_SYNC_ROOT
+      value: /repo
+    - name: GIT_SYNC_DEST
+      value: "workspace"
+    - name: GIT_SYNC_PERMISSIONS
+      value: "0777"
+    - name: GIT_SYNC_ONE_TIME
+      value: "true"
+    - name: GIT_SYNC_SSH
+      value: "true"
+    securityContext:
+      runAsUser: 0
   containers:
-    - name:  agent
-      image: {{ .Values.image }}
-      args: ['sleep', '100000']
-      envFrom:
-        - configMapRef:
-            name: {{ .Values.configMaps }}
-      volumeMounts:
-        - name: git-repo
-          mountPath: /repo
-      lifecycle:
-            postStart:
-              exec:
-                command:
-                - bash
-                - -c
-                - |
-                  mv *.kt /repo
-                  cd /usr/share/sdkman/bin
-                  source sdkman-generate.sh
-                  cd /repo
-                  kscript TalaiotInjector.kt
-                  kscript RewriteProperties.kt
-                  pwd >  /usr/share/message
-                  for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done
+  - name:  agent
+    image: {{ .Values.image }}
+    command: ["/bin/bash"]
+    args: ["-c", "mv *.kt /repo/workspace; cd /repo/workspace; source /root/.bashrc; source /usr/share/sdkman/bin/sdkman-init.sh; source /root/.bashrc;  kscript TalaiotInjector.kt;  kscript RewriteProperties.kt; for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done; "]
+    securityContext:
+      runAsUser: 0
+      allowPrivilegeEscalation: true
+      readOnlyRootFilesystem: false
+    envFrom:
+      - configMapRef:
+          name: {{ .Values.configMaps }}
+    volumeMounts:
+      - name: service
+        mountPath: /repo
   volumes:
-    - name: git-repo
+    - name: service
       emptyDir: {}
-    """.trimIndent()
+    - name: git-secret
+      secret:
+        defaultMode: 256
+        secretName: git-creds
+""".trimIndent()
                 )
             }
 
