@@ -33,3 +33,7 @@ tasks.register("convertFiles", TaskHeaderReplacer::class.java) {
 tasks.getByName("build") {
     this.dependsOn("convertFiles")
 }
+
+val test by tasks.getting(Test::class) {
+    useJUnitPlatform { }
+}

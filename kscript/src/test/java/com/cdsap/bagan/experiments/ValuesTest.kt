@@ -5,7 +5,6 @@ import io.kotlintest.specs.BehaviorSpec
 class ValuesTest : BehaviorSpec({
     given("Values file") {
         val repo = "http://git"
-        val configmap = "configmap0"
         val name = "experiment0"
         val command = "./gradlew command"
         val image = "cdsap/bagan-pod-injector:0.1.4"
@@ -13,7 +12,6 @@ class ValuesTest : BehaviorSpec({
         `when`("Parameters are defined") {
             val values = Values().transform(
                 repository = repo,
-                configMap = configmap,
                 name = name,
                 command = command,
                 iterations = iterations,
@@ -23,7 +21,7 @@ class ValuesTest : BehaviorSpec({
                 assert(
                     values == """
 repository: $repo
-configMaps : $configmap
+configMaps : configmap$name
 name : $name
 image: $image
 command: $command
