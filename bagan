@@ -6,6 +6,7 @@ set -e
 . scripts/command_bagan.sh
 . scripts/command_init_credentials.sh
 . scripts/command_previous_experiments.sh
+. scripts/command_secret.sh
 . scripts/command_end.sh
 
 type=$1
@@ -98,17 +99,20 @@ if [ $type == "gcloud" ]; then
     eval "$(gcloudCredentials)"
     eval "$(gcloudHelm)"
     eval "$(gcloudInfraPods)"
+    eval "$(createSecret)"
     eval "$(gcloudBagan)"
   elif [ $mode == "infrastructure" ]; then
     printf '%s\n' "Mode infrastrucure"
     eval "$(gcloudCredentials)"
     eval "$(gcloudHelm)"
     eval "$(gcloudInfraPods)"
+    eval "$(createSecret)"
     checkPreviousExperiments
     eval "$(gcloudBagan)"
   elif [ $mode == "experiment" ]; then
     printf '%s\n' "Mode expreriment"
     eval "$(gcloudCredentials)"
+  #  eval "$(createSecret)"
     eval "$(gcloudBagan)"
   else
     printf '%s\n' "Error no mode parsed properly for gcloud"
@@ -148,6 +152,12 @@ elif [ $type == "minikube" ]; then
   fi
   if [ $mode == "cluster" ] || [ $mode == "infrastrucure" ]; then
     eval "$(minikubeHelm)"
+
+
+
+    echo 1;
+
+
     eval "$(gcloudInfraPods)"
     eval "$(gcloudBagan)"
   elif [ $mode == "experiment" ]; then

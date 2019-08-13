@@ -20,10 +20,11 @@ function gcloudHelm(){
 }
 
 function minikubeHelm(){
+  sleep10="sleep 10"
   helm_minikube_init="helm init"
   helm_minikube_repo_update="helm repo update"
   echo "$helm_minikube_init"
-  echo "$sleep15;"
+  echo "$sleep10;"
   echo "$helm_minikube_repo_update"
 }
 
