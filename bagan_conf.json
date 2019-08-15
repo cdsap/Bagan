@@ -1,16 +1,23 @@
 {
    "bagan": {
-      "repository": "git@github.com:cdsap/TestPrivateRepository.git",
-      "gradleCommand": "./gradlew clean",
+      "repository": "https://github.com/android/plaid.git",
+      "gradleCommand": "./gradlew clean assembleDebug",
       "clusterName": "",
       "machine": "n1-standard-1",
       "zone": null,
-      "iterations": 1,
+      "private": false,
+      "ssh": "",
+      "known_hosts": "/tmp/known_hosts",
+      "iterations": 5,
       "experiments": {
          "properties": [
             {
                "name": "org.gradle.jvmargs",
                "options": ["-Xmx3g","-Xmx4g"]
+            },
+            {
+               "name": "org.gradle.caching",
+               "options": ["true","false"]
             }
          ]
       }

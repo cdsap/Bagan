@@ -1,7 +1,12 @@
 #!/bin/sh
 
+
+
 function log() {
-  if [ "$debug" ]; then
-    printf '%s\n' "[LOG]: $1"
-  fi
+    printf '%s\n' "$1"
+}
+
+function error() {
+
+  color '31;1' $1
 }

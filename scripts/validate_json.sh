@@ -9,27 +9,31 @@ propertiesCountJson=$(cat $FILE | jq -c -r '.bagan.experiments.properties | leng
 clusterJson=$(cat $FILE | jq -c -r '.bagan.clusterName' | tr -d '\r')
 zoneJson=$(cat $FILE | jq -c -r '.bagan.zone' | tr -d '\r')
 machineJson=$(cat $FILE | jq -c -r  '.bagan.machine' | tr -d '\r')
+privateJson=$(cat $FILE | jq -c -r  '.bagan.private' | tr -d '\r')
+sshJson=$(cat $FILE | jq -c -r  '.bagan.ssh' | tr -d '\r')
+known_hostsJson=$(cat $FILE | jq -c -r  '.bagan.known_hosts' | tr -d '\r')
 
-printf '%s\n' "Json File parsed OK"
-printf '%s\n' "Validating Json..."
+
+log "Json File parsed OK"
+log "Validating Json..."
 
 if  [ -z "$repositoryJson" ] || [ -z "$gradleCommandJson" ]
 then
-     printf '%s\n' "Error: repository, gradleCommand are required "
+     color '31;1' "Error: repository, gradleCommand are required "
      exit 1
 fi
 
 regex='^(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+).git$'
 if [[ ! $repositoryJson =~ $regex ]]
 then
-  printf '%s\n' "Error: url repository is not correct "
+  color '31;1' "Error: url repository is not correct "
   exit 1
 fi
 
 
 if [ -z "$propertiesJson" ]
 then
-     printf '%s\n' "Error: experiments are required in the main configuration file"
+     color '31;1' "Error: experiments are required in the main configuration file"
      exit 1
 fi
 
@@ -38,13 +42,24 @@ if [ "$extras" = "executeExperiment" ]; then
    if [ "$typeJson" = "gcloud" ] || [ "$typeJson" = "gcloud_docker" ]; then
      if [ -z "$clusterJson" ] || [ -z "$zoneJson" ]
      then
-         printf '%s\n' "Error: you have selected to execute experiments in G without Cluster and Zone Information"
+         color '31;1' "Error: you have selected to execute experiments in G without Cluster and Zone Information"
          exit 1
      fi
    fi
 fi
 
-printf '%s\n' "Json File validated OK"
+if [ "$privateJson" == "true" ]; then
+  if [ -z "$sshJson" ] || [ "$sshJson" = "null" ]; then
+    color '31;1' "Error: you have selected private repository but didn't include the ssh key path"
+    exit 1
+  fi
+  if [ -z "$known_hostsJson" ] || [ "$known_hostsJson" = "null" ]; then
+    color '31;1' "Error: you have selected private repository but didn't include the known_hosts path"
+    exit 1
+  fi
+fi
+
+log "Json File validated OK"
 
 cluster=""
 if [ -z "$clusterJson" ] || [ "$clusterJson" = "null" ]
@@ -53,6 +68,7 @@ then
 else
    cluster=$clusterJson
 fi
+
 if [ -z "$zoneJson" ] || [ "$zoneJson" = "null" ]
 then
    zone="us-central1-a"
@@ -67,7 +83,11 @@ else
    machine=$machineJson
 fi
 
+
 repository=$repositoryJson
 gradleCommand=$gradleCommandJson
 properties=$propertiesJson
 propertiesCount=$propertiesCountJson
+private=$privateJson
+ssh=$sshJson
+known_hosts=$known_hostsJson

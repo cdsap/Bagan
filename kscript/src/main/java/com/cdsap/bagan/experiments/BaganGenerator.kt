@@ -50,9 +50,9 @@ class BaganGenerator(
         logger.log(TAG, "Starting DashboardProvider")
         dashBoardProvider.generate(experiments, getCommands(baganConfFileProvider.getBaganConf().gradleCommand))
 
-        experiments.forEach {
-            baganFileGenerator.createExperiment(it.name, it.values, baganConfFileProvider.getBaganConf())
-        }
+     //   experiments.forEach {
+      //      baganFileGenerator.createExperiment(it.name, it.values, baganConfFileProvider.getBaganConf())
+      //  }
     }
 
     private fun getCommands(command: String): List<String> {
