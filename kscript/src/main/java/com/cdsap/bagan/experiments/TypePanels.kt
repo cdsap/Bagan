@@ -35,7 +35,7 @@ data class Table(
 
 data class Style(
     val alias: String = "Time",
-    val dateFormat: String? = null,
+    val dateFormat: String? = "YYYY-MM-DD HH:mm:ss",
     val pattern: String = "Time",
     val type: String = "date"
 )

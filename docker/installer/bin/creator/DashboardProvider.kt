@@ -192,7 +192,7 @@ fun targetGraph() = arrayOf(
 
 fun targetIndicator() = arrayOf(
     Target(
-        query = "select \"experiment\" from (SELECT min(\"per\"), \"experiment\" FROM (SELECT percentile(\"duration\",80) as \"per\" FROM \"tracking\".\"rpTalaiot\".\"build\" GROUP BY  time(\$interval), \"experiment\") )",
+        query = "select \"experiment\" from (SELECT min(\"per\"), \"experiment\" FROM (SELECT percentile(\"duration\",80) as \"per\" FROM \"tracking\".\"rpTalaiot\".\"build\" WHERE \$timeFilter GROUP BY  \"experiment\") )",
         rawQuery = true,
         resultFormat = "time_series",
         groupBy = emptyArray(),
