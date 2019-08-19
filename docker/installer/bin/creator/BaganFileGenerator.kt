@@ -62,7 +62,7 @@ class BaganFileGenerator(
             properties = values
         )
 
-        // commandExecutor.execute("helm install -n $experiment -f $path/values.yaml $path/")
+        commandExecutor.execute("helm install -n $experiment -f $path/values.yaml $path/")
     }
 
     private fun createChartFile(path: String, id: String) {
