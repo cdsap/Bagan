@@ -27,20 +27,18 @@ class DashboardProvider(
 
     fun generate(experiments: List<Experiment>) {
         logger.log(TAG, "Starting DashboardProvider")
-        generateDashBoard(experiments, getCommands(bagan.gradleCommand), bagan.iterations)
+        generateDashBoard(experiments, getCommands(bagan.gradleCommand))
         executeUpgradeHelm()
     }
 
     private fun generateDashBoard(
         experiments: List<Experiment>,
-        commands: List<String>,
-        iterations: Int
+        commands: List<String>
     ) {
         val adapter = moshi.adapter<Any>(Dashboard::class.java)
         val dashboard = Dashboard(panels = calculatePanels(experiments, commands))
         val dashBoardString = adapter.toJson(dashboard)
-        //  val file = File("$path/grafana/dashboards/dashboard.json")
-        val file = File("dashboard.json")
+        val file = File("$path/grafana/dashboards/dashboard.json")
         file.writeText(dashBoardString.toString())
     }
 

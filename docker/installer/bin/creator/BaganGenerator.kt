@@ -28,7 +28,7 @@ fun main(array: Array<String>) {
 
     val logger = LoggerImpl()
     val moshiProvider = MoshiProvider()
-    val commandExecutor = CommandExecutor(logger, true)
+    val commandExecutor = CommandExecutor(logger, false)
     val baganGenerator = BaganGenerator(moshiProvider, commandExecutor, logger, path)
     baganGenerator.generate()
 }
