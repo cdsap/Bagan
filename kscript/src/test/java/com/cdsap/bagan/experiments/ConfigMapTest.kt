@@ -4,13 +4,10 @@ import io.kotlintest.specs.BehaviorSpec
 
 class ConfigMapTest : BehaviorSpec({
     given("ConfigMap file") {
-        val nameConfigMap = "experiment0configmap"
-        val nameExperiment = "experiment0"
         val properties = "org.jvm.arg=1v" +
                 "    org.gradle.caching=true"
         `when`("Parameters are defined") {
             val values = ConfigMap().transform(
-                nameExperiment = nameExperiment,
                 properties = properties
             )
             then("configmap template have been placed") {
@@ -19,12 +16,13 @@ class ConfigMapTest : BehaviorSpec({
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: configmap$nameExperiment
+  name: {{ .Values.configMaps }}
   labels:
+    app: bagan
     type: experiment
-    experiment_id: $nameExperiment
+    session: {{ .Values.session }}
 data:
-  id: $nameExperiment
+  id: {{ .Values.configMaps }}
   experiments: |
                $properties
 """.trimIndent()

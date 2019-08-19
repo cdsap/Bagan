@@ -40,6 +40,7 @@ if [ -z "$commandFound" ]; then
    log "influxdb: create release for influxdb"
    log "services: create services related to grafana"
    log "remove_experiments: remove existing experiment releases"
+   log "grafana_dashboard: ip to access grafana dashboard(:3000)"
    log ""
    log "Examples"
    color '32;1' "./bagan gcloud cluster"

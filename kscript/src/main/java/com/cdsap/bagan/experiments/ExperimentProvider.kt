@@ -1,10 +1,9 @@
 package com.cdsap.bagan.experiments
 
-class ExperimentProvider(private val baganConfFileProvider: BaganConfFileProvider) {
+class ExperimentProvider(private val bagan: Bagan) {
 
-    fun getExperiments(): List<String> = getExperiments(baganConfFileProvider.getBaganConf())
 
-    private fun getExperiments(bagan: Bagan): List<String> {
+    fun getExperiments(): List<String> {
 
         val experiments = mutableListOf<List<String>>()
 

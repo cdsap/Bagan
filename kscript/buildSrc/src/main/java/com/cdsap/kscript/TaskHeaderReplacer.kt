@@ -74,8 +74,7 @@ abstract class TaskHeaderReplacer : DefaultTask() {
                         result = "$v\n\n$result"
 
                         File("$dir/${it.dir}/${file.name}").createNewFile()
-                        val file = File("$dir/${it.dir}/${file.name}")
-                        val fos = FileOutputStream(file)
+                        val fos = FileOutputStream(File("$dir/${it.dir}/${file.name}"))
 
                         fos.write(result.toByteArray())
                         fos.flush()

@@ -7,30 +7,58 @@ import java.nio.file.Paths
 
 class BaganFileGenerator(
     private val sessionExperiment: String,
+    private val bagan: Bagan,
     private val logger: Logger,
     private val commandExecutor: CommandExecutor
 ) {
     val TAG = "BaganFileGenerator"
-    fun createExperiment(experiment: String, values: String, bagan: Bagan) {
+
+
+    fun generateExperiments(experiments: List<Experiment>) {
+        logger.log(TAG, "Starting DashboardProvider")
+
+        experiments.forEach {
+            createExperiment(it.name, it.values)
+        }
+    }
+
+    private fun createExperiment(experiment: String, values: String) {
         val path = "$TEMP_FOLDER/$experiment"
-        val nameConfigMap = "$path/templates/configmap$experiment.yaml"
-        val namePod = "$path/templates/pod$experiment.yaml"
+
         logger.log(TAG, "Experiment $experiment")
-        createFolder(path)
-        createChartFile("$path/Chart.yaml", experiment)
-        createFileValues(
-            path = "$path/values.yaml",
-            nameRepo = bagan.repository,
-            gradleCommand = bagan.gradleCommand,
-            iterations = bagan.iterations,
-            nameExperiment = experiment,
-            image = Versions.POD_INJECTOR
+
+        createFolder(
+            path = path
         )
 
-        createTemplateFolder(path)
-        createPods(namePod, experiment, sessionExperiment)
-        createConfigMaps(nameConfigMap, experiment, values)
-        commandExecutor.execute("helm install -n $experiment -f $path/values.yaml $path/")
+        createFileValues(
+            path = "$path/values.yaml",
+            bagan = bagan,
+            nameExperiment = experiment,
+            image = Versions.POD_INJECTOR,
+            session = sessionExperiment
+        )
+
+        createChartFile(
+            path = "$path/Chart.yaml",
+            id = experiment
+        )
+
+        createTemplateFolder(
+            path = path
+        )
+
+        createPods(
+            path = "$path/templates/pod$experiment.yaml",
+            privateRepo = bagan.private
+        )
+
+        createConfigMaps(
+            path = "$path/templates/configmap$experiment.yaml",
+            properties = values
+        )
+
+        // commandExecutor.execute("helm install -n $experiment -f $path/values.yaml $path/")
     }
 
     private fun createChartFile(path: String, id: String) {
@@ -55,21 +83,21 @@ class BaganFileGenerator(
 
     private fun createFileValues(
         path: String,
-        nameRepo: String,
-        gradleCommand: String,
-        iterations: Int,
+        bagan: Bagan,
         nameExperiment: String,
-        image: String
+        image: String,
+        session: String
     ) {
         logger.log(TAG, "creating Values file $path")
         val file = File(path)
         file.writeText(
             Values().transform(
-                repository = nameRepo,
+                repository = bagan.repository,
                 name = nameExperiment,
-                command = gradleCommand,
-                iterations = iterations,
-                image = image
+                command = bagan.gradleCommand,
+                iterations = bagan.iterations,
+                image = image,
+                session = session
             )
         )
     }
@@ -80,19 +108,26 @@ class BaganFileGenerator(
     }
 
     private fun createConfigMaps(
-        nameConfigMap: String,
-        experiment: String,
-        propertyName: String
+        path: String,
+        properties: String
 
     ) {
-        logger.log(TAG, "creating configmap file $nameConfigMap")
-        val file = File(nameConfigMap)
-        file.writeText(ConfigMap().transform(experiment, propertyName))
+        logger.log(TAG, "creating configmap file $path")
+        val file = File(path)
+        file.writeText(ConfigMap().transform(properties))
     }
 
-    private fun createPods(path: String, nameExperiment: String, experiment: String) {
+    private fun createPods(
+        path: String,
+        privateRepo: Boolean
+    ) {
         logger.log(TAG, "creating pod file $path")
         val file = File(path)
-        file.writeText(Pod().transform(nameExperiment, experiment))
+        if (privateRepo) {
+            file.writeText(PodSecure().transform())
+        } else {
+            file.writeText(Pod().transform())
+        }
     }
+
 }

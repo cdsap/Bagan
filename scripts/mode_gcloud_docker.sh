@@ -4,7 +4,7 @@ function gcloudDockerExecutor(){
   echo $mode
   if [ $mode == "cluster" ]; then
     printf '%s\n' "Mode cluster"
-    execution="$(gcloudInit) $(gcloudClusterCredentials) $(gcloudHelm) $(gcloudInfraPods) $(gcloudDockerBagan)"
+    execution="$(gcloudInit) $(gcloudCreateCluster) $(gcloudClusterCredentials) $(gcloudHelm) $(gcloudInfraPods) $(gcloudDockerBagan)"
   elif [ $mode == "infrastructure" ]; then
     printf '%s\n' "Mode infrastrucure"
     execution="$(gcloudClusterCredentials) $(gcloudHelm) $(gcloudInfraPods) $(gcloudDockerBagan) "

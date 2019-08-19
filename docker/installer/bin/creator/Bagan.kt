@@ -12,7 +12,8 @@ data class Bagan(
     val zone: String?,
     @Json(name = "project-id") val project_id: String?,
     val experiments: GradleExperimentsProperties,
-    val iterations: Int
+    val iterations: Int,
+    val private: Boolean
 )
 
 data class BaganJson(val bagan: Bagan)
