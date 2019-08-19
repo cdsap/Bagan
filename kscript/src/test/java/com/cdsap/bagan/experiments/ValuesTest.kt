@@ -8,6 +8,7 @@ class ValuesTest : BehaviorSpec({
         val name = "experiment0"
         val command = "./gradlew command"
         val image = "cdsap/bagan-pod-injector:0.1.4"
+        val session = "xx1"
         val iterations = 10
         `when`("Parameters are defined") {
             val values = Values().transform(
@@ -15,14 +16,17 @@ class ValuesTest : BehaviorSpec({
                 name = name,
                 command = command,
                 iterations = iterations,
-                image = image
+                image = image,
+                session = session
             )
             then("values template have been placed") {
                 assert(
                     values == """
 repository: $repo
-configMaps : configmap$name
-name : $name
+configMaps: configmap$name
+pod: $name
+session: $session
+name: $name
 image: $image
 command: $command
 iterations: $iterations

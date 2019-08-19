@@ -8,9 +8,12 @@ import java.io.File
 
 
 class DashboardProvider(
-    private val commandExecutor: CommandExecutor,
-    private val path: String
+    private val bagan: Bagan,
+    private val path: String,
+    private val logger: Logger,
+    private val commandExecutor: CommandExecutor
 ) {
+    val TAG = "DashboardProvider"
     private val moshi: Moshi = Moshi.Builder()
         .add(
             PolymorphicJsonAdapterFactory.of(Panel::class.java, "type")
@@ -22,31 +25,38 @@ class DashboardProvider(
         .add(KotlinJsonAdapterFactory())
         .build()
 
-    fun generate(
-        experiments: List<Experiment>,
-        commands: List<String>
-    ) {
-        generateDashBoard(experiments, commands)
+    fun generate(experiments: List<Experiment>) {
+        logger.log(TAG, "Starting DashboardProvider")
+        generateDashBoard(experiments, getCommands(bagan.gradleCommand), bagan.iterations)
         executeUpgradeHelm()
     }
 
     private fun generateDashBoard(
         experiments: List<Experiment>,
-        commands: List<String>
+        commands: List<String>,
+        iterations: Int
     ) {
         val adapter = moshi.adapter<Any>(Dashboard::class.java)
-        val dashboard = Dashboard(panels = calculatePannels(experiments, commands))
+        val dashboard = Dashboard(panels = calculatePanels(experiments, commands))
         val dashBoardString = adapter.toJson(dashboard)
-        val file = File("$path/grafana/dashboards/dashboard.json")
+        //  val file = File("$path/grafana/dashboards/dashboard.json")
+        val file = File("dashboard.json")
         file.writeText(dashBoardString.toString())
-
     }
 
     private fun executeUpgradeHelm() {
         commandExecutor.execute("helm upgrade bagan-grafana $path/grafana")
     }
 
-    private fun calculatePannels(
+    private fun getCommands(command: String): List<String> {
+        val values = command.split(" ")
+        return values.filter {
+            it != "./gradlew"
+                    && it != "clean"
+        }.toList()
+    }
+
+    private fun calculatePanels(
         experiments: List<Experiment>,
         commands: List<String>
     ): Array<Panel?> {
@@ -54,19 +64,29 @@ class DashboardProvider(
         var counter = 0
         panels.add(generateLegend(experiments, counter++))
         commands.forEach {
+
             panels.add(
                 generateWinner(
                     id = counter++,
-                    title = "Experiment Winner $it",
-                    gridPos = Gridpos(w = 7, h = 7, x = 12, y = 7),
+                    title = "Experiment Winner",
+                    gridPos = Gridpos(w = 5, h = 7, x = 19, y = 7),
                     valueName = "Name"
                 )
             )
+
             panels.add(
                 generateGraphs
                     (title = it, gridPos = Gridpos(w = 19, h = 7, x = 0, y = 0), id = counter++)
             )
-            panels.add(generateTable(title = "Min build times $it", id = counter))
+
+            panels.add(generateTableMinBuildTimes(title = "Min build times $it", id = counter++))
+
+            panels.add(
+                generateTablePercentiles(
+                    title = "Percentile(80)",
+                    id = counter++
+                )
+            )
 
         }
         val array = arrayOfNulls<Panel>(panels.size)
@@ -74,11 +94,12 @@ class DashboardProvider(
         return array
     }
 
+
     private fun generateLegend(experiments: List<Experiment>, id: Int) = Markdown(
         content = getContentLegend(experiments),
         id = id,
         title = "Experiments",
-        gridPos = Gridpos(16, 5, 19, 0)
+        gridPos = Gridpos(7, 5, 19, 0)
     )
 
     private fun generateWinner(
@@ -105,21 +126,42 @@ class DashboardProvider(
         targets = targetGraph()
     )
 
-    private fun generateTable(title: String, id: Int) = Table(
+    private fun generateTableMinBuildTimes(title: String, id: Int) = Table(
         id = id,
-        gridPos = Gridpos(x = 0, y = 7, w = 12, h = 7),
+        gridPos = Gridpos(x = 10, y = 7, w = 9, h = 7),
         title = title,
-        targets = targetTable()
+        targets = targetTableMinBuildTimes()
+    )
+
+    private fun generateTablePercentiles(title: String, id: Int) = Table(
+        id = id,
+        gridPos = Gridpos(x = 0, y = 7, w = 10, h = 7),
+        title = title,
+        targets = targetTablePercentiles()
     )
 }
 
-fun targetTable() = arrayOf(
+fun targetTableMinBuildTimes() = arrayOf(
     Target(
         measurement = "tracking",
         orderByTime = "ASC",
         policy = "default",
         resultFormat = "table",
-        query = "SELECT \"duration\", \"experiment\" FROM \"tracking\".\"rpTalaiot\".\"build\" WHERE \$timeFilter",
+        query = "SELECT min(\"duration\") FROM \"tracking\".\"rpTalaiot\".\"build\" WHERE \$timeFilter GROUP by \"experiment\"",
+        rawQuery = true,
+        groupBy = emptyArray(),
+        select = emptyArray(),
+        tags = emptyArray()
+    )
+)
+
+fun targetTablePercentiles() = arrayOf(
+    Target(
+        measurement = "tracking",
+        orderByTime = "ASC",
+        policy = "default",
+        resultFormat = "table",
+        query = "SELECT percentile(\"duration\", 80) FROM \"tracking\".\"rpTalaiot\".\"build\" WHERE \$timeFilter GROUP by \"experiment\"",
         rawQuery = true,
         groupBy = emptyArray(),
         select = emptyArray(),
@@ -144,7 +186,7 @@ fun targetGraph() = arrayOf(
 
 fun targetIndicator() = arrayOf(
     Target(
-        query = "select \"experiment\" from (select min(\"mean\"), experiment from ( select mean(\"duration\") from \"tracking\".\"rpTalaiot\".\"build\" GROUP BY time(\$interval), experiment) GROUP BY time(\$interval))",
+        query = "select \"experiment\" from (SELECT min(\"per\"), \"experiment\" FROM (SELECT percentile(\"duration\",80) as \"per\" FROM \"tracking\".\"rpTalaiot\".\"build\" GROUP BY  time(\$interval), \"experiment\") )",
         rawQuery = true,
         resultFormat = "time_series",
         groupBy = emptyArray(),

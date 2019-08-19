@@ -16,10 +16,11 @@ class ExperimentProviderTest : BehaviorSpec({
                     zone = "myZone",
                     project_id = "",
                     experiments = getSimpleExperiment(),
-                    iterations = 10
+                    iterations = 10,
+                    private = true
                 )
             )
-            val experimentProvider = ExperimentProvider(baganConf)
+            val experimentProvider = ExperimentProvider(baganConf.getBaganConf())
             val experiments = experimentProvider.getExperiments()
             then("combinations for the simple experiment are generated") {
                 experiments.containsAll(listOf("gradlememory=1G", "gradlememory=2G", "gradlememory=3G"))
@@ -36,10 +37,11 @@ class ExperimentProviderTest : BehaviorSpec({
                     zone = "myZone",
                     project_id = "",
                     experiments = getMultipleExperiment(),
-                    iterations = 10
+                    iterations = 10,
+                    private = false
                 )
             )
-            val experimentProvider = ExperimentProvider(baganConf)
+            val experimentProvider = ExperimentProvider(baganConf.getBaganConf())
             val experiments = experimentProvider.getExperiments()
             then("combinations for the Multiple experiment are generated") {
                 assert(experiments.size == 18)

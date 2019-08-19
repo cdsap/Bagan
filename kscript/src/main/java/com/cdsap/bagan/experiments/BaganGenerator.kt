@@ -19,8 +19,8 @@ fun main(array: Array<String>) {
     val logger = LoggerImpl()
     val moshiProvider = MoshiProvider()
     val commandExecutor = CommandExecutor(logger, false)
-    val experimentCoordinator = BaganGenerator(moshiProvider, commandExecutor, logger, path)
-    experimentCoordinator.generate()
+    val baganGenerator = BaganGenerator(moshiProvider, commandExecutor, logger, path)
+    baganGenerator.generate()
 }
 
 class BaganGenerator(
@@ -34,39 +34,36 @@ class BaganGenerator(
     fun generate() {
         checkConfFile()
         checkTmpFolder()
-        val baganConfFileProvider = BaganConfFileProviderImpl(moshiProvider)
-        val dashBoardProvider = DashboardProvider(commandExecutor, path)
-        val experimentProvider = ExperimentProvider(baganConfFileProvider)
-        val sessionExperiment = registerExperiment()
-        logger.log(TAG, "Bagan Experiment Session $sessionExperiment")
 
-        val baganFileGenerator = BaganFileGenerator(sessionExperiment, logger, commandExecutor)
+        val bagan = BaganConfFileProviderImpl(moshiProvider).getBaganConf()
+        val experimentProvider = ExperimentProvider(bagan)
+        val sessionExperiment = registerExperiment()
+        val dashBoardProvider = DashboardProvider(bagan, path, logger, commandExecutor)
+
+        val baganFileGenerator = BaganFileGenerator(
+            sessionExperiment,
+            bagan,
+            logger,
+            commandExecutor
+        )
         var count = 0
         val experiments = experimentProvider.getExperiments().flatMap {
             count++
             listOf(Experiment("experiment$count".toLowerCase(), it))
         }
 
-        logger.log(TAG, "Starting DashboardProvider")
-        dashBoardProvider.generate(experiments, getCommands(baganConfFileProvider.getBaganConf().gradleCommand))
+        dashBoardProvider.generate(experiments)
+        baganFileGenerator.generateExperiments(experiments)
 
-        experiments.forEach {
-            baganFileGenerator.createExperiment(it.name, it.values, baganConfFileProvider.getBaganConf())
-        }
     }
 
-    private fun getCommands(command: String): List<String> {
-        val values = command.split(" ")
-        return values.filter {
-            it != "./gradlew"
-                    && it != "clean"
-        }.toList()
-    }
 
     private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 
     private fun registerExperiment(): String {
-        return getStringExperiment()
+        val session = getSessionExperiment()
+        logger.log(TAG, "Bagan Experiment Session $session")
+        return session
     }
 
 
@@ -77,7 +74,7 @@ class BaganGenerator(
         }
     }
 
-    private fun getStringExperiment() = (1..20)
+    private fun getSessionExperiment() = (1..20)
         .map { ThreadLocalRandom.current().nextInt(0, charPool.size) }
         .map(charPool::get)
         .joinToString("")
