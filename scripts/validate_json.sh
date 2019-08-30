@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 printf '%s\n' "Parsing Json..."
 FILE="bagan_conf.json"
@@ -6,6 +6,10 @@ repositoryJson=$(cat $FILE | jq -c -r '.bagan.repository' | tr -d '\r')
 gradleCommandJson=$(cat $FILE | jq -c -r '.bagan.gradleCommand' | tr -d '\r')
 propertiesJson=$(cat $FILE | jq -c -r '.bagan.experiments.properties' | tr -d '\r')
 propertiesCountJson=$(cat $FILE | jq -c -r '.bagan.experiments.properties | length' | tr -d '\r')
+branchJson=$(cat $FILE | jq -c -r '.bagan.experiments.branch' | tr -d '\r')
+branchCountJson=$(cat $FILE | jq -c -r '.bagan.experiments.branch | length' | tr -d '\r')
+gradleWrapperJson=$(cat $FILE | jq -c -r '.bagan.experiments.gradleWrapper' | tr -d '\r')
+gradleWrapperCountJson=$(cat $FILE | jq -c -r '.bagan.experiments.gradleWrapper | length' | tr -d '\r')
 clusterJson=$(cat $FILE | jq -c -r '.bagan.clusterName' | tr -d '\r')
 zoneJson=$(cat $FILE | jq -c -r '.bagan.zone' | tr -d '\r')
 machineJson=$(cat $FILE | jq -c -r  '.bagan.machine' | tr -d '\r')
@@ -30,10 +34,19 @@ then
   exit 1
 fi
 
-
-if [ -z "$propertiesJson" ]
-then
-     color '31;1' "Error: experiments are required in the main configuration file"
+if [ "$propertiesJson" == "null" ] && [ "$branchJson" == "null" ] && [ "$gradleWrapperJson" == "null" ]; then
+     color '31;1' "Error: you have to include at least one type experiment in the configuration file."
+     log "Example:"
+     log "\"experiments\": {
+        \"properties\": [
+           {
+              \"name\": \"org.gradle.jvmargs\",
+              \"options\": [\"-Xmx3g\",\"-Xmx4g\"]
+           }
+        ],
+        \"branch\": [ \"develop\",\"master\"],
+        \"gradleWrapper\": [ \"5.6\",\"5.5\",\"5.4\"]
+     }"
      exit 1
 fi
 
@@ -88,6 +101,10 @@ repository=$repositoryJson
 gradleCommand=$gradleCommandJson
 properties=$propertiesJson
 propertiesCount=$propertiesCountJson
+branch=$branchJson
+branchCount=$branchCountJson
+gradleWrapper=$gradleWrapperJson
+gradleWrapperCountJson=$gradleWrapperCountJson
 private=$privateJson
 ssh=$sshJson
 known_hosts=$known_hostsJson

@@ -1,7 +1,9 @@
 #!/bin/bash
 
-if [ ! "$type" = "gcloud" ] && [ ! "$type" = "standalone" ] && [ ! "$type" = "gcloud_docker" ]; then
+if [ ! "$mode" = "gcloud" ] && [ ! "$mode" = "standalone" ] && [ ! "$mode" = "gcloud_docker" ]; then
+  log ""
   color '31;1' "Error: mode not supported. Current clusters environments supported are standalone, gcloud and gcloud_docker:"
+  log ""
   color '32;1' "Example: ./bagan gcloud cluster"
   color '32;1' "Example: ./bagan gcloud_docker infrastructure"
   color '32;1' "Example: ./bagan standalone experiment"
@@ -15,20 +17,19 @@ declare -a commands=( "cluster" "infrastructure" "experiment" "create_cluster"
 
 for i in "${commands[@]}"
 do
-    if [ "$i" == "$mode" ] ; then
+    if [ "$i" == "$command" ] ; then
         commandFound="Found"
     fi
 done
 
 if [ -z "$commandFound" ]; then
-   color '31;1' "Error: command $mode not supported." >&2
-   log "You need to specify correct command to run on $type mode."
-   log "There are two different types of commands, grouped or independents:"
-   color '34;1' "Grouped commands:"
+   log ""
+   color '31;1' "Error: command not found." >&2
+   log ""
+   color '34;1' "Avaliable commands:"
    log "cluster: create cluster, infrastructure(helm + roles + grafana + influx) and execute the experiments."
    log "infrastructure: create infrastrucure for the cluster(helm + roles + grafana + influx) and execute the experiments."
    log "experiment: execute the experiments"
-   color '34;1' "Independent commands:"
    log "create_cluster: create cluster"
    log "credentials: get credentials from gcloud"
    log "secret: create secret in cluster with the ssh key information provided"

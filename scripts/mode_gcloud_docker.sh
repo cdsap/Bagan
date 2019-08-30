@@ -1,53 +1,71 @@
 #!/bin/sh
 
 function gcloudDockerExecutor(){
-  echo $mode
-  if [ $mode == "cluster" ]; then
+  log "Command $command"
+  if [ $command == "cluster" ]; then
     printf '%s\n' "Mode cluster"
-    execution="$(gcloudInit) $(gcloudCreateCluster) $(gcloudClusterCredentials) $(gcloudHelm) $(gcloudInfraPods) $(gcloudDockerBagan)"
-  elif [ $mode == "infrastructure" ]; then
+    execution="$(gcloudInit) $(gcloudCreateCluster) $(gcloudClusterCredentials) $(helm1) $(infraPods) $(createSecretDockerContainer) $(dockerBagan)"
+  elif [ $command == "infrastructure" ]; then
     printf '%s\n' "Mode infrastrucure"
-    execution="$(gcloudClusterCredentials) $(gcloudHelm) $(gcloudInfraPods) $(gcloudDockerBagan) "
-  elif [ $mode == "experiment" ]; then
+    execution="$(gcloudClusterCredentials) $(helm1) $(infraPods) $(createSecretDockerContainer) $(dockerBagan) "
+  elif [ $command == "experiment" ]; then
     printf '%s\n' "Mode experiment"
-    execution="$(gcloudClusterCredentials) $(gcloudDockerBagan)"
-  elif [[ $mode == "create_cluster" ]]; then
+    execution="$(gcloudClusterCredentials) $(dockerBagan)"
+  elif [[ $command == "create_cluster" ]]; then
     execution="$(gcloudInit) $(gcloudCreateCluster)"
-  elif [[ $mode == "credentials" ]]; then
+  elif [[ $command == "credentials" ]]; then
     execution="$(gcloudClusterCredentials)"
-  elif [[ $mode == "secret" ]]; then
-    execution="$(secret)"
-  elif [[ $mode == "helm" ]]; then
-    execution="$(gcloudClusterCredentials) $(gcloudHelm)"
-  elif [[ $mode == "helm_init" ]]; then
+  elif [[ $command == "secret" ]]; then
+    execution="$(gcloudClusterCredentials) $(createSecretDockerContainer)"
+  elif [[ $command == "helm" ]]; then
+    execution="$(gcloudClusterCredentials) $(helm1)"
+  elif [[ $command == "helm_init" ]]; then
     execution="$(gcloudClusterCredentials) $(helmInit)"
-  elif [[ $mode == "helm_clusterrolebinding" ]]; then
+  elif [[ $command == "helm_clusterrolebinding" ]]; then
     execution="$(gcloudClusterCredentials) $(helmClusterRoleBinding)"
-  elif [[ $mode == "infra_pods" ]]; then
-    execution="$(gcloudClusterCredentials) $(gcloudInfraPods)"
-  elif [[ $mode == "grafana" ]]; then
+  elif [[ $command == "infra_pods" ]]; then
+    execution="$(gcloudClusterCredentials) $(infraPods)"
+  elif [[ $command == "grafana" ]]; then
     execution="$(gcloudClusterCredentials) $(grafana)"
-  elif [[ $mode == "influxdb" ]]; then
+  elif [[ $command == "influxdb" ]]; then
     execution="$(gcloudClusterCredentials) $(influxdb)"
-  elif [[ $mode == "services" ]]; then
+  elif [[ $command == "services" ]]; then
     execution="$(gcloudClusterCredentials) $(services)"
-  elif [[ $mode == "remove_experiments" ]]; then
+  elif [[ $command == "remove_experiments" ]]; then
     execution="$(gcloudClusterCredentials) $(removeExperiments)"
-  elif [[ $mode == "grafana_dashboard" ]]; then
+  elif [[ $command == "grafana_dashboard" ]]; then
     execution="$(gcloudClusterCredentials) $(infoDashboard)"
   else
-    color '31;1' "Error no mode parsed properly for gcloud_docker: $mode"
+    color '31;1' "Error no command parsed properly for gcloud_docker: $command"
     exit 1
   fi
-
+  end="$(endMessageDocker)"
   log "Executing Docker"
-  docker run -ti -v $HOME/.config/gcloud:/root/.config/gcloud \
-               -v $PWD/tmp:/usr/local/tmp \
-               -v $PWD/bagan_conf.json:/usr/local/tmp/creator/bagan_conf.json \
-                  cdsap/bagan-init:0.1.4 /bin/bash -c "
-                  set -e;
-                  export PATH=$PATH:/usr/local/gcloud/google-cloud-sdk/bin/;
-                  cd /usr/local;
-                  $execution"
+  if [ "$private" == "true" ]; then
+
+    docker run -ti -v $HOME/.config/gcloud:/root/.config/gcloud \
+                 -v $PWD/tmp:/usr/local/tmp \
+                 -v $PWD/bagan_conf.json:/usr/local/tmp/generator/bagan_conf.json \
+                 -v $ssh:/root/.ssh/id_rsa \
+                 -v $known_hosts:/root/.ssh/known_hosts \
+                 cdsap/bagan-init:$dockerBaganInitVersion /bin/bash -c "
+                 set -e;
+                 export PATH=$PATH:/usr/local/gcloud/google-cloud-sdk/bin/;
+                 cd /usr/local;
+                 $execution
+                  echo 1;
+                 $end"
+  else
+    docker run -ti -v $HOME/.config/gcloud:/root/.config/gcloud \
+       -v $PWD/tmp:/usr/local/tmp \
+       -v $PWD/bagan_conf.json:/usr/local/tmp/generator/bagan_conf.json \
+       cdsap/bagan-init:$dockerBaganInitVersion /bin/bash -c "
+       set -e;
+       export PATH=$PATH:/usr/local/gcloud/google-cloud-sdk/bin/;
+       cd /usr/local;
+       $execution
+       echo 1;
+       $end"
+  fi
 
 }

@@ -1,10 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
-function cluster(){
-   eval "$(gcloudInit)"
-   eval "$(gcloudCreateCluster)"
-   eval "$(gcloudClusterCredentials)"
-}
+# Commands to execute gcloud initialization, cluster creation and credentials inside Bagan.
+# Used by modes gcloud and mode_gcloud_docker.
 
 function gcloudInit(){
   gcloud_init="gcloud init"
@@ -21,14 +18,4 @@ function gcloudCreateCluster() {
 function gcloudClusterCredentials(){
   gcloud_credentials="gcloud container clusters get-credentials $cluster --zone $zone"
   echo "$gcloud_credentials;"
-}
-
-## deprecated?
-
-function miniKubeInit(){
-  minikube_init=""
-}
-
-function minikubeCredentials(){
-  minikube_credentials=""
 }

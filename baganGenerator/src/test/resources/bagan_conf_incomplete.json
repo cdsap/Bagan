@@ -1,0 +1,34 @@
+{
+  "bagan": {
+    "repository": "https://github.com/android/plaid.git",
+    "gradleCommand": "./gradlew clean assembleDebug",
+    "clusterName": "bagan",
+    "machine": "n1-standard-1",
+    "experiments": {
+      "properties": [
+        {
+          "name": "org.gradle.jvmargs",
+          "options": [
+            "-Xmx3g",
+            "-Xmx4g"
+          ]
+        },
+        {
+          "name": "org.gradle.caching",
+          "options": [
+            "true",
+            "false"
+          ]
+        }
+      ],
+      "branch": [
+        "develop",
+        "master"
+      ],
+      "gradleVersion": [
+        "5.6",
+        "5.5"
+      ]
+    }
+  }
+}

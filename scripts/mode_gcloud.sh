@@ -1,63 +1,76 @@
-#!/bin/sh
+#!/bin/bash
 
 function gcloudExecutor(){
-    log "Command $mode"
-    if [ $mode == "cluster" ]; then
+    log "Command $command"
+    if [ $command == "cluster" ]; then
       eval "$(gcloudInit)"
       eval "$(gcloudCreateCluster)"
       eval "$(gcloudClusterCredentials)"
-      eval "$(gcloudHelm)"
-      eval "$(gcloudInfraPods)"
+      eval "$(helmInstaller)"
+      eval "$(infraPods)"
       eval "$(createSecret)"
-      eval "$(gcloudBagan)"
-   elif [ $mode == "infrastructure" ]; then
+      eval "$(bagan)"
+      eval "$(endMessage)"
+   elif [ $command == "infrastructure" ]; then
       eval "$(gcloudClusterCredentials)"
-      eval "$(gcloudHelm)"
-      eval "$(gcloudInfraPods)"
+      eval "$(helmInstaller)"
+      eval "$(infraPods)"
       eval "$(createSecret)"
-      checkPreviousExperiments
-      eval "$(gcloudBagan)"
-   elif [ $mode == "experiment" ]; then
+      eval "$(bagan)"
+      eval "$(endMessage)"
+   elif [ $command == "experiment" ]; then
       eval "$(gcloudClusterCredentials)"
-      #  eval "$(createSecret)"
-      eval "$(gcloudBagan)"
-   elif [[ $mode == "create_cluster" ]]; then
+      eval "$(bagan)"
+      eval "$(endMessage)"
+   elif [[ $command == "create_cluster" ]]; then
       eval "$(gcloudInit)"
       eval "$(gcloudCreateCluster)"
-   elif [[ $mode == "credentials" ]]; then
+      eval "$(endMessageSingleCommand)"
+   elif [[ $command == "credentials" ]]; then
       eval "$(gcloudClusterCredentials)"
-   elif [[ $mode == "secret" ]]; then
+      eval "$(endMessageSingleCommand)"
+   elif [[ $command == "secret" ]]; then
       eval "$(gcloudClusterCredentials)"
       eval "$(createSecret)"
-   elif [[ $mode == "helm" ]]; then
+      eval "$(endMessageSingleCommand)"
+   elif [[ $command == "helm" ]]; then
       eval "$(gcloudClusterCredentials)"
-      eval "$(gcloudHelm)"
-   elif [[ $mode == "helm_init" ]]; then
+      eval "$(helmInstaller)"
+      eval "$(endMessageSingleCommand)"
+   elif [[ $command == "helm_init" ]]; then
       eval "$(gcloudClusterCredentials)"
       eval "$(helmInit)"
-   elif [[ $mode == "helm_clusterrolebinding" ]]; then
+      eval "$(endMessageSingleCommand)"
+   elif [[ $command == "helm_clusterrolebinding" ]]; then
       eval "$(gcloudClusterCredentials)"
       eval "$(helmClusterRoleBinding)"
-   elif [[ $mode == "infra_pods" ]]; then
+      eval "$(endMessageSingleCommand)"
+   elif [[ $command == "infra_pods" ]]; then
       eval "$(gcloudClusterCredentials)"
-      eval "$(gcloudInfraPods)"
-   elif [[ $mode == "grafana" ]]; then
+      eval "$(infraPods)"
+      eval "$(endMessageSingleCommand)"
+   elif [[ $command == "grafana" ]]; then
       eval "$(gcloudClusterCredentials)"
       eval "$(grafana)"
-   elif [[ $mode == "influxdb" ]]; then
+      eval "$(endMessageSingleCommand)"
+   elif [[ $command == "influxdb" ]]; then
       eval "$(gcloudClusterCredentials)"
       eval "$(influxdb)"
-   elif [[ $mode == "services" ]]; then
+      eval "$(endMessageSingleCommand)"
+   elif [[ $command == "services" ]]; then
       eval "$(gcloudClusterCredentials)"
       eval "$(services)"
-   elif [[ $mode == "remove_experiments" ]]; then
+      eval "$(endMessageSingleCommand)"
+   elif [[ $command == "remove_experiments" ]]; then
       eval "$(gcloudClusterCredentials)"
       eval "$(removeExperiments)"
-   elif [[ $mode == "grafana_dashboard" ]]; then
+      eval "$(endMessageSingleCommand)"
+   elif [[ $command == "grafana_dashboard" ]]; then
       eval "$(gcloudClusterCredentials)"
       eval "$(infoDashboard)"
+      eval "$(endMessageSingleCommand)"
    else
-      color '31;1' "Error no mode parsed properly for gcloud"
+      color '31;1' "Error no command parsed properly for gcloud"
       exit 1
    fi
  }

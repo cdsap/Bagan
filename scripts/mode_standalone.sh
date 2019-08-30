@@ -1,44 +1,56 @@
-#!/bin/sh
+#!/bin/bash
 
 function standaloneExecutor(){
-  if [ $mode == "cluster" ]; then
+  if [ $command == "cluster" ]; then
     printf '%s\n' "Not implemented"
-  elif [ $mode == "infrastructure" ]; then
+  elif [ $command == "infrastructure" ]; then
     printf '%s\n' "Mode infrastrucure"
-    eval "$(gcloudHelm)"
-    eval "$(gcloudInfraPods)"
+    eval "$(helmInstaller)"
+    eval "$(infraPods)"
     eval "$(createSecret)"
-    checkPreviousExperiments
-    eval "$(gcloudBagan)"
- elif [ $mode == "experiment" ]; then
+    eval "$(bagan)"
+    eval "$(endMessage)"
+ elif [ $command == "experiment" ]; then
     printf '%s\n' "Mode expreriment"
-    eval "$(gcloudBagan)"
- elif [[ $mode == "create_cluster" ]]; then
+    eval "$(bagan)"
+    eval "$(endMessage)"
+ elif [[ $command == "create_cluster" ]]; then
     printf '%s\n' "Not implemented"
- elif [[ $mode == "credentials" ]]; then
+ elif [[ $command == "credentials" ]]; then
     printf '%s\n' "Not implemented"
- elif [[ $mode == "secret" ]]; then
+ elif [[ $command == "secret" ]]; then
     eval "$(createSecret)"
- elif [[ $mode == "helm" ]]; then
-    eval "$(gcloudHelm)"
- elif [[ $mode == "helm_init" ]]; then
+    eval "$(endMessageSingleCommand)"
+ elif [[ $command == "helm" ]]; then
+    eval "$(helmInstaller)"
+    eval "$(endMessageSingleCommand)"
+ elif [[ $command == "helm_init" ]]; then
     eval "$(helmInit)"
- elif [[ $mode == "helm_clusterrolebinding" ]]; then
+    eval "$(endMessageSingleCommand)"
+ elif [[ $command == "helm_clusterrolebinding" ]]; then
     eval "$(helmClusterRoleBinding)"
- elif [[ $mode == "infra_pods" ]]; then
-    eval "$(gcloudInfraPods)"
- elif [[ $mode == "grafana" ]]; then
+    eval "$(endMessageSingleCommand)"
+ elif [[ $command == "infra_pods" ]]; then
+    eval "$(infraPods)"
+    eval "$(endMessageSingleCommand)"
+ elif [[ $command == "grafana" ]]; then
     eval "$(grafana)"
- elif [[ $mode == "influxdb" ]]; then
+    eval "$(endMessageSingleCommand)"
+ elif [[ $command == "influxdb" ]]; then
     eval "$(influxdb)"
- elif [[ $mode == "services" ]]; then
+    eval "$(endMessageSingleCommand)"
+ elif [[ $command == "services" ]]; then
     eval "$(services)"
- elif [[ $mode == "remove_experiments" ]]; then
+    eval "$(endMessageSingleCommand)"
+ elif [[ $command == "remove_experiments" ]]; then
     eval "$(removeExperiments)"
- elif [[ $mode == "grafana_dashboard" ]]; then
+    eval "$(endMessageSingleCommand)"
+ elif [[ $command == "grafana_dashboard" ]]; then
     eval "$(infoDashboard)"
+    echo "1;"
+    eval "$(endMessageSingleCommand)"
  else
-    color '31;1' "Error no mode parsed properly for standalone"
+    color '31;1' "Error no command parsed properly for standalone"
     exit 1
  fi
 }

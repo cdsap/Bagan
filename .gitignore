@@ -7,12 +7,11 @@
 /captures
 
 # creator kscript files
-kscript/buildSrc/build
-kscript/build
-kscript/out
-kscript/tmp
+baganGenerator/buildSrc/build
+baganGenerator/build
+baganGenerator/out
+baganGenerator/tmp
 tmp/
-kscript/buildSrc/.gradle
+baganGenerator/buildSrc/.gradle
 docker/installer/creator/
-kscript/.idea/
-kscript/kscript/
+baganGenerator/.idea/

@@ -1,5 +1,6 @@
-#/bin/bash
-VERSION="0.1.4"
+#!/bin/bash
+
+VERSION="0.1.6"
 REGISTRY=""
 IMAGE_BAGAN_INIT="cdsap/bagan-init"
 IMAGE_BAGAN_POD="cdsap/bagan-pod-injector"
@@ -14,14 +15,13 @@ rm -rf ../docker/installer/bin/*
 rm -rf ../docker/pod/bin/*
 
 # 2- Execute build of kscript to generated formatted files
-cd ../kscript
+cd ../baganGenerator
 ./gradlew clean build
 
 
 # 3- Move files to binary files
-mv  build/kscript/creator/ ../docker/installer/bin/
-mv  build/kscript/properties/ ../docker/pod/bin
-mv  build/kscript/injector/ ../docker/pod/bin
+mv  build/baganGenerator/generator/ ../docker/installer/bin/
+mv  build/baganGenerator/experiments/ ../docker/pod/bin
 
 # 4- Generate docker images
 # 4.1- Bagan Installer

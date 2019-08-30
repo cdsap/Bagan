@@ -1,0 +1,23 @@
+{
+  "bagan": {
+    "repository": "https://github.com/android/plaid.git",
+    "gradleCommand": "./gradlew clean assembleDebug",
+    "clusterName": "bagan",
+    "machine": "n1-standard-1",
+    "zone": null,
+    "experiments": {
+      "prope
+          ]
+        }
+      ],
+      "branch": [
+        "develop",
+        "master"
+      ],
+      "gradleVersion": [
+        "5.6",
+        "5.5"
+      ]
+    }
+  }
+}

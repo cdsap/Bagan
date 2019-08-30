@@ -1,13 +1,13 @@
 {
    "bagan": {
-      "repository": "https://github.com/android/plaid.git",
+      "repository": "git@github.com:cdsap/TestPrivateRepository.git",
       "gradleCommand": "./gradlew clean assembleDebug",
       "clusterName": "",
       "machine": "n1-standard-4",
       "zone": null,
-      "private": false,
-      "ssh": "",
-      "known_hosts": "/tmp/known_hosts",
+      "private": true,
+      "ssh": "/Users/inaki/.ssh/id_rsa",
+      "known_hosts": "/Users/inaki/.ssh/known_hosts",
       "iterations": 20,
       "experiments": {
          "properties": [
@@ -15,7 +15,8 @@
                "name": "org.gradle.jvmargs",
                "options": ["-Xmx3g","-Xmx4g"]
             }
-         ]
+         ],
+         "branch": [ "develop3","master"]
       }
    }
 }

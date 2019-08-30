@@ -1,13 +1,12 @@
 #!/bin/bash
 set -e
-type=$1
-mode=$2
+mode=$1
+command=$2
 
-color() {
-      printf '\033[%sm%s\033[m\n' "$@"
-}
+dockerBaganInitVersion="0.1.6"
 
 . scripts/log.sh
+. scripts/command_infra.sh
 . scripts/command_helm.sh
 . scripts/command_bagan.sh
 . scripts/command_cluster.sh
@@ -17,79 +16,85 @@ color() {
 . scripts/mode_gcloud.sh
 . scripts/mode_gcloud_docker.sh
 . scripts/mode_standalone.sh
-. scripts/mode_standalone.sh
+
+log ""
+color '32;1' "Welcome to Bagan"
+log "mode: $mode"
+log "command: $command"
+
+log ""
+
 . scripts/validations.sh
 
-echo ""
-echo "Welcome to Bagan"
-echo ""
+if [ "$mode" == "gcloud" ]; then
+ requeriments="   - jq: https://stedolan.github.io/jq/
+   - gcloud: https://cloud.google.com/sdk/
+   - docker: https://www.docker.com/
+   - kscript: https://github.com/holgerbrandl/kscript"
 
-if [ "$type" == "gcloud" ]; then
- requeriments="   -- jq: https://stedolan.github.io/jq/
-   -- gcloud: https://cloud.google.com/sdk/
-   -- docker: https://www.docker.com/
-   -- kscript: https://github.com/holgerbrandl/kscript"
+elif [ "$mode" == "gcloud_docker" ]; then
+  requeriments="     - jq: https://stedolan.github.io/jq/
+   - docker: https://www.docker.com/"
 
-elif [ "$type" == "gcloud_docker" ]; then
-  requeriments="     -- jq: https://stedolan.github.io/jq/
-     -- docker: https://www.docker.com/"
-
-elif [ "$type" == "standalone" ]; then
-  requeriments="   -- Setup locally kubectl in the execution machine
-     -- kscript: https://github.com/holgerbrandl/kscript"
+elif [ "$mode" == "standalone" ]; then
+  requeriments="   - Setup locally kubectl in the execution machine
+   - kscript: https://github.com/holgerbrandl/kscript"
 else
   echo "error : Be sure you have included the bagan_conf.json with the desired configuration."
 fi
 
 log ""
-log "Requeriments for your $type environment selection:"
+log "Requeriments for your $mode environment selection:"
 log "$requeriments"
 log ""
-log "Values:"
-log "type: $type"
-log "cluster: $cluster"
-log "zone: $zone"
-log "machine: $machine"
-log "repository: $repository"
-log "private repository: $private"
+log "Values bagan_conf.json:"
+log "  -mode: $mode"
+log "  -cluster: $cluster"
+log "  -zone: $zone"
+log "  -machine: $machine"
+log "  -repository: $repository"
+log "  -private repository: $private"
 if [ "$private" == "true" ]; then
-    log "ssh key path: $ssh"
-    log "known hosts path: $known_hosts"
+    log "  -ssh key path: $ssh"
+    log "  -known hosts path: $known_hosts"
 fi
-log "gradleCommand: $gradleCommand"
-log "properties: $properties"
+log "  -gradleCommand: $gradleCommand"
+log "  -Experiments:"
+if [ "$properties" != "null" ]; then
+  log "    -properties: $properties"
+fi
+if [ "$branch" != "null" ]; then
+  log "    -branch: $branch"
+fi
+if [ "$gradleWrapper" != "null" ]; then
+  log "    -gradleWrapper: $gradleWrapper"
+fi
 log ""
-if  [ "$mode" == "experiment" ] && ([ "$type" == "gcloud" ] || [ "$type" == "gcloud_docker" ]) ; then
-  log "In case you are running experiments, not for the first time, and you didn't remove it from Gcloud console, you can delete previous experiment releases with:"
-  log "helm del --purge \$( helm ls --all experimen* --short)"
-  log ""
-fi;
+
 echo -n "Do you want to continue [y/n]: "
 read ans
-
 if [ "$ans" != "y" ] || [ -z "$ans" ]; then
   exit 1
 fi;
 
 log "Staring Bagan"
 
+log "Creating tmp folder"
 rm -rf tmp
 mkdir tmp
-
+log "copying charts and binaries to tmp"
 cp -r k8s/grafana tmp/
 cp -r k8s/influxdb tmp/
-cp -r docker/installer/bin/creator tmp/
+cp -r docker/installer/bin/generator tmp/
 cp -r docker/pod/bin/ tmp
 
-if [ $type == "gcloud" ]; then
-  log "Running gcloud"
+log "Running mode $mode"
+
+if [ $mode == "gcloud" ]; then
   gcloudExecutor
-  echo "$(endGcloud)"
-elif [ $type == "gcloud_docker" ]; then
-  log "Running gcloud docker"
+elif [ $mode == "gcloud_docker" ]; then
   gcloudDockerExecutor
-elif [ $type == "standalone" ]; then
-  log "Runing standalone"
+elif [ $mode == "standalone" ]; then
   standaloneExecutor
 else
   error "Error: no type parsed properly "

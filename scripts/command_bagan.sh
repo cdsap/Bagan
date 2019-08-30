@@ -1,29 +1,21 @@
-#!/bin/sh
+#!/bin/bash
 
-function gcloudBagan(){
-  PATH_GCLOUD_BAGAN="tmp/creator"
-  gcloud_bagan="kscript $PATH_GCLOUD_BAGAN/BaganGenerator.kt tmp"
-  echo "$gcloud_bagan;"
+# Commands to execute emperiments inside Bagan with the Kscript file BaganGenerator.kt
+# Used by modes gcloud, gcloud_docker and standalone.
+
+function bagan(){
+  PATH_GCLOUD_BAGAN="tmp/generator"
+  execution_bagan="kscript $PATH_GCLOUD_BAGAN/BaganGenerator.kt tmp"
+  echo "$execution_bagan;"
 }
 
-function removeExperiments(){
-  removingPreviousExperiments="helm del --purge \$( helm ls --all experimen* --short)"
-  echo "$removingPreviousExperiments;"
-}
-
-function gcloudDockerBagan(){
-  gcloud_docker_bootstrap_bagan="kscript Bootstraping.kt"
-  gcloud_docker_bagan="kscript BaganGenerator.kt .."
+function dockerBagan(){
+  docker_bootstrap_bagan="kscript Bootstraping.kt"
+  docker_bagan="kscript BaganGenerator.kt .."
   bashrc="source /root/.bashrc"
-  changeFolder="cd tmp/creator"
+  changeFolder="cd tmp/generator"
   echo "$bashrc;"
   echo "$changeFolder;"
-  echo "$gcloud_docker_bootstrap_bagan;"
-  echo "$gcloud_docker_bagan"
-}
-
-function minikubeBagan(){
-  PATH_MINIKUBE_BAGAN="tmp/creator"
-  minikube_bagan="kscript $PATH_MINIKUBE_BAGAN/BaganGenerator.kt"
-  echo $minikube_bagan;
+  echo "$docker_bootstrap_bagan;"
+  echo "$docker_bagan"
 }
