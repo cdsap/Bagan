@@ -5,18 +5,20 @@
 
 Bagan is a framework to automate and parallelize the execution, reporting and collection of data with different types of experiments in Gradle projects using Kubernetes.
 
-1- How to use Bagan
-2- bagan_conf.json
-3- Modes
-4- Commands
-5- Internals Bagan
-6- Lifecycle Bagan
-6- Money impact on Gcloud
-7- Examples
-7- Deploying Bagan
+# Table of Contents
+1. [How to use Bagan](#how-to-use-bagan)
+2. [bagan_conf.json](#example2)
+3. [Experiments](#example2)
+4. [Modes](#example2)
+5. [Commands](#example2)
+6. [Lifecycle Bagan](#example2)
+7. [Internals Bagan](#example2)
+8. [The cost of Bagan](#example2)
+9. [Examples](#example2)
+10. [Deploying Bagan](#third-example)
 
 
-## How to use
+## How to use Bagan <a name="how-to-use-bagan"></a>
 Once you have downloaded this repository you will need to set up the `bagan_conf.json`. There ypu can setup different properties
 like the type of experiments you want to apply, the target repository or the resources you want to use in the Kubernetes environments.
 
@@ -24,7 +26,9 @@ Bagan will be executed with the `./bagan` command following the next format:
 
 ` ./bagan MODE COMMAND`
 
-Bagan will execute the experiments in a Kubernetes environments. There using the package Manager will be created the infrastrucure applications
+Bagan will execute the experiments in a Kubernetes environments. For each experiment Bgan will create a Pod where it will run the target repository applying the experimentation.
+
+There using the package Manager will be created the infrastrucure applications
 like Grafaa and InfluxDb and the experimentation. To report the data Bagan will use Talaiot. Bagan is working
 
 
@@ -111,7 +115,8 @@ Following the example, we will 16 different combinations:
 | org.gradle.jvmargs="-Xmx3g"  <br> org.gradle.caching="false" <br> develop <br> 5.5 | org.gradle.jvmargs="-Xmx3g"  <br> org.gradle.caching="false" <br> develop <br> 5.4 | org.gradle.jvmargs="-Xmx3g"  <br> org.gradle.caching="false" <br> master <br> 5.4 | org.gradle.jvmargs="-Xmx3g"  <br> org.gradle.caching="false" <br> master <br> 5.5 |
 | org.gradle.jvmargs="-Xmx4g"  <br> org.gradle.caching="false" <br> develop <br> 5.5 | org.gradle.jvmargs="-Xmx4g"  <br> org.gradle.caching="false" <br> develop <br> 5.4 | org.gradle.jvmargs="-Xmx4g"  <br> org.gradle.caching="false" <br> master <br> 5.4 | org.gradle.jvmargs="-Xmx4g"  <br> org.gradle.caching="false" <br> master <br> 5.5 |
 
-
+In this example there are 16 different combinations. Bagan will create 16 different pods with the specific configuration. Check the cost of Bagan section 
+to understand better the impact in terms of cost of high perumations experiments.
 
 
 ### Modes
