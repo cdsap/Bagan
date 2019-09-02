@@ -1,4 +1,8 @@
 # Bagan
+
+![alt text](resources/bagan_1.png "Bagan image")
+
+
 Bagan is a framework to automate and parallelize the execution, reporting and collection of data with different types of experiments in Gradle projects using Kubernetes.
 
 1- How to use Bagan
