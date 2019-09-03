@@ -41,7 +41,7 @@ class BaganFileGeneratorTest : BehaviorSpec({
                 contentValuesFile should haveSubstring("branch: master")
                 contentValuesFile should haveSubstring("properties: |")
                 contentValuesFile should haveSubstring("property1")
-                contentValuesFile should haveSubstring("gradleWrapperVersion: 4.5")
+                contentValuesFile should haveSubstring("gradleWrapperVersion: '4.5'")
 
             }
             then("pod is generated with ssh options") {

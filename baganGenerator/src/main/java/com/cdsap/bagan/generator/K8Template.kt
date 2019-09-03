@@ -195,7 +195,7 @@ for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;
 
 object ConfigMapExperiments {
     fun branch(branch: String) = """branch: $branch"""
-    fun gradleWrapperVersion(version: String) = """gradleWrapperVersion: $version"""
+    fun gradleWrapperVersion(version: String) = """gradleWrapperVersion: '$version'"""
     fun properties(properties: String) =
 """properties: |
                $properties""".trimIndent()

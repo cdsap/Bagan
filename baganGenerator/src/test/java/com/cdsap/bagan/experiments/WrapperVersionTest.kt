@@ -27,7 +27,7 @@ class WrapperVersionTest : BehaviorSpec({
         `when`("Environment variable is found but not the file gradle-wrapper.properties") {
             val testLogger = TestPodLogger()
             val exception = shouldThrow<FileNotFoundException> {
-                withEnvironment("gradleWrapperVersion" to "5.1") {
+                withEnvironment("gradleWrapperVersion" to "'5.1'") {
                     val wrapperVersion = GradleWrapperVersion("tmp", testLogger)
                     wrapperVersion.applyExperiments()
 
@@ -47,7 +47,7 @@ class WrapperVersionTest : BehaviorSpec({
             val contentFile = File("tmp/gradle/wrapper/gradle-wrapper.properties")
             contentFile.writeText("distributionUrl=https://services.gradle.org/distributions/gradle-5.4.1-bin.zip")
 
-            withEnvironment("gradleWrapperVersion" to "5.5") {
+            withEnvironment("gradleWrapperVersion" to "'5.5'") {
                 val wrapperVersion = GradleWrapperVersion("tmp", testLogger)
                 wrapperVersion.applyExperiments()
             }

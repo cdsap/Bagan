@@ -8,8 +8,8 @@ propertiesJson=$(cat $FILE | jq -c -r '.bagan.experiments.properties' | tr -d '\
 propertiesCountJson=$(cat $FILE | jq -c -r '.bagan.experiments.properties | length' | tr -d '\r')
 branchJson=$(cat $FILE | jq -c -r '.bagan.experiments.branch' | tr -d '\r')
 branchCountJson=$(cat $FILE | jq -c -r '.bagan.experiments.branch | length' | tr -d '\r')
-gradleWrapperJson=$(cat $FILE | jq -c -r '.bagan.experiments.gradleWrapper' | tr -d '\r')
-gradleWrapperCountJson=$(cat $FILE | jq -c -r '.bagan.experiments.gradleWrapper | length' | tr -d '\r')
+gradleWrapperVersionJson=$(cat $FILE | jq -c -r '.bagan.experiments.gradleWrapperVersion' | tr -d '\r')
+gradleWrapperVersionCountJson=$(cat $FILE | jq -c -r '.bagan.experiments.gradleWrapperVersion | length' | tr -d '\r')
 clusterJson=$(cat $FILE | jq -c -r '.bagan.clusterName' | tr -d '\r')
 zoneJson=$(cat $FILE | jq -c -r '.bagan.zone' | tr -d '\r')
 machineJson=$(cat $FILE | jq -c -r  '.bagan.machine' | tr -d '\r')
@@ -34,7 +34,7 @@ then
   exit 1
 fi
 
-if [ "$propertiesJson" == "null" ] && [ "$branchJson" == "null" ] && [ "$gradleWrapperJson" == "null" ]; then
+if [ "$propertiesJson" == "null" ] && [ "$branchJson" == "null" ] && [ "$gradleWrapperVersionJson" == "null" ]; then
      color '31;1' "Error: you have to include at least one type experiment in the configuration file."
      log "Example:"
      log "\"experiments\": {
@@ -45,7 +45,7 @@ if [ "$propertiesJson" == "null" ] && [ "$branchJson" == "null" ] && [ "$gradleW
            }
         ],
         \"branch\": [ \"develop\",\"master\"],
-        \"gradleWrapper\": [ \"5.6\",\"5.5\",\"5.4\"]
+        \"gradleWrapperVersion\": [ \"5.6\",\"5.5\",\"5.4\"]
      }"
      exit 1
 fi
@@ -103,8 +103,8 @@ properties=$propertiesJson
 propertiesCount=$propertiesCountJson
 branch=$branchJson
 branchCount=$branchCountJson
-gradleWrapper=$gradleWrapperJson
-gradleWrapperCountJson=$gradleWrapperCountJson
+gradleWrapperVersion=$gradleWrapperVersionJson
+gradleWrapperVersionCountJson=$gradleWrapperVersionCountJson
 private=$privateJson
 ssh=$sshJson
 known_hosts=$known_hostsJson

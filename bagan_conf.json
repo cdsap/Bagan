@@ -1,22 +1,30 @@
 {
    "bagan": {
-      "repository": "git@github.com:cdsap/TestPrivateRepository.git",
-      "gradleCommand": "./gradlew clean assembleDebug",
+      "repository": "https://github.com/igorwojda/android-showcase.git",
+      "gradleCommand": "./gradlew clean :app:bundleDebug",
       "clusterName": "",
-      "machine": "n1-standard-4",
-      "zone": null,
-      "private": true,
-      "ssh": "/Users/inaki/.ssh/id_rsa",
-      "known_hosts": "/Users/inaki/.ssh/known_hosts",
+      "machine": "n2-standard-8",
+      "zone": "asia-southeast1-b",
+      "private": false,
+      "ssh": "",
+      "known_hosts": "",
       "iterations": 20,
       "experiments": {
          "properties": [
             {
                "name": "org.gradle.jvmargs",
-               "options": ["-Xmx3g","-Xmx4g"]
+               "options": ["-Xmx2g","-Xmx4g"]
+            },
+            {
+               "name": "kapt.incremental.apt",
+               "options": ["true","false"]
+            },
+            {
+               "name": "kapt.use.worker.api",
+               "options": ["true","false"]
             }
          ],
-         "branch": [ "develop3","master"]
+         "gradleWrapperVersion": ["5.6.1","5.5"]
       }
    }
 }

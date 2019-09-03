@@ -44,7 +44,7 @@ metadata:
     session: {{ .Values.session }}
 data:
   id: {{ .Values.name }}
-  gradleWrapperVersion: 4.3
+  gradleWrapperVersion: '4.3'
 """.trimIndent()
                 )
             }
@@ -98,7 +98,7 @@ data:
   properties: |
                property1=a
   branch: develop
-  gradleWrapperVersion: 4.5""".trimIndent()
+  gradleWrapperVersion: '4.5'""".trimIndent()
 
                 )
             }

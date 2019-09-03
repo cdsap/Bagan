@@ -66,8 +66,8 @@ fi
 if [ "$branch" != "null" ]; then
   log "    -branch: $branch"
 fi
-if [ "$gradleWrapper" != "null" ]; then
-  log "    -gradleWrapper: $gradleWrapper"
+if [ "$gradleWrapperVersion" != "null" ]; then
+  log "    -gradleWrapperVersion: $gradleWrapperVersion"
 fi
 log ""
 

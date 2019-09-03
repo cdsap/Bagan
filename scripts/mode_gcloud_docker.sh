@@ -4,10 +4,10 @@ function gcloudDockerExecutor(){
   log "Command $command"
   if [ $command == "cluster" ]; then
     printf '%s\n' "Mode cluster"
-    execution="$(gcloudInit) $(gcloudCreateCluster) $(gcloudClusterCredentials) $(helm1) $(infraPods) $(createSecretDockerContainer) $(dockerBagan)"
+    execution="$(gcloudInit) $(gcloudCreateCluster) $(gcloudClusterCredentials) $(helmInstaller) $(infraPods) $(createSecretDockerContainer) $(dockerBagan)"
   elif [ $command == "infrastructure" ]; then
     printf '%s\n' "Mode infrastrucure"
-    execution="$(gcloudClusterCredentials) $(helm1) $(infraPods) $(createSecretDockerContainer) $(dockerBagan) "
+    execution="$(gcloudClusterCredentials) $(helmInstaller) $(infraPods) $(createSecretDockerContainer) $(dockerBagan) "
   elif [ $command == "experiment" ]; then
     printf '%s\n' "Mode experiment"
     execution="$(gcloudClusterCredentials) $(dockerBagan)"
@@ -18,7 +18,7 @@ function gcloudDockerExecutor(){
   elif [[ $command == "secret" ]]; then
     execution="$(gcloudClusterCredentials) $(createSecretDockerContainer)"
   elif [[ $command == "helm" ]]; then
-    execution="$(gcloudClusterCredentials) $(helm1)"
+    execution="$(gcloudClusterCredentials) $(helmInstaller)"
   elif [[ $command == "helm_init" ]]; then
     execution="$(gcloudClusterCredentials) $(helmInit)"
   elif [[ $command == "helm_clusterrolebinding" ]]; then

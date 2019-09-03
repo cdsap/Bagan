@@ -22,7 +22,7 @@ class GradleWrapperVersion(
             logger.log(TAG, "Error, not value found for the env variable gradleWrapperVersion")
         } else {
             logger.log(TAG, "gradleWrapperVersion version value $value")
-            val url = "https://services.gradle.org/distributions/gradle-$value-bin.zip"
+            val url = "https://services.gradle.org/distributions/gradle-${value.replace("'", "")}-bin.zip"
             try {
                 val inProperties = FileInputStream("$path/gradle/wrapper/gradle-wrapper.properties")
                 val props = Properties()
@@ -30,7 +30,7 @@ class GradleWrapperVersion(
                 inProperties.close()
 
                 val outProperties = FileOutputStream("$path/gradle/wrapper/gradle-wrapper.properties")
-                logger.log(TAG, "Writing property distributionUrl-$url")
+                logger.log(TAG, "Writing property distributionUrl-${url.replace("'", "")}")
                 props.setProperty("distributionUrl", url)
                 props.store(outProperties, null)
                 outProperties.close()
