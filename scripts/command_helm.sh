@@ -13,7 +13,7 @@ helm_patch_deploy="kubectl --namespace kube-system patch deploy tiller-deploy -p
 helm_cluster_role2="kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)"
 helm_repo_update="helm repo update"
 
-function helm1(){
+function helmInstaller(){
   echo "$helm_init;"
   echo "$helm_service_account;"
   echo "$sleep10;"

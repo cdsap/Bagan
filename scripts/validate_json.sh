@@ -84,7 +84,7 @@ fi
 
 if [ -z "$zoneJson" ] || [ "$zoneJson" = "null" ]
 then
-   zone="us-central1-a"
+   zone="us-west1-a"
 else
    zone=$zoneJson
 fi
