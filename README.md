@@ -3,7 +3,7 @@
 ![alt text](resources/bagan_1.png "Bagan image")
 
 
-Bagan is a framework that helps to automate the execution, reporting and collection of data with different types of experiments in Gradle projects using Kubernetes.
+Bagan is an experimental framework used to automate the execution, reporting and collection of data, from the builds of Gradle projects, using Kubernetes.
 
 ![alt text](resources/experiment2.png "Bagan image")
 
@@ -23,7 +23,7 @@ Bagan is a framework that helps to automate the execution, reporting and collect
 
 
 ## How to use Bagan <a name="how-to-use-bagan"></a>
-Once you have downloaded this repository you need to set up the `bagan_conf.json`.  You can define different properties
+Once you have downloaded this repository you need to set up the `bagan_conf.json`. You can define different properties
 like the type of experiments you want to apply, the target repository or the resources you want to use in the Kubernetes environments.
 
 Bagan will be executed with the `./bagan` command following the next format:
@@ -31,7 +31,7 @@ Bagan will be executed with the `./bagan` command following the next format:
 ` ./bagan MODE COMMAND`
 
 The execution framework and reporting happen in Kubernetes environment. For each experiment, Bagan will create a Helm Release where it will run the target repository applying the experimentation.
-To report the information of the build Bagan will inject Talaiot in the Gradle configuration of the project using InfluxDb as time-series database and Grafana as a dashboard visualization tool.
+To report and collect the information of the build, Bagan will inject Talaiot in the Gradle configuration of the project using InfluxDb as time-series database and Grafana as a dashboard visualization tool.
 
 Bagan can deploy a new cluster or will use an existing cluster to execute the experimentation defined
 in the main conf file.
@@ -39,17 +39,20 @@ in the main conf file.
 
 ## bagan_conf.json <a name="bagan_conf.json"></a>
 
-| Property          |      Description                                                          |
-|-------------------|---------------------------------------------------------------------------|
-| repository        | Repository of the project we want to experiment                           |
-| gradleCommand     | Gradle command to be executed in each Experiment from the repository                          |
-| clusterName       | Name of the cluster which the experimentation will be executed. If it is not specified and the command implies the creation the default name is Bagan, modes gcloud, gcloud_docker |
-| machine           | Type of Machine used bu the experimentation in modes gcloud, gcloud_docker. Check [The cost of Bagan](#cost) |
-| private           | Flag to indicate the experimentation will be executed in a private repository |
-| ssh               | Pah to the rsa id key for the private repository   |
-| known_hosts       | Path to the known_hosts file required to create the secret on the pods   |
-| iterations        | Number of executions of the Gradle command  |
-| experiments       | Experimentation properties for the execution, see next section.   |
+The main configuration file is `bagan_conf.json`. The properties to be configured are:
+
+| Property          |      Description                                                                                                  |
+|-------------------|-------------------------------------------------------------------------------------------------------------------|
+| repository        | Repository of the project we want to experiment.                                                                  |
+| gradleCommand     | Gradle command to be executed in each Experiment from the repository.                                             |
+| clusterName       | Name of the cluster where the experimentation will be executed. If it is not specified the default name is Bagan. |
+| zone              | Zone of the machine for Kubernetes Engine in Google Cloud.                                                        |
+| machine           | Type of Machine used in the experimentation. Check [The cost of Bagan](#cost).                                    |
+| private           | Flag to indicate the target repository is private.                                                                |
+| ssh               | Pah to the rsa id key for the private repository.                                                                 |
+| known_hosts       | Path to the known_hosts file required to create the secret on the pods.                                           |
+| iterations        | Number of executions of the Gradle command in the repository.                                                     |
+| experiments       | Experimentation properties for the execution.                                                                     |
 
 Example:
 ```
@@ -79,15 +82,15 @@ Example:
 
 ## Experiments  <a name="experiments"></a>
 
-Experiments are the type of different entities will be applied in each experiment. You need to use at least one of the experiments to execute Bagan. Currently, the types of experiments supported are:
+An Experiment is an Entity that represents a specific state of the target repository. This state is related to a different configuration of the build system or the control version system. Currently, the types of experiments supported are:
 
-| Experiment             |      Description                                                          |
-|------------------------|---------------------------------------------------------------------------|
-| properties             | create_cluster + credentials + helm + infra_pods + experiments                                           |
-| branch                 | Create infrastructure and execute experiments in the environment mode selected                          |
-| gradleWrapperVersion   | Execute experiments in the environment mode selected   |
+| Experiment  Type       |      Description                                 |
+|------------------------|--------------------------------------------------|
+| properties             | Specifies different values for Gradle properties.|
+| branch                 | Specifies different branches for experimentation.|
+| gradleWrapperVersion   | Specifies different versions of the wrapper.     |
 
-Example Pe
+Example:
 ```
 "experiments": {
    "properties": [],
@@ -96,7 +99,7 @@ Example Pe
 }
 ```
 
-Bagan will apply a cartesian product for all type experiments, and each combination will be considered as an element to be tested.
+Bagan will apply a cartesian product for all the experiments, and each combination will be considered as an element to be tested.
 In case we want to experiment with `jvmargs` in the project with will include.
 ```
 "experiments": {
@@ -108,6 +111,7 @@ In case we want to experiment with `jvmargs` in the project with will include.
    ]
 }
 ```
+And the experiments generated are:
 
 |Experiments                 |
 |----------------------------|
@@ -115,7 +119,7 @@ In case we want to experiment with `jvmargs` in the project with will include.
 |org.gradle.jvmargs="-Xmx4g" |
 
 
-We can experiment with different Gradle properties at the same time and with the other type of experiments like 
+We can experiment with different types of experiments, here we are using properties, branches and Gradle Wrapper versions:
 
 ```
 "experiments": {
@@ -134,6 +138,7 @@ We can experiment with different Gradle properties at the same time and with the
 }
 ```
 
+The experiments generated are:
 
 |Experiments                         |    | | |
 |----------------------------|-------|---|------------------|
@@ -142,37 +147,30 @@ We can experiment with different Gradle properties at the same time and with the
 | org.gradle.jvmargs="-Xmx3g"  <br> org.gradle.caching="false" <br> develop <br> 5.5 | org.gradle.jvmargs="-Xmx3g"  <br> org.gradle.caching="false" <br> develop <br> 5.4 | org.gradle.jvmargs="-Xmx3g"  <br> org.gradle.caching="false" <br> master <br> 5.4 | org.gradle.jvmargs="-Xmx3g"  <br> org.gradle.caching="false" <br> master <br> 5.5 |
 | org.gradle.jvmargs="-Xmx4g"  <br> org.gradle.caching="false" <br> develop <br> 5.5 | org.gradle.jvmargs="-Xmx4g"  <br> org.gradle.caching="false" <br> develop <br> 5.4 | org.gradle.jvmargs="-Xmx4g"  <br> org.gradle.caching="false" <br> master <br> 5.4 | org.gradle.jvmargs="-Xmx4g"  <br> org.gradle.caching="false" <br> master <br> 5.5 |
 
-In this example, there are 16 different combinations. Bagan will create 16 different pods with the specific configuration. Check the cost of Bagan section 
-to understand better the impact in terms of cost of high permutations experiments.
 
 
 ### Modes  <a name="modes"></a>
-A `mode` is the Kubernetes   environment where you want to execute the experimentation. Modes are needed to provision and interact with the
-Kubernetes environment
-There are supported three modes
+Bagan uses modes to identify the environment which Kubernetes will use to set up the configuration and execute the experiments.
+There are supported three modes:
 
-| Mode           |      Description                                                          |
-|----------------|---------------------------------------------------------------------------|
-| gcloud         | Bagan will be executed in Kubernetes Engine in Gcloud using gcloud sdk     |
-| gcloud_docker  | Bagan will be executed in Kubernetes Engine in Gcloud using Docker and avoiding to set up different configurations in your machine. The image is cdsap/bagan-init |
-| standalone     | Bagan will be executed in the environment configured in the host machine.   |
+| Mode           |      Description                                                                                                                                          |
+|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| gcloud         | Bagan will be executed in Kubernetes Engine in Gcloud using gcloud sdk.                                                                                   |
+| gcloud_docker  | Bagan will be executed in Kubernetes Engine in Gcloud using Docker and avoiding to install additional sdk in your machine. The image is cdsap/bagan-init. |
+| standalone     | Bagan will be executed in the environment configured in the host machine.                                                                                 |
 
-If you have your cluster created in Gcloud or you have a host machine where you want
-to execute Bagan
-Gcloud_docker will be used to encapsulate the execution of the gcloud encapsulated in a docker image
 
 ### Commands  <a name="commands"></a>
 Commands are the tasks to be executed in the mode selected. There are two main commands groups.
 
 #### Meta Commands
-Used to execute a sequence of commands, these commands execute all the required steps to finish with
-the experimentation on Kubernetes
+Meta Commands offer a complete execution of Bagan. It may contain multiple single commands.
 
-| Mode           |      Description                                                          |
-|----------------|---------------------------------------------------------------------------|
-| cluster        | Create cluster, infrastructure and execute experiments in the environment mode selected.                                            |
-| infrastructure | Create infrastructure and execute experiments in the environment mode selected                          |
-| experiment     | Execute experiments in the environment mode selected   |
+| Command        |      Description                                                                        |
+|----------------|-----------------------------------------------------------------------------------------|
+| cluster        | Create cluster, infrastructure and execute experiments in the environment mode selected.|
+| infrastructure | Create infrastructure and execute experiments in the environment mode selected.         |
+| experiment     | Execute experiments in the environment mode selected.                                   |
 
 Examples:
 ```
@@ -184,36 +182,27 @@ Examples:
 Meta commands are composed by single commands. You can execute single commands depending on your requirements.
 For example, if you are using an existing cluster and some of the components required by Bagan are installed, you can execute a single command:
 
-| Command                     |      Description                                                                                       |
-|-----------------------------|--------------------------------------------------------------------------------------------------------|
-| create_cluster              | Createcluster, infrastructure and execute experiments in the environment mode selected.               |
-| infra_pods                  | Create infrastructure and execute experiments in the environment mode selected   (Grafana + InfluxDb)  |
-| credentials                 | Get the credentials for the current cluster                                                            |
-| secret                      | Create secret object in the mode selected require to experiment with private repositories              |
-| helm                        | Execute initialization of helm and the cluster role binding required in Kubernetes                     |
-| helm_init                   | Execute initialization of Helm                                                                         |
-| helm_clusterrolebinding     | Create the cluster role binding required in Kubernetes                                                |
-| grafana                     | Install the Chart of Grafana with Helm at the cluster                                                  |
-| influxfb                    | Install the Chart of InfluxDb with Helm at the cluster                                                 |
-| services                    | Creates a service port type Load Balance                                                               |
-| remove_experiments          | Remove experiments in the cluster                                                                      |
-| grafana_dashboard           | Retrieve the public IP of the Dashboard created                                                       |
-
-
-So on the same way, we can see how the Meta Commands are composed:
-
-| Command           |      Single Commands                                                          |
-|-------------------|---------------------------------------------------------------------------|
-| cluster           | create_cluster + credentials + helm + infra_pods + experiments                                           |
-| infrastructure     | Create infrastructure and execute experiments in the environment mode selected                          |
-| experiment        | credentials + experiments   |
+| Command                     |      Description                                                                               |
+|-----------------------------|------------------------------------------------------------------------------------------------|
+| create_cluster              | Create new cluster in the environment mode selected.                                           |
+| infra_pods                  | Create infrastructure(Grafana + InfluxDb)  in the environment mode selected.                   |
+| credentials                 | Get the credentials for the current cluster.                                                   |
+| secret                      | Create secret object in the mode selected require to experiment with private repositories.     |
+| helm                        | Execute initialization of Helm and the cluster role binding required in Kubernetes.            |
+| helm_init                   | Execute initialization of Helm.                                                                |
+| helm_clusterrolebinding     | Create the cluster role binding required in Kubernetes.                                        |
+| grafana                     | Install the Chart of Grafana with Helm at the cluster.                                         |
+| influxfb                    | Install the Chart of InfluxDb with Helm at the cluster.                                        |
+| services                    | Creates a service port type Load Balance for Grafana.                                          |
+| remove_experiments          | Remove experiments in the cluster.                                                             |
+| grafana_dashboard           | Retrieve the public IP of the Dashboard created.                                               |
 
 
     
 ## Lifecycle Bagan  <a name="lifecycle"></a>
 We can group the execution of Bagan in three main stages:
 
-* Verificiation
+* Verification
 * Provisioning
 * Execution Experiments:
 
@@ -227,7 +216,7 @@ and requires [jq](https://stedolan.github.io/jq/) to perform the validation.
 
 ### Provisioning 
 In this phase, Bagan will execute the command included in the mode selected. 
-For `gcloud` and `standalone`, modes it will be executed in the host machine. For `gcloud_docker` will be executed in a docker image(cdsap/bagan-init).
+For `gcloud` and `standalone` modes, it will be executed in the host machine. For `gcloud_docker` will be executed in a docker image(cdsap/bagan-init).
 Kubectl and Helm will be configured.
 Depending on the command selected, different actions will be handle. Check commands section.
 
@@ -263,33 +252,79 @@ To check the IP you can execute :
 
 ### Kubernetes Infrastructure
 
-The overall picture of Bagan from the perspective of Kubernetes will be:
+Independent of the environment selected, the general infrastructure for Bagan in Kubernetes is:
 
 ![alt text](resources/kubernetes_infra.png "Kubernetes infra")
 
-Once the experiments are generated and installed one Pod will be linked with the configuration, it will perform the build with the `gradleCommand` and `iterations` defined in 
-the `bagan_conf.json`.  
+To create the instances of Grafana and InfluxDb, we are using the Kubernetes package manager Helm. Helm is used to create experiments in Kubernetes too. 
+In case of modes gcloud and gcloud_docker, additional Cluster Role Binding objects are created to be used by tiller/Helm.
+For gcloud and standalone we can use kubectl as a command-line interface for running commands against Kubernetes clusters.
+
+We can use the Google cloud console, https://console.cloud.google.com, where we have a user interface to manage the cluster:
+
+![alt text](resources/googlecloud.png "Google Cloud")
 
 
+### Pod Experiment execution 
+Every experiment generates a Helm release with this structure:
 
-### Pod execution 
-Every experiment creates a Helm release composed of different objects like configmaps and pods. 
-The execution of the build happens inside the Pod. The Docker image used by the pod is cdsap/bagan-pod. This image is responsible for:
+![alt text](resources/helmexperiment.png "Helm")
+
+`values.yaml` contains the information related to the experiment and the configuration provided in the Bagan conf. 
+
+```
+repository: https://github.com/android/plaid.git
+branch: master
+configMaps: configmapexperiment1
+pod: experiment1
+session: sessionId
+name: experiment1
+image: cdsap/bagan-pod-injector:0.1.6
+command: ./gradlew assemble
+iterations: 10
+```
+
+`configmapexperimentN.yaml` contains the data of the permutation calculated for the experiment:
+```
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.configMaps }}
+  labels:
+    app: bagan
+    type: experiment
+    session: {{ .Values.session }}
+data:
+  id: {{ .Values.name }}
+  properties: |
+               org.gradle.jvmargs=-Xmx6g
+               org.gradle.workers.max=1
+```
+
+The execution of the build happens inside the pod created by podexperimentN.yaml. The Docker image used by the pod is cdsap/bagan-pod. 
+This pod is responsible for:
 * Fetch Target repository in a specific volume.
 * Inject Talaiot in the project 
-* Apply the experimentation for Gradle Properties and Gradle Wrapper versions 
+* Apply the experimentation for Gradle Properties and Gradle Wrapper versions parsing the data from the configmap.
 * Execute the build given N iteration
 
 The execution flow is:
 
 ![alt text](resources/pod.png "Pod")
 
+When the Pod is running, it will execute the ExperimentController.kt (using kscript) that starts applying Talaiot in the main Gradle configuration file (groovy/kts):
+```
+publishers {
+    influxDbPublisher {
+        dbName = "tracking"
+        url = "http://bagan-influxdb.default:8086"
+        taskMetricName = "tasks"
+        buildMetricName = "build"
+    }
+}
+```
 
-
-
-### Gcloud console 
-
-
+Later, the `ExperimentController.kt` will parse the data of the configmap and will apply the different experiments. Note that in the case of Branch Experimentation, the experiment will be applied in the Pod and not in the configmap.
 
 
 
@@ -439,7 +474,7 @@ If you want to use your own images, you can set-up in the deployment script the 
 * Build and push the docker image for bagan-pod 
 
 ### Docker 
-Contains the Docker iamges for bagan-init and bagan-pod. It includes the binaries generated by the baganGenerator in the 
+Contains the Docker images for bagan-init and bagan-pod. It includes the binaries generated by the baganGenerator in the 
 deployment step.
 In case you want to provide your own images you can set the values on the deployment file:
 
@@ -458,7 +493,14 @@ Grafana contains the provisioned data source configuration for InfluxDb. Also in
 It contains the bash scripts related to the verificaction and provisioning phase. 
 For each mode, there is available one command executor where the scripts can be done. 
 
-## Contribute
 
-## License
+## Tools/Libraries used in Bagan
+* [Kubernetes](https://github.com/kubernetes/kubernetes) 
+* [Google Cloud](https://cloud.google.com/)
+* [Helm](https://github.com/helm/helm/)
+* [jq](https://stedolan.github.io/jq/)
+* [Talaiot](https://github.com/cdsap/Talaiot)
+* [kscript](https://github.com/holgerbrandl/kscript) 
+* [Gradle](https://gradle.org/)
+
 
