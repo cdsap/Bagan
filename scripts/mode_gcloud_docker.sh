@@ -63,7 +63,6 @@ function gcloudDockerExecutor(){
        export PATH=$PATH:/usr/local/gcloud/google-cloud-sdk/bin/;
        cd /usr/local;
        $execution
-       echo 1;
        $end"
   fi
 
