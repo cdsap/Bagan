@@ -53,7 +53,6 @@ function gcloudDockerExecutor(){
                  export PATH=$PATH:/usr/local/gcloud/google-cloud-sdk/bin/;
                  cd /usr/local;
                  $execution
-                  echo 1;
                  $end"
   else
     docker run -ti -v $HOME/.config/gcloud:/root/.config/gcloud \

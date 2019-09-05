@@ -4,7 +4,7 @@
       "gradleCommand": "./gradlew clean assembleDebug",
       "clusterName": "bagan",
       "machine": "n2-standard-8",
-      "zone": "asia-southeast1-b",
+      "zone": "europe-west4-b",
       "private": false,
       "ssh": "",
       "known_hosts": "",
