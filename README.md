@@ -3,7 +3,7 @@
 ![alt text](resources/bagan_1.png "Bagan image")
 
 
-Bagan is an experimental framework used to automate the execution, reporting and collection of data, from the builds of Gradle projects, using Kubernetes.
+Bagan is an experimental framework used to automate the execution, reporting and collection of data for Gradle projects, using Kubernetes.
 
 ![alt text](resources/experiment2.png "Bagan image")
 
@@ -13,13 +13,13 @@ Bagan is an experimental framework used to automate the execution, reporting and
 3. [Experiments](#experiments)
 4. [Modes](#modes)
 5. [Commands](#commands)
-6. [Requeriments Execution](#requeriments)
-7. [Lifecycle Bagan](#lifecycle)
-8. [Internals Bagan](#internals)
-9. [The cost of Bagan](#cost)
-10. [Examples](#examples)
-11. [Deploying Bagan](#deploy)
-12. [Constribute](#contribute)
+6. [Lifecycle Bagan](#lifecycle)
+7. [Internals Bagan](#internals)
+8. [The cost of Bagan](#cost)
+9. [Examples](#examples)
+10. [Deploying Bagan](#deploy)
+11. [Tools/Libraries used in Bagan](#tools)
+12. [The real Bagan](#bagan)
 
 
 ## How to use Bagan <a name="how-to-use-bagan"></a>
@@ -49,9 +49,9 @@ The main configuration file is `bagan_conf.json`. The properties to be configure
 | zone              | Zone of the machine for Kubernetes Engine in Google Cloud.                                                        |
 | machine           | Type of Machine used in the experimentation. Check [The cost of Bagan](#cost).                                    |
 | private           | Flag to indicate the target repository is private.                                                                |
-| ssh               | Pah to the rsa id key for the private repository.                                                                 |
-| known_hosts       | Path to the known_hosts file required to create the secret on the pods.                                           |
-| iterations        | Number of executions of the Gradle command in the repository.                                                     |
+| ssh               | Pah to the ssh key.                                                                                               |
+| known_hosts       | Path to the file that has the name of a server and a public-key that is applicable to the server machine.         |
+| iterations        | Number of executions of the Gradle command.                                                                       |
 | experiments       | Experimentation properties for the execution.                                                                     |
 
 Example:
@@ -100,7 +100,7 @@ Example:
 ```
 
 Bagan will apply a cartesian product for all the experiments, and each combination will be considered as an element to be tested.
-In case we want to experiment with `jvmargs` in the project with will include.
+In case we want to experiment with `jvmargs` in the project, we will include:
 ```
 "experiments": {
    "properties": [
@@ -168,9 +168,9 @@ Meta Commands offer a complete execution of Bagan. It may contain multiple singl
 
 | Command        |      Description                                                                        |
 |----------------|-----------------------------------------------------------------------------------------|
-| cluster        | Create cluster, infrastructure and execute experiments in the environment mode selected.|
-| infrastructure | Create infrastructure and execute experiments in the environment mode selected.         |
-| experiment     | Execute experiments in the environment mode selected.                                   |
+| cluster        | Create cluster, infrastructure and execute experiments in the environment mode chosen.  |
+| infrastructure | Create infrastructure and execute experiments in the environment mode chosen.           |
+| experiment     | Execute experiments in the environment mode chosen.                                     |
 
 Examples:
 ```
@@ -184,16 +184,16 @@ For example, if you are using an existing cluster and some of the components req
 
 | Command                     |      Description                                                                               |
 |-----------------------------|------------------------------------------------------------------------------------------------|
-| create_cluster              | Create new cluster in the environment mode selected.                                           |
+| create_cluster              | Create a new cluster in the environment mode selected.                                         |
 | infra_pods                  | Create infrastructure(Grafana + InfluxDb)  in the environment mode selected.                   |
 | credentials                 | Get the credentials for the current cluster.                                                   |
-| secret                      | Create secret object in the mode selected require to experiment with private repositories.     |
+| secret                      | Create a secret object in the mode selected, required to experiment with private repositories. |
 | helm                        | Execute initialization of Helm and the cluster role binding required in Kubernetes.            |
 | helm_init                   | Execute initialization of Helm.                                                                |
 | helm_clusterrolebinding     | Create the cluster role binding required in Kubernetes.                                        |
 | grafana                     | Install the Chart of Grafana with Helm at the cluster.                                         |
 | influxfb                    | Install the Chart of InfluxDb with Helm at the cluster.                                        |
-| services                    | Creates a service port type Load Balance for Grafana.                                          |
+| services                    | Creates a service port of type Load Balance for Grafana.                                       |
 | remove_experiments          | Remove experiments in the cluster.                                                             |
 | grafana_dashboard           | Retrieve the public IP of the Dashboard created.                                               |
 
@@ -204,7 +204,7 @@ We can group the execution of Bagan in three main stages:
 
 * Verification
 * Provisioning
-* Execution Experiments:
+* Execution Experiments
 
 
 ![alt text](resources/lifecycle.png "Life Cycle")
@@ -222,29 +222,31 @@ Depending on the command selected, different actions will be handle. Check comma
 
 
 ### Execution 
-The execution phase will be driven by the kscript `BaganGenerator.kt`. This script  has two main functions:
+The execution phase will be driven by the kscript `BaganGenerator.kt`. This script has three main functions:
 * Calculate the combination of experiments
 * Generate the Grafana Dashboard with the experimentation and Gradle Commands
 * Create and install the experiment environment.
 
-For each experiment `BaganGenerator.kt` will create: 
-* Chart.yaml
-* Values.yaml
-* templates/configmapexpermientN.yaml
-* templates/podexperimentN.yaml
+Before the execution of the experiments, the deployments of Grafana and InfluxDb are created. 
+The release of Grafana includes a provisioned data source for InfluxDb. Later, a Dashboard is generated with the configuration provided by the `bagan_conf.json`:
+ ![alt text](resources/experiment1.png "Bagan image")
+ The dashboard contains five panels:
+* Graph of the command group by experiment.
+* Percentile(80) of the experiments on the command configured.
+* Minimum build times by experiment and command.
+* Experiment Winner.
+* Information about the experiments. 
 
-Finally, with Helm will install the package in the selected environment.
+To access the dashboard, you have to access:
 
-Once the experiments are running, you can check the Grafana dashboard to visualize the results:
-```
-http://IP:3000/d/IS3q0sSWz
-```
+`http://IP:3000/d/IS3q0sSWz`
 
-The `IP` corresponds with the public IP exposed as Service type load balancer on the Grafana deployment. 
-To check the IP you can execute :
-```
-./bagan gcloud grafana_dashboard
-```
+To retrieve the IP, you can use the Bagan command:
+
+`./bagan gcloud grafana_dashboard`
+
+User and password by default are admin/admin.
+Additionally, you can create your panels in Grafana. It follows the same scheme used in Talaiot being the primary points build and task:
 
 
 
@@ -257,8 +259,8 @@ Independent of the environment selected, the general infrastructure for Bagan in
 ![alt text](resources/kubernetes_infra.png "Kubernetes infra")
 
 To create the instances of Grafana and InfluxDb, we are using the Kubernetes package manager Helm. Helm is used to create experiments in Kubernetes too. 
-In case of modes gcloud and gcloud_docker, additional Cluster Role Binding objects are created to be used by tiller/Helm.
-For gcloud and standalone we can use kubectl as a command-line interface for running commands against Kubernetes clusters.
+In case of modes `gcloud` and `gcloud_docker`, additional Cluster Role Binding objects are created to be used by tiller/Helm.
+For `gcloud` and `standalone`, we can use `kubectl` as a command-line interface for running commands against Kubernetes clusters.
 
 We can use the Google cloud console, https://console.cloud.google.com, where we have a user interface to manage the cluster:
 
@@ -301,7 +303,7 @@ data:
                org.gradle.workers.max=1
 ```
 
-The execution of the build happens inside the pod created by podexperimentN.yaml. The Docker image used by the pod is cdsap/bagan-pod. 
+The execution of the build happens inside the pod created by `podexperimentN.yaml`. The Docker image used by the pod is `cdsap/bagan-pod`. 
 This pod is responsible for:
 * Fetch Target repository in a specific volume.
 * Inject Talaiot in the project 
@@ -312,7 +314,7 @@ The execution flow is:
 
 ![alt text](resources/pod.png "Pod")
 
-When the Pod is running, it will execute the ExperimentController.kt (using kscript) that starts applying Talaiot in the main Gradle configuration file (groovy/kts):
+When the Pod is running, it will execute the `ExperimentController.kt` (using kscript) that starts applying Talaiot in the main Gradle configuration file (groovy/kts):
 ```
 publishers {
     influxDbPublisher {
@@ -327,27 +329,35 @@ publishers {
 Later, the `ExperimentController.kt` will parse the data of the configmap and will apply the different experiments. Note that in the case of Branch Experimentation, the experiment will be applied in the Pod and not in the configmap.
 
 
+### Requirements by Mode
+
+`gcloud`
+* [jq](https://stedolan.github.io/jq/)
+* [Google Cloud SDK](https://cloud.google.com/sdk/)
+* [kscript](https://github.com/holgerbrandl/kscript) 
+
+
+`gcloud_docker` 
+* [jq](https://stedolan.github.io/jq/)
+* [Docker](https://www.docker.com/) 
+
+`standalone` 
+* [jq](https://stedolan.github.io/jq/)
+* `kubectl` configured with existing cluster
 
 ## The cost of Bagan  <a name="cost"></a>
-In case you are using Google Cloud as Kubernetes environment you should consider the impact in terms of money of the selection 
-of the different elements.
-Resources are limited and  constraint by the type of the machine you have selected. Android projects are expensive in terms of 
-memory consumption and create multiples combinations will cause the failure of the experiments:
+In case you are using Google Cloud as Kubernetes environment, you should consider the impact in terms of cost($$) of the experimentation. Android projects are expensive in terms of memory consumption 
+and creating multiples combinations with not enough powerful machine will cause the failure of the experiments:
 
 
 ![alt text](resources/no_resources.png "No Resources")
 
-On the other side if you consider to increase the resources of the machine we should consider the cost. Google Cloud publish the 
-cost for the different types of machines:
+Increasing the resources of the machine will help to succeed in the execution of the experiment, but it brings more consumption of resources a.k.a money. 
+Remember that more permutations of the different experiments will generate more Pods. 
+There is no restriction on the machine used in Bagan, for small/medium projects we recommend the n2 series(cost per hour):
 
 ![alt text](resources/cost.png "Cost")
 
-Bagan doesn't put any restriction on the machine selected, but you should consider the impact of the experimentation. 
-Once the experiments are succeeded, and you don't want to repeat experiments and the data is done you should remove the cluster in 
-case you are using personal project.
-
-Another point to consider is depending on the machine you have selected, maybe is not available in the zone you have selected. 
-The default zone is `us-west1-a`, but you can choose others depending on your requirements. 
 Check more documentation about region, zones and availability in Gcloud here:
 https://cloud.google.com/compute/docs/regions-zones/#available
 
@@ -359,17 +369,17 @@ https://cloud.google.com/compute/docs/regions-zones/#available
 
 ### Example 1
 
-Simple example of private repository generated by Android Studio
+Simple example of a private repository with three modules
 
-| bagan_conf      |                                                              |
-|-----------------|--------------------------------------------------------------|
-| machine         |n2-standard-2                                                 |
-| zone            |asia-southeast1-b                                             |
-| repository      |git@github.com:cdsap/TestPrivateRepository.git                |
-| private         |true                                                          |
+| bagan_conf      |                                                               |
+|-----------------|---------------------------------------------------------------|
+| machine         |n2-standard-2                                                  |
+| zone            |asia-southeast1-b                                              |
+| repository      |git@github.com:cdsap/TestPrivateRepository.git                 |
+| private         |true                                                           |
 | experiments     |gradle properties :{ "org.gradle.jvmargs": ["-Xmx3g","-Xmx4g"]}|
-| command         | ./gradlew clean assembleDebug                                |
-| iterations      |20                                                            |
+| command         | ./gradlew clean assembleDebug                                 |
+| iterations      |20                                                             |
 
 Twp experiments of Type Gradle Properties will be generated: 
 * -Xmx3g
@@ -386,10 +396,10 @@ Experimentation on Google project Plaid, with kapt properties
 
 | bagan_conf      |                                                              |
 |-----------------|--------------------------------------------------------------|
-| machine         |n2-standard-8                                           |
+| machine         |n2-standard-8                                                 |
 | zone            |asia-southeast1-b                                             |
-| repository      |https://github.com/android/plaid.git             |
-| private         |false                                                          |
+| repository      |https://github.com/android/plaid.git                          |
+| private         |false                                                         |
 | experiments     |gradle properties:<br>{ "org.gradle.jvmargs": ["-Xmx2g","-Xmx4g"] }<br>{ "org.gradle.caching": ["true","false"] }<br>{ "kapt.incremental.apt": ["true","false"] }<br>{ "kapt.use.worker.api": ["true","false"] }<br>|
 | command         | ./gradlew clean assembleDebug                                |
 | iterations      |20                                                            |
@@ -449,34 +459,37 @@ Result:
 Best times are using Gradle `5.6.1`. 
 
 ## Deploy  <a name="deploy"></a>
-Bagan is open source and you can update create your requirements. 
-This is the structure of the project:
+Bagan is open source and you can contribute or adapt it under your requirements. 
+The folder structure of the project is:
 
-| Folder               |                                                                |
-|----------------------|---------------------------------------------------------------------------|
-| baganGenerator       | Kotlin project with the managment of Create infrastructure and execute experiments in the environment mode selected                          |
-| deploy               | Deployment script of docker images adding the build output generated by the Bagan Generator                                        |
-| docker               | Docker images for the installation with docker  and execution of the Pods                      |
-| k8s                  | Packages Charts for Grafana and InfluxDb  |
-| scripts               |  Bash scripts for validation and provisioning of the environment  |
+| Folder               |
+|----------------------|
+| baganGenerator       | 
+| deploy               |  
+| docker               | 
+| k8s                  | 
+| scripts              |
 
 ### Bagan Generator
-Is the Kotlin project 
+Bagan Generator is the Kotlin project with two main applications:
+* Generation and installation of Experiments and Dashboards.
+* Experiment controller handling the injection of Talaiot and experimentation on the pod.
 
-Additionally, it creates a custom task to override the headers and required to execute kscript on it. 
+We are using `kscript` to run the Kotlin classes. We need to transform the way we import the dependencies to be used in kscript. 
+The task `convertFiles`(depending on `build` task) will convert the imports in a kscript format.
 
 ### Deploy 
-If you want to use your own images, you can set-up in the deployment script the required files. 
-
-* Build the Bagan Generator
+Deployment folder used for:
+ 
+* Build the BaganGenerator project.
 * Copy the binaries required for each image to the folder
-* Build and push the docker image for bagan-init
-* Build and push the docker image for bagan-pod 
+* Build, tag and push the docker image for bagan-init
+* Build, tag  and push the docker image for bagan-pod 
 
 ### Docker 
-Contains the Docker images for bagan-init and bagan-pod. It includes the binaries generated by the baganGenerator in the 
+It contains the Docker images for bagan-init and bagan-pod. It includes the binaries generated by the baganGenerator in the 
 deployment step.
-In case you want to provide your own images you can set the values on the deployment file:
+In case you want to provide your own images, you can set the values on the deployment file(`deploy/deployment.sh`):
 
 ```
 VERSION="0.1.6"
@@ -486,21 +499,26 @@ IMAGE_BAGAN_POD="cdsap/bagan-pod-injector"
 ```
 
 ### K8s
-Contains the Grafana and InfluxDb charts.
-Grafana contains the provisioned data source configuration for InfluxDb. Also includes the default dashboard that will be updated when experimenteation will be execited
+It contains the Grafana and InfluxDb charts.
+Grafana contains the provisioned data source configuration for InfluxDb. Also includes the default dashboard that will be updated when experimentation will be executed.
 
 ### Scripts
-It contains the bash scripts related to the verificaction and provisioning phase. 
-For each mode, there is available one command executor where the scripts can be done. 
+It contains the bash scripts related to the verification and provisioning phase.  For each mode, there is available one command executor. 
 
-
-## Tools/Libraries used in Bagan
+## Tools/Libraries used in Bagan <a name="tools"></a>
 * [Kubernetes](https://github.com/kubernetes/kubernetes) 
 * [Google Cloud](https://cloud.google.com/)
+* [Google Cloud SDK](https://cloud.google.com/sdk/)
 * [Helm](https://github.com/helm/helm/)
 * [jq](https://stedolan.github.io/jq/)
 * [Talaiot](https://github.com/cdsap/Talaiot)
 * [kscript](https://github.com/holgerbrandl/kscript) 
 * [Gradle](https://gradle.org/)
+* [Docker](https://www.docker.com/)
+
+## The real Bagan <a name="bagan"></a>
+Bagan is an ancient city and a UNESCO World Heritage Site located in the Mandalay Region of Myanmar.
+If you have the opportunity, visit Bagan:
+https://en.wikipedia.org/wiki/Bagan
 
 

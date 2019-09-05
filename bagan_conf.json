@@ -1,8 +1,8 @@
 {
    "bagan": {
-      "repository": "https://github.com/igorwojda/android-showcase.git",
-      "gradleCommand": "./gradlew clean :app:bundleDebug",
-      "clusterName": "",
+      "repository": "https://github.com/android/plaid.git",
+      "gradleCommand": "./gradlew clean assembleDebug",
+      "clusterName": "bagan",
       "machine": "n2-standard-8",
       "zone": "asia-southeast1-b",
       "private": false,
@@ -13,18 +13,13 @@
          "properties": [
             {
                "name": "org.gradle.jvmargs",
-               "options": ["-Xmx2g","-Xmx4g"]
+               "options": ["-Xmx4g","-Xmx6g"]
             },
             {
-               "name": "kapt.incremental.apt",
-               "options": ["true","false"]
-            },
-            {
-               "name": "kapt.use.worker.api",
-               "options": ["true","false"]
+               "name": "org.gradle.workers.max",
+               "options": ["1","3"]
             }
-         ],
-         "gradleWrapperVersion": ["5.6.1","5.5"]
+         ]
       }
    }
 }

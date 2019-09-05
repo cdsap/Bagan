@@ -74,7 +74,7 @@ class BaganFileGeneratorTest : BehaviorSpec({
                 )
             }
         }
-        TestFolder.recursiveDelete(File("tmp"))
+    //    TestFolder.recursiveDelete(File("tmp"))
     }
 
 })
