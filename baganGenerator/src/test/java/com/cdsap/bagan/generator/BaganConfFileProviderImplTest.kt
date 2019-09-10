@@ -22,7 +22,7 @@ class BaganConfFileProviderImplTest : BehaviorSpec({
 
             }
         }
-        `when`("bagan config misses some required properties") {
+        `when`("Bagan config misses some required properties") {
             val baganConfFileProvider =
                 BaganConfFileProviderImpl(MoshiProvider(), "src/test/resources/bagan_conf_incomplete.json")
             val exception = shouldThrow<JsonDataException> {
@@ -32,17 +32,25 @@ class BaganConfFileProviderImplTest : BehaviorSpec({
                 exception.message should haveSubstring("Required value 'iterations'")
             }
         }
-        `when`(
-            "bagan config is incorrecct"
-        ) {
+        `when`("Bagan config is incorrecct") {
             val baganConfFileProvider =
                 BaganConfFileProviderImpl(MoshiProvider(), "src/test/resources/bagan_conf_incorrect.json")
             val exception = shouldThrow<JsonEncodingException> {
                 baganConfFileProvider.getBaganConf()
             }
-            then("filew parrsedd oo") {
+            then("error displayed") {
                 exception.message should haveSubstring("Expected ':' at path \$.bagan.experiment")
             }
+        }
+        `when`("Bagan includes Talaiot options don't publish Task metrics") {
+            val baganConfFileProvider =
+                BaganConfFileProviderImpl(MoshiProvider(), "src/test/resources/bagan_conf_ok.json")
+            val baganFile = baganConfFileProvider.getBaganConf()
+            then("Bagan configuration object is properly parsed with Talaiot included in the conf") {
+                assert(baganFile.talaiot?.publishTaskMetrics == false)
+                assert(baganFile.talaiot?.publishBuildMetrics == true)
+            }
+
         }
     }
 })
