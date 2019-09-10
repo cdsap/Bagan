@@ -50,6 +50,8 @@ class TalaiotInjector(
     private fun createFileTalaiot() {
         val id = System.getenv("id")
         val file = File("$path/talaiot.gradle.kts")
+        val publishTaskMetrics = System.getenv("talaiot.publishTaskMetrics") ?: true
+        val publishBuildMetrics = System.getenv("talaiot.publishBuildMetrics") ?: true
         val content = """
 buildscript {
     repositories {
@@ -75,6 +77,8 @@ configure<com.cdsap.talaiot.TalaiotExtension>() {
 
         influxDbPublisher {
             dbName = "tracking"
+            publishBuildMetrics = $publishBuildMetrics
+            publishTaskMetrics = $publishTaskMetrics
             url = "http://bagan-influxdb.default:8086"
             taskMetricName = "tasks"
             buildMetricName = "build"
