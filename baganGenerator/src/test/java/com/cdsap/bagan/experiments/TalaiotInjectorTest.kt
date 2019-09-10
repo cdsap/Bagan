@@ -2,6 +2,7 @@ package com.cdsap.bagan.experiments
 
 import com.cdsap.bagan.utils.TestFolder
 import com.cdsap.bagan.utils.TestPodLogger
+import io.kotlintest.extensions.system.withEnvironment
 
 import io.kotlintest.matchers.haveSubstring
 import io.kotlintest.matchers.startWith
@@ -91,6 +92,8 @@ configure<com.cdsap.talaiot.TalaiotExtension>() {
 
         influxDbPublisher {
             dbName = "tracking"
+            publishBuildMetrics = true
+            publishTaskMetrics = true
             url = "http://bagan-influxdb.default:8086"
             taskMetricName = "tasks"
             buildMetricName = "build"
@@ -98,6 +101,54 @@ configure<com.cdsap.talaiot.TalaiotExtension>() {
     }
 }""".trimIndent()
                 file.readText() should haveSubstring(content)
+            }
+            TestFolder.recursiveDelete(File("tmp"))
+        }
+        `when`("Publish Task metrics is false but Publish Build metrics is true") {
+            withEnvironment("talaiot.publishTaskMetrics" to "false") {
+                val testLogger = TestPodLogger()
+                File("tmp").mkdir()
+                File("tmp/build.gradle").createNewFile()
+                val talaiotInjector = TalaiotInjector("tmp", testLogger)
+                talaiotInjector.init()
+
+            }
+
+            then("exception is catched and log message is registered") {
+                val file = File("tmp/talaiot.gradle.kts")
+                val content = """
+buildscript {
+    repositories {
+        mavenCentral()
+        google()
+        mavenLocal()
+        jcenter()
+    }
+    dependencies {
+        classpath("com.cdsap:talaiot:1.0.4")
+    }
+}
+
+apply<com.cdsap.talaiot.TalaiotPlugin>()
+
+configure<com.cdsap.talaiot.TalaiotExtension>() {
+    logger = com.cdsap.talaiot.logger.LogTracker.Mode.INFO
+    metrics {
+        customBuildMetrics("experiment" to  "null")
+        customTaskMetrics("experiment" to  "null")
+    }
+    publishers {
+
+        influxDbPublisher {
+            dbName = "tracking"
+            publishBuildMetrics = true
+            publishTaskMetrics = false
+            url = "http://bagan-influxdb.default:8086"
+            taskMetricName = "tasks"
+            buildMetricName = "build"
+        }
+    }
+}""".trimIndent()
             }
             TestFolder.recursiveDelete(File("tmp"))
         }

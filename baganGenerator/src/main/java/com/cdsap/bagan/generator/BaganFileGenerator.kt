@@ -56,7 +56,8 @@ class BaganFileGenerator(
 
         createConfigMaps(
             path = "$path/templates/configmap${experiment.name}.yaml",
-            experiment = experiment
+            experiment = experiment,
+            talaiot = bagan.talaiot
         )
 
         commandExecutor.execute("helm install -n ${experiment.name} -f $path/values.yaml $path/")
@@ -117,12 +118,14 @@ class BaganFileGenerator(
 
     private fun createConfigMaps(
         path: String,
-        experiment: Experiment
+        experiment: Experiment,
+        talaiot: Talaiot?
     ) {
         logger.log(TAG, "creating configmap file $path")
         val file = File(path)
 
         var experiments = ""
+        var talaiotProperties = ""
         if (!experiment.properties.isEmpty()) {
             experiments += "${ident(experiments)}${ConfigMapExperiments.properties(properties = experiment.properties)}\n"
         }
@@ -133,8 +136,12 @@ class BaganFileGenerator(
         if (!experiment.gradleWrapperVersion.isEmpty()) {
             experiments += "${ident(experiments)}${ConfigMapExperiments.gradleWrapperVersion(version = experiment.gradleWrapperVersion)}"
         }
+
+        talaiotProperties += "  talaiot.publishTaskMetrcis: ${talaiot?.publishTaskMetrics ?: true}\n"
+        talaiotProperties += "  talaiot.publishBuildMetrcis: ${talaiot?.publishBuildMetrics ?: true}"
+
         file.writeText(
-            ConfigMap().transform(experiments = experiments)
+            ConfigMap().transform(experiments = experiments, talaiotProperties = talaiotProperties)
         )
     }
 

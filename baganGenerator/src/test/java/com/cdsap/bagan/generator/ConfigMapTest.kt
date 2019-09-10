@@ -1,5 +1,6 @@
 package com.cdsap.bagan.generator
 
+import io.kotlintest.matchers.string.shouldContain
 import io.kotlintest.specs.BehaviorSpec
 
 class ConfigMapTest : BehaviorSpec({
@@ -9,8 +10,7 @@ class ConfigMapTest : BehaviorSpec({
                 ConfigMapExperiments.branch("develop")
             )
             then("configmap template have been placed with Branch conf") {
-                assert(
-                    values == """
+                values shouldContain ("""
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -23,7 +23,7 @@ data:
   id: {{ .Values.name }}
   branch: develop
 """.trimIndent()
-                )
+                        )
             }
 
         }
@@ -32,8 +32,7 @@ data:
                 ConfigMapExperiments.gradleWrapperVersion("4.3")
             )
             then("configmap template have been placed with Gradle Wrapper Version conf") {
-                assert(
-                    values == """
+                values shouldContain ("""
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -46,7 +45,7 @@ data:
   id: {{ .Values.name }}
   gradleWrapperVersion: '4.3'
 """.trimIndent()
-                )
+                        )
             }
 
         }
@@ -55,8 +54,7 @@ data:
                 ConfigMapExperiments.properties("property1=a")
             )
             then("configmap template have been placed with properties conf") {
-                assert(
-                    values == """
+                values shouldContain ("""
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -70,11 +68,11 @@ data:
   properties: |
                property1=a
 """.trimIndent()
-                )
+                        )
             }
 
         }
-        `when`("All type exepriments are defined") {
+        `when`("All type experiments are defined") {
             val values = ConfigMap().transform(
                 ConfigMapExperiments.properties("property1=a") + "\n" +
                         "  " + ConfigMapExperiments.branch("develop") + "\n" +
@@ -83,8 +81,7 @@ data:
 
             )
             then("configmap template have been placed with properties conf") {
-                assert(
-                    values == """
+                values shouldContain ("""
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -98,12 +95,28 @@ data:
   properties: |
                property1=a
   branch: develop
-  gradleWrapperVersion: '4.5'""".trimIndent()
-
-                )
+  gradleWrapperVersion: '4.5'
+  """.trimIndent()
+                        )
             }
 
         }
+        `when`("Talaiot task and build properties are defined") {
+            var talaiotProperties = ""
+            talaiotProperties += "  talaiot.publishTaskMetrcis: true\n"
+            talaiotProperties += "  talaiot.publishBuildMetrcis: true"
+
+            val values = ConfigMap().transform(
+                ConfigMapExperiments.properties("property1=a"),
+                talaiotProperties
+            )
+            then("Talaiot properties are present in the ConfigMap file") {
+                values shouldContain "  talaiot.publishTaskMetrcis: true"
+                values shouldContain "  talaiot.publishBuildMetrcis: true"
+                values shouldContain "               property1=a"
+            }
+        }
+
     }
 })
 
