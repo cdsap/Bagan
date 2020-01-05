@@ -59,7 +59,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath("com.cdsap:talaiot:1.0.4")
+        classpath("com.cdsap:talaiot:1.0.10")
     }
 }
 
