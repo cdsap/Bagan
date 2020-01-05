@@ -3,7 +3,7 @@ set -e
 mode=$1
 command=$2
 
-dockerBaganInitVersion="0.1.6"
+dockerBaganInitVersion="0.1.7"
 
 . scripts/log.sh
 . scripts/command_infra.sh

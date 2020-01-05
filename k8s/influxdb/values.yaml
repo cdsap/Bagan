@@ -3,7 +3,20 @@
 image:
   repository: "influxdb"
   tag: "1.7.3-alpine"
+  tag: "1.7.6-alpine"
   pullPolicy: IfNotPresent
+  ## If specified, use these secrets to access the images
+  # pullSecrets:
+  #   - registry-secret
+
+## Customize livenessProbe and readinessProbe
+## ref: https://docs.influxdata.com/influxdb/v1.7/tools/api/#ping-http-endpoint
+##
+livenessProbe:
+  probePath: "/ping"
+
+readinessProbe:
+  probePath: "/ping"
 
 ## Specify a service type
 ## NodePort is default
@@ -26,6 +39,7 @@ service:
 ##
 persistence:
   enabled: false
+  enabled: true
   ## If true will use an existing PVC instead of creating one
   # useExisting: false
   ## Name of existing PVC to be used in the influx deployment
@@ -85,6 +99,16 @@ resources:
   limits:
     memory: 16Gi
     cpu: 8
+resources: {}
+#  requests:
+#    memory: 256Mi
+#    cpu: 0.1
+#  limits:
+#    memory: 16Gi
+#    cpu: 8
+
+# Annotations to be added to InfuxDB pods
+podAnnotations: {}
 
 ingress:
   enabled: false
@@ -123,6 +147,7 @@ tolerations: []
 ## configure certain parts of the server.
 ## Ref: https://hub.docker.com/_/influxdb/
 env:
+env: {}
   # - name: INFLUXDB_DB
   #   value: "demo"
 
@@ -146,6 +171,8 @@ config:
     compact_full_write_cold_duration: 4h0m0s
     max_series_per_database: 1000000
     max_values_per_tag: 100000
+    max_series_per_database: 3000000
+    max_values_per_tag: 300000
     trace_logging_enabled: false
   coordinator:
     write_timeout: 10s
@@ -182,6 +209,7 @@ config:
     enabled: true
     bind_address: 8086
     auth_enabled: false
+    flux_enabled: true
     log_enabled: true
     write_tracing: false
     pprof_enabled: true
@@ -262,3 +290,23 @@ initScripts:
   scripts:
     init.iql: |+
       SHOW DATABASES
+      CREATE DATABASE "telegraf" WITH DURATION 30d REPLICATION 1 NAME "rp_30d"
+
+backup:
+  enabled: false
+  schedule: "0 0 * * *"
+  annotations: {}
+
+  ## Google Cloud Storage
+  ## Secret is expected to have key stored in `key.json` field
+  # gcs:
+  #    serviceAccountSecret: influxdb-backup-key
+  #    destination: gs://bucket/influxdb
+
+  ## Azure
+  ## Secret is expected to have connection string stored in `connection-string` field
+  ## Existing container will be used or private one withing storage account will be created.
+  # azure:
+  #   storageAccountSecret: influxdb-backup-azure-key
+  #   destination_container: influxdb-container
+  #   destination_path: ""

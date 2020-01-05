@@ -197,7 +197,7 @@ fun getContentLegend(experiments: List<Experiment>): String {
         }
         if (it.gradleWrapperVersion.isNotBlank()) {
             contentExperiment += "#### Gradle Wrapper:\n"
-            contentExperiment += "${it.gradleWrapperVersion}\n"
+            contentExperiment += "${it.gradleWrapperVersion.replace("'", "")}\n"
         }
         content += contentExperiment
     }
