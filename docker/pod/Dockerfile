@@ -14,7 +14,7 @@ RUN set -x \
     && echo "sdkman_insecure_ssl=false" >> $SDKMAN_DIR/etc/config
 
 RUN source "$HOME/.sdkman/bin/sdkman-init.sh" \
-    && sdk install kotlin 1.3.31
+    && sdk install kotlin 1.3.61
 
 
 SHELL [ "/bin/bash", "-c" ]
@@ -30,8 +30,7 @@ RUN echo "sdkman_auto_answer=true" > $SDKMAN_DIR/etc/config \
 
 
 RUN source "$HOME/.sdkman/bin/sdkman-init.sh" \
-    && sdk install kotlin 1.3.31 \
-    && sdk install kscript
+    && sdk install kscript 2.9.3
 
 ENV ANDROID_HOME /opt/android-sdk-linux
 RUN echo ANDROID_HOME
