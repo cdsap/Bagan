@@ -10,12 +10,50 @@ branchJson=$(cat $FILE | jq -c -r '.bagan.experiments.branch' | tr -d '\r')
 branchCountJson=$(cat $FILE | jq -c -r '.bagan.experiments.branch | length' | tr -d '\r')
 gradleWrapperVersionJson=$(cat $FILE | jq -c -r '.bagan.experiments.gradleWrapperVersion' | tr -d '\r')
 gradleWrapperVersionCountJson=$(cat $FILE | jq -c -r '.bagan.experiments.gradleWrapperVersion | length' | tr -d '\r')
+
 clusterJson=$(cat $FILE | jq -c -r '.bagan.clusterName' | tr -d '\r')
 zoneJson=$(cat $FILE | jq -c -r '.bagan.zone' | tr -d '\r')
 machineJson=$(cat $FILE | jq -c -r  '.bagan.machine' | tr -d '\r')
 privateJson=$(cat $FILE | jq -c -r  '.bagan.private' | tr -d '\r')
 sshJson=$(cat $FILE | jq -c -r  '.bagan.ssh' | tr -d '\r')
 known_hostsJson=$(cat $FILE | jq -c -r  '.bagan.known_hosts' | tr -d '\r')
+
+
+#compose=$(cat $FILE | jq -c -r '.bagan.experiments.compose' | tr -d '\r')
+
+#validations, let start with restrictive policies only allowing
+#composing functions
+
+#taskExperiment=$(cat $FILE | jq -c -r '.bagan.experiments.compose.taskExperiment' | tr -d '\r')
+#iterationsTaskExperiment=$(cat $FILE | jq -c -r '.bagan.experiments.compose.iterationsExperiment' | tr -d '\r')
+#values=$(cat $FILE | jq -c -r '.bagan.experiments.compose.values | length' | tr -d '\r')
+printf ""
+
+#printf $taskExperiment
+#printf "\n"
+#printf $iterationsTaskExperiment
+#printf "\n"
+#printf $values
+#printf "\n"
+
+# check parameters
+# check how many values
+
+#casa=$(cat $FILE | jq '.bagan.experiments.compose.values | .[].branch')
+
+#files=$(cat $FILE | jq -c -r '.bagan.experiments.compose.values | .[].files' | tr -d '\r')
+
+
+#printf "exit"
+#printf $files
+#printf "exit2222"
+#printf $casa
+ #echo ${casa[@]}
+
+#printf "\n"
+
+
+#exit 1
 
 
 log "Json File parsed OK"
@@ -47,7 +85,7 @@ if [ "$propertiesJson" == "null" ] && [ "$branchJson" == "null" ] && [ "$gradleW
         \"branch\": [ \"develop\",\"master\"],
         \"gradleWrapperVersion\": [ \"5.6\",\"5.5\",\"5.4\"]
      }"
-     exit 1
+    # exit 1
 fi
 
 

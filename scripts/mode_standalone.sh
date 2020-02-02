@@ -5,8 +5,11 @@ function standaloneExecutor(){
     printf '%s\n' "Not implemented"
   elif [ $command == "infrastructure" ]; then
     printf '%s\n' "Mode infrastrucure"
+    printf '%s\n' "111Mode infrastrucure"
     eval "$(helmInstaller)"
+    printf '%s\n' "1Mode infrastrucure"
     eval "$(infraPods)"
+    printf '%s\n' "1Mode infrastrucure"
     eval "$(createSecret)"
     eval "$(bagan)"
     eval "$(endMessage)"

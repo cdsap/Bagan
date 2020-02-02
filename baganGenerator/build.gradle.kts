@@ -18,6 +18,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+    implementation("com.github.doyaaaaaken:kotlin-csv-jvm:0.7.3")
     implementation("com.squareup.moshi:moshi-kotlin:1.8.0")
     implementation("com.squareup.moshi:moshi-adapters:1.8.0")
     testImplementation("io.kotlintest:kotlintest-runner-junit5:3.4.0")

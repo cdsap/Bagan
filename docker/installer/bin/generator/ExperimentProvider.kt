@@ -1,5 +1,6 @@
 package com.cdsap.bagan.generator
 
+import kotlin.math.exp
 import kotlin.reflect.KFunction
 
 /**
@@ -19,23 +20,49 @@ class ExperimentProvider(private val bagan: Bagan) {
 
 
     fun getExperiments(): List<Experiment> {
-        val experimentsProperties = getExperimentsProperties()?.toSet() ?: setOf("")
-        val experimentBranches = bagan.experiments.branch?.toSet() ?: setOf("")
-        val experimentGradleWrapper = bagan.experiments.gradleWrapperVersion?.toSet() ?: setOf("")
+        if (bagan.experiments.compose != null) {
+            var counter = 1
+            val experiments = mutableListOf<Experiment>()
+            bagan.experiments.compose.values.forEach {
+                val elements = it.files.flatMap {
+                    listOf(UnitExperiment(it.module, it.path))
+                }
+                val experiment = Experiment(
+                    properties = "",
+                    branch = "",
+                    gradleWrapperVersion = ""
+                )
+                experiment.composeExperiment = ComposeExperiment(
+                    taskExperiment = bagan.experiments.compose.taskExperiment,
+                    iterationsExperiments = bagan.experiments.compose.iterationsExperiment,
+                    branch = it.branch,
+                    files = elements
+                )
 
-        val listExperiments = cartesianProduct(
-            experimentsProperties,
-            experimentBranches,
-            experimentGradleWrapper
-        ).map(::Experiment)
+                experiment.name = "experiment$counter"
+                counter++
+                experiments.add(experiment)
+            }
+            return experiments
 
-        var count = 1
-        listExperiments.forEach {
-            it.name = "experiment" + count++
+        } else {
+            val experimentsProperties = getExperimentsProperties()?.toSet() ?: setOf("")
+            val experimentBranches = bagan.experiments.branch?.toSet() ?: setOf("")
+            val experimentGradleWrapper = bagan.experiments.gradleWrapperVersion?.toSet() ?: setOf("")
+
+            val listExperiments = cartesianProduct(
+                experimentsProperties,
+                experimentBranches,
+                experimentGradleWrapper
+            ).map(::Experiment)
+
+            var count = 1
+            listExperiments.forEach {
+                it.name = "experiment" + count++
+            }
+
+            return listExperiments
         }
-
-        return listExperiments
-
     }
 
     private fun getExperimentsProperties(): List<String>? =
@@ -90,6 +117,19 @@ class ExperimentProvider(private val bagan: Bagan) {
 
 }
 
-data class Experiment(val properties: String, val branch: String, val gradleWrapperVersion: String) {
+data class Experiment(
+    val properties: String,
+    val branch: String,
+    val gradleWrapperVersion: String
+) {
     var name: String = ""
+    var composeExperiment: ComposeExperiment? = null
 }
+
+data class ComposeExperiment(
+    val taskExperiment: String,
+    val iterationsExperiments: Int,
+    val branch: String, val files: List<UnitExperiment>
+)
+
+data class UnitExperiment(val module: String, val path: String)

@@ -6,8 +6,10 @@ class ConfigMapTest : BehaviorSpec({
     given("ConfigMap file") {
         `when`("Parameter branch is defined") {
             val values = ConfigMap().transform(
+                false,
                 ConfigMapExperiments.branch("develop")
             )
+            println(values)
             then("configmap template have been placed with Branch conf") {
                 assert(
                     values == """
@@ -21,6 +23,7 @@ metadata:
     session: {{ .Values.session }}
 data:
   id: {{ .Values.name }}
+  isComposed: 'false'
   branch: develop
 """.trimIndent()
                 )
@@ -29,6 +32,7 @@ data:
         }
         `when`("Parameter Gradle Wrapper Version is defined") {
             val values = ConfigMap().transform(
+                false,
                 ConfigMapExperiments.gradleWrapperVersion("4.3")
             )
             then("configmap template have been placed with Gradle Wrapper Version conf") {
@@ -44,6 +48,7 @@ metadata:
     session: {{ .Values.session }}
 data:
   id: {{ .Values.name }}
+  isComposed: 'false'
   gradleWrapperVersion: '4.3'
 """.trimIndent()
                 )
@@ -52,6 +57,7 @@ data:
         }
         `when`("Parameter Properties is defined") {
             val values = ConfigMap().transform(
+                false,
                 ConfigMapExperiments.properties("property1=a")
             )
             then("configmap template have been placed with properties conf") {
@@ -67,6 +73,7 @@ metadata:
     session: {{ .Values.session }}
 data:
   id: {{ .Values.name }}
+  isComposed: 'false'
   properties: |
                property1=a
 """.trimIndent()
@@ -76,6 +83,7 @@ data:
         }
         `when`("All type exepriments are defined") {
             val values = ConfigMap().transform(
+                false,
                 ConfigMapExperiments.properties("property1=a") + "\n" +
                         "  " + ConfigMapExperiments.branch("develop") + "\n" +
                         "  " + ConfigMapExperiments.gradleWrapperVersion("4.5")
@@ -95,14 +103,13 @@ metadata:
     session: {{ .Values.session }}
 data:
   id: {{ .Values.name }}
+  isComposed: 'false'
   properties: |
                property1=a
   branch: develop
   gradleWrapperVersion: '4.5'""".trimIndent()
-
                 )
             }
-
         }
     }
 })

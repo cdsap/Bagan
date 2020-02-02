@@ -16,13 +16,13 @@ class BaganFileGenerator(
 
     fun generateExperiments(experiments: List<Experiment>) {
         logger.log(TAG, "Starting DashboardProvider")
-
         experiments.forEach {
             createExperiment(it)
         }
     }
 
     private fun createExperiment(experiment: Experiment) {
+        val composeMode = bagan.experiments.compose != null
         val path = "$TEMP_FOLDER/${experiment.name}"
 
         logger.log(TAG, "Experiment ${experiment.name}")
@@ -31,13 +31,14 @@ class BaganFileGenerator(
             path = path
         )
 
+        val branch = getBranch(composeMode, experiment)
         createFileValues(
             path = "$path/values.yaml",
             bagan = bagan,
             nameExperiment = experiment.name,
             image = Versions.POD_INJECTOR,
             session = sessionExperiment,
-            branch = if (experiment.branch.isEmpty()) "master" else experiment.branch
+            branch = branch
         )
 
         createChartFile(
@@ -51,15 +52,28 @@ class BaganFileGenerator(
 
         createPods(
             path = "$path/templates/pod${experiment.name}.yaml",
-            privateRepo = bagan.private
+            privateRepo = bagan.private,
+            isComposedExperiment = composeMode
         )
+
 
         createConfigMaps(
             path = "$path/templates/configmap${experiment.name}.yaml",
-            experiment = experiment
+            experiment = experiment,
+            isComposedExperiment = composeMode,
+            initialTask = bagan.gradleCommand,
+            initialIterations = bagan.iterations
         )
 
         commandExecutor.execute("helm install -n ${experiment.name} -f $path/values.yaml $path/")
+    }
+
+    private fun getBranch(isComposedExperiment: Boolean, experiment: Experiment): String {
+        if (isComposedExperiment) {
+            return experiment.composeExperiment!!.branch
+        } else {
+            return if (experiment.branch.isEmpty()) "master" else experiment.branch
+        }
     }
 
     private fun createChartFile(path: String, id: String) {
@@ -117,24 +131,43 @@ class BaganFileGenerator(
 
     private fun createConfigMaps(
         path: String,
-        experiment: Experiment
+        experiment: Experiment,
+        isComposedExperiment: Boolean,
+        initialTask: String,
+        initialIterations: Int
     ) {
         logger.log(TAG, "creating configmap file $path")
         val file = File(path)
 
         var experiments = ""
-        if (!experiment.properties.isEmpty()) {
-            experiments += "${ident(experiments)}${ConfigMapExperiments.properties(properties = experiment.properties)}\n"
-        }
-        if (!experiment.branch.isEmpty()) {
-            experiments += "${ident(experiments)}${ConfigMapExperiments.branch(branch = experiment.branch)}\n"
-        }
 
-        if (!experiment.gradleWrapperVersion.isEmpty()) {
-            experiments += "${ident(experiments)}${ConfigMapExperiments.gradleWrapperVersion(version = experiment.gradleWrapperVersion)}"
+        if (isComposedExperiment) {
+            if (experiment.composeExperiment != null) {
+                val composed = experiment.composeExperiment
+                experiments += "${ident(experiments)}extraLabel: '${composed}'\n"
+                experiments += "${ident(experiments)}startingTask: '$initialTask'\n"
+                experiments += "${ident(experiments)}startingTaskIterations: '$initialIterations'\n"
+                experiments += "${ident(experiments)}taskExperimentation: '${composed?.taskExperiment}'\n"
+                experiments += "${ident(experiments)}iterationsExperiments: '${composed?.iterationsExperiments}'\n"
+                experiments += "${ident(experiments)}files: |\n"
+                experiments += "${generateFiles(composed?.files)}\n"
+            }
+
+        } else {
+
+            if (!experiment.properties.isEmpty()) {
+                experiments += "${ident(experiments)}${ConfigMapExperiments.properties(properties = experiment.properties)}\n"
+            }
+            if (!experiment.branch.isEmpty()) {
+                experiments += "${ident(experiments)}${ConfigMapExperiments.branch(branch = experiment.branch)}\n"
+            }
+
+            if (!experiment.gradleWrapperVersion.isEmpty()) {
+                experiments += "${ident(experiments)}${ConfigMapExperiments.gradleWrapperVersion(version = experiment.gradleWrapperVersion)}"
+            }
         }
         file.writeText(
-            ConfigMap().transform(experiments = experiments)
+            ConfigMap().transform(isComposed = isComposedExperiment, experiments = experiments)
         )
     }
 
@@ -143,15 +176,33 @@ class BaganFileGenerator(
 
     private fun createPods(
         path: String,
-        privateRepo: Boolean
+        privateRepo: Boolean,
+        isComposedExperiment: Boolean
     ) {
         logger.log(TAG, "creating pod file $path")
+
         val file = File(path)
-        if (privateRepo) {
-            file.writeText(PodSecure().transform())
+
+        // initially only supporting compose mdode for private repos
+        if (isComposedExperiment) {
+            file.writeText(PodSecureComposed().transform())
         } else {
-            file.writeText(Pod().transform())
+            if (privateRepo) {
+                file.writeText(PodSecure().transform())
+            } else {
+                file.writeText(Pod().transform())
+            }
         }
+    }
+
+
+    private fun generateFiles(files: List<UnitExperiment>?): String {
+        val ident = "         "
+        var experiments = ""
+        files?.forEach {
+            experiments += "$ident${it.module.replace(":","")}=${it.path}\n"
+        }
+        return experiments
     }
 
 }

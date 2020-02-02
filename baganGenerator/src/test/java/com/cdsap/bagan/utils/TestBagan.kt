@@ -1,7 +1,6 @@
 package com.cdsap.bagan.utils
 
-import com.cdsap.bagan.generator.Bagan
-import com.cdsap.bagan.generator.getSimpleExperiment
+import com.cdsap.bagan.generator.*
 
 object TestBagan {
 
@@ -47,5 +46,39 @@ object TestBagan {
         experiments = getSimpleExperiment(),
         iterations = 10,
         private = true
+    )
+
+    fun getBaganWithComposedExperiments() = Bagan(
+        repository = "http://git.com",
+        gradleCommand = "./gradlew clean",
+        clusterName = "myCluster",
+        zone = "myZone",
+        project_id = "",
+        experiments = getComposedExperiment(),
+        iterations = 10,
+        private = true
+    )
+
+    private fun getComposedExperiment() = GradleExperimentsProperties(
+        compose = Compose(
+            taskExperiment = "./gradlew assemble",
+            iterationsExperiment = 12,
+            values = arrayOf(
+                ComposeUnit(
+                    branch = "branchA",
+                    files = arrayOf(
+                        FileUnit("moduleA", "src/main/com/Second.kt"),
+                        FileUnit("moduleB", "src/main/com/Third.kt")
+                    )
+                ),
+                ComposeUnit(
+                    branch = "branchB",
+                    files = arrayOf(
+                        FileUnit("moduleA", "src/main/com/Second.kt"),
+                        FileUnit("moduleB", "src/main/com/Third.kt")
+                    )
+                )
+            )
+        )
     )
 }

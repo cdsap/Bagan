@@ -24,7 +24,15 @@ class ExperimentProviderTest : BehaviorSpec({
             val experimentProvider = ExperimentProvider(baganConf.getBaganConf())
             val experiments = experimentProvider.getExperiments()
             then("combinations for the simple experiment are generated") {
-                experiments.containsAll(listOf("gradlememory=1G", "gradlememory=2G", "gradlememory=3G","develop","master"))
+                experiments.containsAll(
+                    listOf(
+                        "gradlememory=1G",
+                        "gradlememory=2G",
+                        "gradlememory=3G",
+                        "develop",
+                        "master"
+                    )
+                )
 
             }
         }
@@ -119,7 +127,7 @@ fun getSimpleExperiment() = GradleExperimentsProperties(
             arrayOf("1G", "2G", "3G")
         )
     ),
-    branch = arrayOf("develop","master ")
+    branch = arrayOf("develop", "master ")
 )
 
 fun getMultipleExperiment() = GradleExperimentsProperties(
@@ -139,6 +147,28 @@ fun getMultipleExperiment() = GradleExperimentsProperties(
     )
 )
 
+fun getComposedExperiment() = GradleExperimentsProperties(
+    compose = Compose(
+        taskExperiment = "./gradlew assemble",
+        iterationsExperiment = 12,
+        values = arrayOf(
+            ComposeUnit(
+                "branchA",
+                files = arrayOf(
+                    FileUnit("moduleA", "src/main/com/Second.kt"),
+                    FileUnit("moduleB", "src/main/com/Third.kt")
+                )
+            ),
+            ComposeUnit(
+                branch = "branchB",
+                files = arrayOf(
+                    FileUnit("moduleA", "src/main/com/Second.kt"),
+                    FileUnit("moduleB", "src/main/com/Third.kt")
+                )
+            )
+        )
+    )
+)
 
 fun baganWithMultipleExperiments() = Bagan(
     repository = "http ://git.com",

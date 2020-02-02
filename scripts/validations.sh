@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 if [ ! "$mode" = "gcloud" ] && [ ! "$mode" = "standalone" ] && [ ! "$mode" = "gcloud_docker" ]; then

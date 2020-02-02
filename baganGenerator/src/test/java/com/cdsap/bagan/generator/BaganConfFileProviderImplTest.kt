@@ -29,6 +29,7 @@ class BaganConfFileProviderImplTest : BehaviorSpec({
                 baganConfFileProvider.getBaganConf()
             }
             then("error iterations showed") {
+                println(exception.message)
                 exception.message should haveSubstring("Required value 'iterations'")
             }
         }

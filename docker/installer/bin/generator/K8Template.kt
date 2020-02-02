@@ -14,6 +14,76 @@ version: $version"
 
 }
 
+class PodSecureComposed {
+    fun transform() = """
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Values.pod }}
+  labels:
+    app: bagan
+    type: experiment
+    session: {{ .Values.session }}
+  annotations:
+    seccomp.security.alpha.kubernetes.io/pod: 'docker/default'
+spec:
+  restartPolicy: Never
+  initContainers:
+  - name: git-sync
+    image: k8s.gcr.io/git-sync-amd64:v2.0.6
+    imagePullPolicy: Always
+    volumeMounts:
+    - name: service
+      mountPath: /repo
+    - name: git-secret
+      mountPath: /etc/git-secret
+    env:
+    - name: GIT_SYNC_REPO
+      value: {{ .Values.repository }}
+    - name: GIT_SYNC_BRANCH
+      value: {{ .Values.branch }}
+    - name: GIT_SYNC_ROOT
+      value: /repo
+    - name: GIT_SYNC_DEST
+      value: "workspace"
+    - name: GIT_SYNC_PERMISSIONS
+      value: "0777"
+    - name: GIT_SYNC_ONE_TIME
+      value: "true"
+    - name: GIT_SYNC_SSH
+      value: "true"
+    securityContext:
+      runAsUser: 0
+  containers:
+  - name:  agent
+    image: {{ .Values.image }}
+    resources:
+      requests:
+        memory: "10G"
+    command: ["/bin/bash"]
+    args: ["-c", "${ExecutorInPodComposed.executor()}"]
+    securityContext:
+      runAsUser: 0
+      allowPrivilegeEscalation: true
+      readOnlyRootFilesystem: false
+    envFrom:
+      - configMapRef:
+          name: {{ .Values.configMaps }}
+    volumeMounts:
+      - name: service
+        mountPath: /repo
+  volumes:
+    - name: service
+      emptyDir: {}
+    - name: git-secret
+      secret:
+        defaultMode: 256
+        secretName: git-creds
+""".trimIndent()
+
+}
+
+
 class PodSecure {
     fun transform() = """
 apiVersion: v1
@@ -163,6 +233,7 @@ iterations: $iterations
 
 class ConfigMap {
     fun transform(
+        isComposed : Boolean,
         experiments: String = ""
 
     ) = """
@@ -176,6 +247,7 @@ metadata:
     session: {{ .Values.session }}
 data:
   id: {{ .Values.name }}
+  isComposed: '$isComposed'
   $experiments
 """.trimIndent()
 }
@@ -192,6 +264,18 @@ for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;
 """.trimIndent()
 }
 
+object ExecutorInPodComposed {
+    fun executor() = """
+mv *.kt /repo/workspace;
+cd /repo/workspace;
+source /root/.bashrc;
+source /usr/share/sdkman/bin/sdkman-init.sh;
+source /root/.bashrc;
+kscript ExperimentController.kt;
+kscript ExecutionGenerator.kt;
+bash execution.sh;
+""".trimIndent()
+}
 
 object ConfigMapExperiments {
     fun branch(branch: String) = """branch: $branch"""

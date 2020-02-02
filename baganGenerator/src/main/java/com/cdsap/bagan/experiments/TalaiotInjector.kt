@@ -49,6 +49,7 @@ class TalaiotInjector(
 
     private fun createFileTalaiot() {
         val id = System.getenv("id")
+        val extraLabel = System.getenv("extraLabel")
         val file = File("$path/talaiot.gradle.kts")
         val content = """
 buildscript {
@@ -59,17 +60,27 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath("com.cdsap:talaiot:1.0.4")
+        classpath("com.cdsap:talaiot:1.0.9")
     }
 }
 
 apply<com.cdsap.talaiot.TalaiotPlugin>()
-
+val trackingLabel = rootProject.getProperties().get("tinder.trackinglabel") as String
 configure<com.cdsap.talaiot.TalaiotExtension>() {
     logger = com.cdsap.talaiot.logger.LogTracker.Mode.INFO
+    ignoreWhen {
+            envName = "tinder.trackinglabel"
+            envValue = "bootstraping"
+    }
     metrics {
-        customBuildMetrics("experiment" to  "$id")
-        customTaskMetrics("experiment" to  "$id")
+        customBuildMetrics(
+          "experiment" to "$id",
+          "extraLabel" to trackingLabel
+        )
+        customTaskMetrics(
+          "experiment" to "$id",
+          "extraLabel" to trackingLabel
+        )
     }
     publishers {
 

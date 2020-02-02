@@ -77,6 +77,28 @@ class ExperimentControllerTest : BehaviorSpec({
             TestFolder.recursiveDelete(File("tmp"))
 
         }
+        `when`("Experimentation is composed") {
+            File("tmp").mkdir()
+            File("tmp/build.gradle").createNewFile()
+            File("tmp/gradle.properties").createNewFile()
+            val testLogger = TestPodLogger()
+            withEnvironment(
+                mapOf(
+                    "properties" to "property=1",
+                    "isComposed" to "true"
+                )
+            ) {
+                val experimentController = ExperimentController("tmp", testLogger)
+                experimentController.init()
+            }
+            then("log message for Properties experimentation is detected") {
+
+                assert(!testLogger.containsLog("Gradle Properties experimentation detected."))
+                assert(!testLogger.containsLog("Begin process RewriteProperties"))
+            }
+            TestFolder.recursiveDelete(File("tmp"))
+
+        }
 
     }
 

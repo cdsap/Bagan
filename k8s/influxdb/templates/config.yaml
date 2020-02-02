@@ -2,10 +2,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "influxdb.fullname" . }}
+  name: "{{ template "influxdb.fullname" . }}"
   labels:
-    app: {{ template "influxdb.fullname" . }}
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app: "{{ template "influxdb.fullname" . }}"
+    chart: "{{ template "influxdb.chart" . }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
 data:
@@ -26,8 +26,8 @@ data:
       cache-snapshot-memory-size = {{ .Values.config.data.cache_snapshot_memory_size | int64 }}
       cache-snapshot-write-cold-duration = "{{ .Values.config.data.cache_snapshot_write_cold_duration }}"
       compact-full-write-cold-duration = "{{ .Values.config.data.compact_full_write_cold_duration }}"
-      max-series-per-database = {{ .Values.config.data.max_series_per_database | int64 }}
-      max-values-per-tag = {{ .Values.config.data.max_values_per_tag | int64 }}
+      max-series-per-database = 3000000
+      max-values-per-tag = 3000000
       trace-logging-enabled = {{ .Values.config.data.trace_logging_enabled }}
 
     [coordinator]
@@ -70,6 +70,7 @@ data:
     [http]
       enabled = {{ .Values.config.http.enabled }}
       bind-address = ":{{ .Values.config.http.bind_address }}"
+      flux-enabled = {{ .Values.config.http.flux_enabled }}
       auth-enabled = {{ .Values.config.http.auth_enabled }}
       log-enabled = {{ .Values.config.http.log_enabled }}
       write-tracing = {{ .Values.config.http.write_tracing }}
@@ -83,9 +84,9 @@ data:
       realm = "{{ .Values.config.http.realm }}"
       unix-socket-enabled = {{ .Values.config.http.unix_socket_enabled }}
       bind-socket = "{{ .Values.config.http.bind_socket }}"
-    
+
     # TODO: allow multiple graphite listeners
-    
+
     [[graphite]]
       enabled = {{ .Values.config.graphite.enabled }}
       bind-address = ":{{ .Values.config.graphite.bind_address }}"
@@ -105,7 +106,7 @@ data:
         {{- end }}
       ]
       {{- end }}
-    
+
     # TODO: allow multiple collectd listeners with templates
 
     [[collectd]]
@@ -120,7 +121,7 @@ data:
       typesdb = "{{ .Values.config.collectd.typesdb }}"
       security-level = "{{ .Values.config.collectd.security_level }}"
       auth-file = "{{ .Values.config.collectd.auth_file }}"
-    
+
     # TODO: allow multiple opentsdb listeners with templates
 
     [[opentsdb]]
@@ -135,7 +136,7 @@ data:
       batch-pending = {{ .Values.config.opentsdb.batch_pending | int64 }}
       batch-timeout = "{{ .Values.config.opentsdb.batch_timeout }}"
       log-point-errors = {{ .Values.config.opentsdb.log_point_errors }}
-    
+
     # TODO: allow multiple udp listeners with templates
 
     [[udp]]

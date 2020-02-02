@@ -11,7 +11,10 @@ class ExperimentController(private val path: String, private val logger: LoggerP
     fun init() {
         logger.log(TAG, "Staring the process")
         injectTalaiot()
-        applyExperiment()
+        val isComposed = "true" == System.getenv("isComposed")
+        if (!isComposed) {
+            applyExperiment()
+        }
     }
 
     private fun injectTalaiot() {

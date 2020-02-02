@@ -10,12 +10,17 @@ helm_init="helm init"
 helm_service_account="kubectl --namespace kube-system create serviceaccount tiller"
 helm_cluster_role="kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller"
 helm_patch_deploy="kubectl --namespace kube-system patch deploy tiller-deploy -p '{\"spec\":{\"template\":{\"spec\":{\"serviceAccount\":\"tiller\"}}}}'"
-helm_cluster_role2="kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)"
+#todo fix the problem with the gcloud account
+helm_cluster_role2="kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user="
 helm_repo_update="helm repo update"
 
 function helmInstaller(){
+  echo "echo 1;"
+  echo "echo 22;"
   echo "$helm_init;"
+  echo "echo 2;"
   echo "$helm_service_account;"
+  echo "echo 3;"
   echo "$sleep10;"
   echo "$helm_cluster_role;"
   echo "$helm_patch_deploy;"
