@@ -1,6 +1,6 @@
 package com.cdsap.bagan.experiments
 
-data class MetadataI(
+data class IncrementalChangeInfo(
     val initialTask: String,
     val initialTaskIterations: Int,
     val taskExperimentation: String,

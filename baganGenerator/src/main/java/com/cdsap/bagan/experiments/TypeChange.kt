@@ -1,6 +1,6 @@
 package com.cdsap.bagan.experiments
 
-enum class Change {
+enum class TypeChange {
     ADD_VALUE,
     ADD_METHOD
 }

@@ -4,7 +4,6 @@ import java.io.StringReader
 import java.lang.Exception
 import java.util.*
 
-
 fun main() {
     ExecutionGenerator(".").init()
 }
@@ -12,10 +11,9 @@ fun main() {
 class ExecutionGenerator(val path: String) {
 
     fun init() {
-
-        val coordinator = ChangesCoordinator()
+        val coordinator = ChangeProvider()
         val scriptGenerator = ScriptGenerator("$path/execution.sh")
-        val composedExperiments = ComposedExperiments(
+        val composedExperiments = IncrementalChange(
             getUpdates(false),
             coordinator,
             scriptGenerator,
@@ -25,14 +23,14 @@ class ExecutionGenerator(val path: String) {
         composedExperiments.execute()
     }
 
-    fun getMetadata(isMocked: Boolean): MetadataI {
+    fun getMetadata(isMocked: Boolean): IncrementalChangeInfo {
         if (isMocked) {
             val taskExperiment = "./gradlew  :Tinder:assembleInternal"
             val iterationsExperiment = "2"
             val startingTask = "./gradlew clean :Tinder:assembleInternal"
             val startingTaskIterations = "2"
             val extraLabel = "bootstraping"
-            return MetadataI(
+            return IncrementalChangeInfo(
                 startingTask,
                 startingTaskIterations.toInt(),
                 taskExperiment,
@@ -46,7 +44,7 @@ class ExecutionGenerator(val path: String) {
             val startingTask = System.getenv("startingTask")
             val startingTaskIterations = System.getenv("startingTaskIterations")
             val extraLabel = System.getenv("extraLabel")
-            return MetadataI(
+            return IncrementalChangeInfo(
                 startingTask,
                 startingTaskIterations.toInt(),
                 taskExperiment,
@@ -70,8 +68,6 @@ class ExecutionGenerator(val path: String) {
             newProps.load(files)
 
             return newProps.flatMap {
-                println(it.key)
-                println(it.value)
                 listOf(Update(it.key as String, it.value as String))
             }
 

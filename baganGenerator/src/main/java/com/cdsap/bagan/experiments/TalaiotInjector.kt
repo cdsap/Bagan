@@ -60,16 +60,16 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath("com.cdsap:talaiot:1.0.9")
+        classpath("com.cdsap:talaiot:1.0.10")
     }
 }
 
 apply<com.cdsap.talaiot.TalaiotPlugin>()
-val trackingLabel = rootProject.getProperties().get("tinder.trackinglabel") as String
+val trackingLabel = rootProject.getProperties().get("extraLabel") as String
 configure<com.cdsap.talaiot.TalaiotExtension>() {
     logger = com.cdsap.talaiot.logger.LogTracker.Mode.INFO
     ignoreWhen {
-            envName = "tinder.trackinglabel"
+            envName = "extraLabel"
             envValue = "bootstraping"
     }
     metrics {
