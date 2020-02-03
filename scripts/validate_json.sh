@@ -19,15 +19,23 @@ sshJson=$(cat $FILE | jq -c -r  '.bagan.ssh' | tr -d '\r')
 known_hostsJson=$(cat $FILE | jq -c -r  '.bagan.known_hosts' | tr -d '\r')
 
 
-#compose=$(cat $FILE | jq -c -r '.bagan.experiments.compose' | tr -d '\r')
+incrementalChangesJson=$(cat $FILE | jq -c -r '.bagan.experiments.incrementalChanges' | tr -d '\r')
 
 #validations, let start with restrictive policies only allowing
 #composing functions
 
-#taskExperiment=$(cat $FILE | jq -c -r '.bagan.experiments.compose.taskExperiment' | tr -d '\r')
-#iterationsTaskExperiment=$(cat $FILE | jq -c -r '.bagan.experiments.compose.iterationsExperiment' | tr -d '\r')
-#values=$(cat $FILE | jq -c -r '.bagan.experiments.compose.values | length' | tr -d '\r')
-printf ""
+printf "111     z "
+taskExperimentJson=$(cat $FILE | jq -c -r '.bagan.experiments.incrementalChanges.taskIncremental' | tr -d '\r')
+
+printf "2222 "
+printf $taskExperimentJson
+printf "3333 "
+iterationsTaskExperimentJson=$(cat $FILE | jq -c -r '.bagan.experiments.incrementalChanges.iterationsExperiment' | tr -d '\r')
+experimentValuesJson=$(cat $FILE | jq -c -r '.bagan.experiments.incrementalChanges.values | length' | tr -d '\r')
+printf $taskExperimentJson
+
+printf $iterationsTaskExperimentJson
+printf $experimentValuesJson
 
 #printf $taskExperiment
 #printf "\n"
@@ -39,9 +47,9 @@ printf ""
 # check parameters
 # check how many values
 
-#casa=$(cat $FILE | jq '.bagan.experiments.compose.values | .[].branch')
+#casa=$(cat $FILE | jq '.bagan.experiments.incrementalChanges.values | .[].branch')
 
-#files=$(cat $FILE | jq -c -r '.bagan.experiments.compose.values | .[].files' | tr -d '\r')
+#files=$(cat $FILE | jq -c -r '.bagan.experiments.incrementalChanges.values | .[].files' | tr -d '\r')
 
 
 #printf "exit"
@@ -72,7 +80,7 @@ then
   exit 1
 fi
 
-if [ "$propertiesJson" == "null" ] && [ "$branchJson" == "null" ] && [ "$gradleWrapperVersionJson" == "null" ]; then
+if [ "$propertiesJson" == "null" ] && [ "$branchJson" == "null" ] && [ "$gradleWrapperVersionJson" == "null" ] && [ "$incrementalChangesJson" == "null" ] ; then
      color '31;1' "Error: you have to include at least one type experiment in the configuration file."
      log "Example:"
      log "\"experiments\": {
@@ -146,3 +154,5 @@ gradleWrapperVersionCountJson=$gradleWrapperVersionCountJson
 private=$privateJson
 ssh=$sshJson
 known_hosts=$known_hostsJson
+
+exit
