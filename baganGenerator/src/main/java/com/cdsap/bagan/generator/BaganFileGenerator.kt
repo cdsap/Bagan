@@ -65,7 +65,7 @@ class BaganFileGenerator(
             initialIterations = bagan.iterations
         )
 
-        commandExecutor.execute("helm install -n ${experiment.name} -f $path/values.yaml $path/")
+        commandExecutor.execute("helm install ${experiment.name} -f $path/values.yaml $path/")
     }
 
     private fun getBranch(isComposedExperiment: Boolean, experiment: Experiment): String {
