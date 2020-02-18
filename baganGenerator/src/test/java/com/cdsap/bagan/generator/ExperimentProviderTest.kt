@@ -120,17 +120,20 @@ class ExperimentProviderTest : BehaviorSpec({
     }
 })
 
-fun getSimpleExperiment() = GradleExperimentsProperties(
-    properties = arrayOf(
-        Property(
-            "gradlememory",
-            arrayOf("1G", "2G", "3G")
-        )
-    ),
-    branch = arrayOf("develop", "master ")
+fun getSimpleExperiment() = Experiments(
+    combined = CombinedExperiments(
+        properties = arrayOf(
+            Property(
+                "gradlememory",
+                arrayOf("1G", "2G", "3G")
+            )
+        ),
+        branch = arrayOf("develop", "master ")
+    )
 )
 
-fun getMultipleExperiment() = GradleExperimentsProperties(
+fun getMultipleExperiment() = Experiments(
+    combined = CombinedExperiments(
     properties = arrayOf(
         Property(
             "gradlememory",
@@ -145,10 +148,10 @@ fun getMultipleExperiment() = GradleExperimentsProperties(
             arrayOf("1", "2", "3")
         )
     )
-)
+))
 
-fun getComposedExperiment() = GradleExperimentsProperties(
-    compose = Compose(
+fun getComposedExperiment() = Experiments(
+    incrementalChanges = IncrementalChanges(
         taskExperiment = "./gradlew assemble",
         iterationsExperiment = 12,
         values = arrayOf(
@@ -178,7 +181,8 @@ fun baganWithMultipleExperiments() = Bagan(
     project_id = "",
     iterations = 10,
     private = true,
-    experiments = GradleExperimentsProperties(
+    experiments = Experiments(
+        CombinedExperiments(
         properties = arrayOf(
             Property("gradlememory", arrayOf("1G", "2G", "3G")),
             Property("caching", arrayOf("true", "false"))
@@ -186,4 +190,4 @@ fun baganWithMultipleExperiments() = Bagan(
         ),
         branch = arrayOf("develop", "master")
     )
-)
+))

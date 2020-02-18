@@ -24,20 +24,20 @@ class ExecutionGenerator(val path: String) {
     }
 
     fun getMetadata(isMocked: Boolean): IncrementalChangeInfo {
-        if (isMocked) {
-            val taskExperiment = "./gradlew  :Tinder:assembleInternal"
-            val iterationsExperiment = "2"
-            val startingTask = "./gradlew clean :Tinder:assembleInternal"
-            val startingTaskIterations = "2"
-            val extraLabel = "bootstraping"
-            return IncrementalChangeInfo(
-                startingTask,
-                startingTaskIterations.toInt(),
-                taskExperiment,
-                iterationsExperiment.toInt(),
-                extraLabel
-            )
-        } else {
+//        if (isMocked) {
+//            val taskExperiment = "./gradlew  :Tinder:assembleInternal"
+//            val iterationsExperiment = "2"
+//            val startingTask = "./gradlew clean :Tinder:assembleInternal"
+//            val startingTaskIterations = "2"
+//            val extraLabel = "bootstraping"
+//            return IncrementalChangeInfo(
+//                startingTask,
+//                startingTaskIterations.toInt(),
+//                taskExperiment,
+//                iterationsExperiment.toInt(),
+//                extraLabel
+//            )
+//        } else {
             validate()
             val taskExperiment = System.getenv("taskExperimentation") as String
             val iterationsExperiment = System.getenv("iterationsExperiments") as String
@@ -51,7 +51,7 @@ class ExecutionGenerator(val path: String) {
                 iterationsExperiment.toInt(),
                 extraLabel
             )
-        }
+      //  }
     }
 
 

@@ -18,7 +18,7 @@ class BaganConfFileProviderImplTest : BehaviorSpec({
                 assert(baganFile.clusterName == "bagan")
                 assert(baganFile.repository == "https://github.com/android/plaid.git")
                 assert(baganFile.iterations == 20)
-                assert(baganFile.experiments.properties!!.size == 2)
+                assert(baganFile.experiments.combined?.properties!!.size == 2)
 
             }
         }

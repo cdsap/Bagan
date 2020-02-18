@@ -22,7 +22,7 @@ class BaganFileGenerator(
     }
 
     private fun createExperiment(experiment: Experiment) {
-        val composeMode = bagan.experiments.compose != null
+        val incrementalMode = bagan.experiments.incrementalChanges != null
         val path = "$TEMP_FOLDER/${experiment.name}"
 
         logger.log(TAG, "Experiment ${experiment.name}")
@@ -31,7 +31,7 @@ class BaganFileGenerator(
             path = path
         )
 
-        val branch = getBranch(composeMode, experiment)
+        val branch = getBranch(incrementalMode, experiment)
         createFileValues(
             path = "$path/values.yaml",
             bagan = bagan,
@@ -53,14 +53,14 @@ class BaganFileGenerator(
         createPods(
             path = "$path/templates/pod${experiment.name}.yaml",
             privateRepo = bagan.private,
-            isComposedExperiment = composeMode
+            isComposedExperiment = incrementalMode
         )
 
 
         createConfigMaps(
             path = "$path/templates/configmap${experiment.name}.yaml",
             experiment = experiment,
-            isComposedExperiment = composeMode,
+            isComposedExperiment = incrementalMode,
             initialTask = bagan.gradleCommand,
             initialIterations = bagan.iterations
         )

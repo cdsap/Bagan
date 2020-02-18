@@ -59,8 +59,8 @@ object TestBagan {
         private = true
     )
 
-    private fun getComposedExperiment() = GradleExperimentsProperties(
-        compose = Compose(
+    private fun getComposedExperiment() = Experiments(
+        incrementalChanges = IncrementalChanges(
             taskExperiment = "./gradlew assemble",
             iterationsExperiment = 12,
             values = arrayOf(

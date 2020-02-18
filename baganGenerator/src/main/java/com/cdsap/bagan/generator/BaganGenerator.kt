@@ -48,7 +48,10 @@ class BaganGenerator(
         )
         val experiments = experimentProvider.getExperiments()
 
-        dashBoardProvider.generate(experiments)
+        if (bagan.experiments.combined != null) {
+            dashBoardProvider.generate(experiments)
+        }
+
         baganFileGenerator.generateExperiments(experiments)
     }
 

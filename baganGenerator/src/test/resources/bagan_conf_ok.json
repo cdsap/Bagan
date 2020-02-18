@@ -10,30 +10,32 @@
     "known_hosts": "/tmp/known_hosts",
     "iterations": 20,
     "experiments": {
-      "properties": [
-        {
-          "name": "org.gradle.jvmargs",
-          "options": [
-            "-Xmx3g",
-            "-Xmx4g"
-          ]
-        },
-        {
-          "name": "org.gradle.caching",
-          "options": [
-            "true",
-            "false"
-          ]
-        }
-      ],
-      "branch": [
-        "develop",
-        "master"
-      ],
-      "gradleVersion": [
-        "5.6",
-        "5.5"
-      ]
+      "combined": {
+        "properties": [
+          {
+            "name": "org.gradle.jvmargs",
+            "options": [
+              "-Xmx3g",
+              "-Xmx4g"
+            ]
+          },
+          {
+            "name": "org.gradle.caching",
+            "options": [
+              "true",
+              "false"
+            ]
+          }
+        ],
+        "branch": [
+          "develop",
+          "master"
+        ],
+        "gradleVersion": [
+          "5.6",
+          "5.5"
+        ]
+      }
     }
   }
 }

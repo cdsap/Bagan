@@ -1,6 +1,5 @@
 package com.cdsap.bagan.generator
 
-import kotlin.math.exp
 import kotlin.reflect.KFunction
 
 /**
@@ -20,10 +19,10 @@ class ExperimentProvider(private val bagan: Bagan) {
 
 
     fun getExperiments(): List<Experiment> {
-        if (bagan.experiments.compose != null) {
+        if (bagan.experiments.incrementalChanges != null) {
             var counter = 1
             val experiments = mutableListOf<Experiment>()
-            bagan.experiments.compose.values.forEach {
+            bagan.experiments.incrementalChanges.values.forEach {
                 val elements = it.files.flatMap {
                     listOf(UnitExperiment(it.module, it.path))
                 }
@@ -33,8 +32,8 @@ class ExperimentProvider(private val bagan: Bagan) {
                     gradleWrapperVersion = ""
                 )
                 experiment.composeExperiment = ComposeExperiment(
-                    taskExperiment = bagan.experiments.compose.taskExperiment,
-                    iterationsExperiments = bagan.experiments.compose.iterationsExperiment,
+                    taskExperiment = bagan.experiments.incrementalChanges.taskExperiment,
+                    iterationsExperiments = bagan.experiments.incrementalChanges.iterationsExperiment,
                     branch = it.branch,
                     files = elements
                 )
@@ -47,8 +46,8 @@ class ExperimentProvider(private val bagan: Bagan) {
 
         } else {
             val experimentsProperties = getExperimentsProperties()?.toSet() ?: setOf("")
-            val experimentBranches = bagan.experiments.branch?.toSet() ?: setOf("")
-            val experimentGradleWrapper = bagan.experiments.gradleWrapperVersion?.toSet() ?: setOf("")
+            val experimentBranches = bagan.experiments.combined?.branch?.toSet() ?: setOf("")
+            val experimentGradleWrapper = bagan.experiments.combined?.gradleWrapperVersion?.toSet() ?: setOf("")
 
             val listExperiments = cartesianProduct(
                 experimentsProperties,
@@ -66,10 +65,10 @@ class ExperimentProvider(private val bagan: Bagan) {
     }
 
     private fun getExperimentsProperties(): List<String>? =
-        if (bagan.experiments.properties != null) {
+        if (bagan.experiments.combined?.properties != null) {
             val experiments = mutableListOf<List<String>>()
 
-            bagan.experiments.properties?.forEach {
+            bagan.experiments.combined.properties?.forEach {
                 val experiment = mutableListOf<String>()
                 val prefix = it.name
                 it.options.forEach {
