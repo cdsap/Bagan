@@ -22,27 +22,32 @@ class ExperimentController(private val path: String, private val logger: LoggerP
     }
 
     private fun applyExperiment() {
-        val properties = System.getenv("properties")
-        val branch = System.getenv("branch")
-        val gradleWrapperVersion = System.getenv("gradleWrapperVersion")
+        val experimentType = System.getenv("typeExperiments")
+        if (experimentType == "incrementalChanges") {
+            ExecutionGenerator(".").init()
+        } else {
+            val properties = System.getenv("properties")
+            val branch = System.getenv("branch")
+            val gradleWrapperVersion = System.getenv("gradleWrapperVersion")
 
-        if (properties != null) {
-            logger.log(TAG, "Gradle Properties experimentation detected.")
-            RewriteProperties(path, logger).applyExperiments()
-        }
+            if (properties != null) {
+                logger.log(TAG, "Gradle Properties experimentation detected.")
+                RewriteProperties(path, logger).applyExperiments()
+            }
 
-        if (branch != null) {
-            logger.log(TAG, "Branch experimentation detected. Experiment applied at the Pod")
+            if (branch != null) {
+                logger.log(TAG, "Branch experimentation detected. Experiment applied at the Pod")
 
-        }
+            }
 
-        if (gradleWrapperVersion != null) {
-            logger.log(TAG, "Gradle Wrapper Versions experimentation detected.")
-            GradleWrapperVersion(path, logger).applyExperiments()
-        }
+            if (gradleWrapperVersion != null) {
+                logger.log(TAG, "Gradle Wrapper Versions experimentation detected.")
+                GradleWrapperVersion(path, logger).applyExperiments()
+            }
 
-        if (properties == null && branch == null && gradleWrapperVersion == null) {
-            logger.log(TAG, "No experiments detected")
+            if (properties == null && branch == null && gradleWrapperVersion == null) {
+                logger.log(TAG, "No experiments detected")
+            }
         }
     }
 }

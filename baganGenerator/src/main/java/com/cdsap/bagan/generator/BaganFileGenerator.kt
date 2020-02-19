@@ -15,14 +15,18 @@ class BaganFileGenerator(
 
 
     fun generateExperiments(experiments: List<Experiment>) {
-        logger.log(TAG, "Starting DashboardProvider")
+        logger.log(TAG, "Generating ${experiments.size} experiments")
         experiments.forEach {
             createExperiment(it)
         }
     }
 
     private fun createExperiment(experiment: Experiment) {
-        val incrementalMode = bagan.experiments.incrementalChanges != null
+        val typeExperiments = if (bagan.experiments.incrementalChanges != null) {
+            "incrementalChanges"
+        } else {
+            "combined"
+        }
         val path = "$TEMP_FOLDER/${experiment.name}"
 
         logger.log(TAG, "Experiment ${experiment.name}")
@@ -31,7 +35,7 @@ class BaganFileGenerator(
             path = path
         )
 
-        val branch = getBranch(incrementalMode, experiment)
+        val branch = getBranch(typeExperiments, experiment)
         createFileValues(
             path = "$path/values.yaml",
             bagan = bagan,
@@ -53,14 +57,13 @@ class BaganFileGenerator(
         createPods(
             path = "$path/templates/pod${experiment.name}.yaml",
             privateRepo = bagan.private,
-            isComposedExperiment = incrementalMode
+            typeExperiments = typeExperiments
         )
-
 
         createConfigMaps(
             path = "$path/templates/configmap${experiment.name}.yaml",
             experiment = experiment,
-            isComposedExperiment = incrementalMode,
+            typeExperiments = typeExperiments,
             initialTask = bagan.gradleCommand,
             initialIterations = bagan.iterations
         )
@@ -68,8 +71,8 @@ class BaganFileGenerator(
         commandExecutor.execute("helm install ${experiment.name} -f $path/values.yaml $path/")
     }
 
-    private fun getBranch(isComposedExperiment: Boolean, experiment: Experiment): String {
-        if (isComposedExperiment) {
+    private fun getBranch(typeExperiments: String, experiment: Experiment): String {
+        if (isIncremental(typeExperiments)) {
             return experiment.composeExperiment!!.branch
         } else {
             return if (experiment.branch.isEmpty()) "master" else experiment.branch
@@ -132,7 +135,7 @@ class BaganFileGenerator(
     private fun createConfigMaps(
         path: String,
         experiment: Experiment,
-        isComposedExperiment: Boolean,
+        typeExperiments: String,
         initialTask: String,
         initialIterations: Int
     ) {
@@ -141,7 +144,8 @@ class BaganFileGenerator(
 
         var experiments = ""
 
-        if (isComposedExperiment) {
+
+        if (isIncremental(typeExperiments)) {
             if (experiment.composeExperiment != null) {
                 val composed = experiment.composeExperiment
                 experiments += "${ident(experiments)}extraLabel: '${composed}'\n"
@@ -167,7 +171,10 @@ class BaganFileGenerator(
             }
         }
         file.writeText(
-            ConfigMap().transform(isComposed = isComposedExperiment, experiments = experiments)
+            ConfigMap().transform(
+                typeExperiments = typeExperiments,
+                experiments = experiments
+            )
         )
     }
 
@@ -177,14 +184,14 @@ class BaganFileGenerator(
     private fun createPods(
         path: String,
         privateRepo: Boolean,
-        isComposedExperiment: Boolean
+        typeExperiments: String
     ) {
         logger.log(TAG, "creating pod file $path")
 
         val file = File(path)
 
         // initially only supporting compose mdode for private repos
-        if (isComposedExperiment) {
+        if (isIncremental(typeExperiments)) {
             file.writeText(PodSecureComposed().transform())
         } else {
             if (privateRepo) {
@@ -200,9 +207,11 @@ class BaganFileGenerator(
         val ident = "         "
         var experiments = ""
         files?.forEach {
-            experiments += "$ident${it.module.replace(":","")}=${it.path}\n"
+            experiments += "$ident${it.module.replace(":", "")}=${it.path}\n"
         }
         return experiments
     }
+
+    fun isIncremental(typeExperiments : String) : Boolean = typeExperiments == "incrementalChanges"
 
 }

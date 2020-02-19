@@ -233,7 +233,7 @@ iterations: $iterations
 
 class ConfigMap {
     fun transform(
-        isComposed : Boolean,
+        typeExperiments: String,
         experiments: String = ""
 
     ) = """
@@ -247,7 +247,7 @@ metadata:
     session: {{ .Values.session }}
 data:
   id: {{ .Values.name }}
-  isComposed: '$isComposed'
+  incrementalChangesExperiment: '$typeExperiments'
   $experiments
 """.trimIndent()
 }
@@ -281,7 +281,7 @@ object ConfigMapExperiments {
     fun branch(branch: String) = """branch: $branch"""
     fun gradleWrapperVersion(version: String) = """gradleWrapperVersion: '$version'"""
     fun properties(properties: String) =
-"""properties: |
+        """properties: |
                $properties""".trimIndent()
 
 }
