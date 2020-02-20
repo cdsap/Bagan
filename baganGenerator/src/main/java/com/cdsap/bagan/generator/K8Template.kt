@@ -247,7 +247,7 @@ metadata:
     session: {{ .Values.session }}
 data:
   id: {{ .Values.name }}
-  incrementalChangesExperiment: '$typeExperiments'
+  typeExperiments: '$typeExperiments'
   $experiments
 """.trimIndent()
 }
