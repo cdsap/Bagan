@@ -4,26 +4,27 @@ import java.io.StringReader
 import java.lang.Exception
 import java.util.*
 
-fun main() {
-    ExecutionGenerator(".").init()
-}
+//fun main() {
+//    ExecutionGenerator(".").init()
+//}
 
-class ExecutionGenerator(val path: String) {
-
+class ExecutionGenerator(val path: String, val logger: LoggerPod) {
+    private val TAG = "ExecutionGenerator"
     fun init() {
+        logger.log(TAG, "Init ExecutionGenerator")
         val coordinator = ChangeProvider()
         val scriptGenerator = ScriptGenerator("$path/execution.sh")
         val composedExperiments = IncrementalChange(
-            getUpdates(false),
+            getUpdates(),
             coordinator,
             scriptGenerator,
-            getMetadata(false)
+            getMetadata()
         )
 
         composedExperiments.execute()
     }
 
-    fun getMetadata(isMocked: Boolean): IncrementalChangeInfo {
+    private fun getMetadata(): IncrementalChangeInfo {
 //        if (isMocked) {
 //            val taskExperiment = "./gradlew  :Tinder:assembleInternal"
 //            val iterationsExperiment = "2"
@@ -38,40 +39,40 @@ class ExecutionGenerator(val path: String) {
 //                extraLabel
 //            )
 //        } else {
-            validate()
-            val taskExperiment = System.getenv("taskExperimentation") as String
-            val iterationsExperiment = System.getenv("iterationsExperiments") as String
-            val startingTask = System.getenv("startingTask")
-            val startingTaskIterations = System.getenv("startingTaskIterations")
-            val extraLabel = System.getenv("extraLabel")
-            return IncrementalChangeInfo(
-                startingTask,
-                startingTaskIterations.toInt(),
-                taskExperiment,
-                iterationsExperiment.toInt(),
-                extraLabel
-            )
-      //  }
+        validate()
+        val taskExperiment = System.getenv("taskExperimentation") as String
+        val iterationsExperiment = System.getenv("iterationsExperiments") as String
+        val startingTask = System.getenv("startingTask")
+        val startingTaskIterations = System.getenv("startingTaskIterations")
+        val extraLabel = System.getenv("extraLabel")
+        return IncrementalChangeInfo(
+            startingTask,
+             startingTaskIterations.toInt(),
+            taskExperiment,
+            iterationsExperiment.toInt(),
+            extraLabel
+        )
+        //  }
     }
 
 
-    fun getUpdates(isMocked: Boolean): List<Update> {
-        if (isMocked) {
-            return listOf(
-                Update(":Tinder", "Tinder/src/main/java/com/tinder/analytics/adapter/LeanplumFireworksEventAdapter.kt"),
-                Update(":data", "data/src/main/java/com/tinder/data/mapper/MessageRequestBodyMapper.kt")
-            )
-        } else {
-            val files = StringReader(System.getenv("files"))
-            val newProps = Properties()
+    private fun getUpdates(): List<Update> {
+//        if (isMocked) {
+//            return listOf(
+//                Update(":Tinder", "Tinder/src/main/java/com/tinder/analytics/adapter/LeanplumFireworksEventAdapter.kt"),
+//                Update(":data", "data/src/main/java/com/tinder/data/mapper/MessageRequestBodyMapper.kt")
+//            )
+//        } else {
+        val files = StringReader(System.getenv("files"))
+        val newProps = Properties()
 
-            newProps.load(files)
+        newProps.load(files)
 
-            return newProps.flatMap {
-                listOf(Update(it.key as String, it.value as String))
-            }
-
+        return newProps.flatMap {
+            listOf(Update(it.key as String, it.value as String))
         }
+
+        //  }
     }
 
     private fun validate() {
@@ -86,11 +87,6 @@ class ExecutionGenerator(val path: String) {
         if (System.getenv("files") == null) {
             throw Exception("No files defined to experiment")
         }
-
-      //  if (System.getenv("extraLabel") == null) {
-      //      throw Exception("No extra label defined to experiment")
-      //  }
-
         if (System.getenv("startingTask") == null) {
             throw Exception("No starting Task defined to experiment")
         }

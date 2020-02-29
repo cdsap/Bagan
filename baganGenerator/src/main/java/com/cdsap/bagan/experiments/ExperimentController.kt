@@ -11,10 +11,7 @@ class ExperimentController(private val path: String, private val logger: LoggerP
     fun init() {
         logger.log(TAG, "Staring the process")
         injectTalaiot()
-        val isComposed = "true" == System.getenv("isComposed")
-        if (!isComposed) {
-            applyExperiment()
-        }
+        applyExperiment()
     }
 
     private fun injectTalaiot() {
@@ -24,7 +21,8 @@ class ExperimentController(private val path: String, private val logger: LoggerP
     private fun applyExperiment() {
         val experimentType = System.getenv("typeExperiments")
         if (experimentType == "incrementalChanges") {
-            ExecutionGenerator(".").init()
+            logger.log(TAG, "Incremental Changes experimentation detected.")
+            ExecutionGenerator(".",logger).init()
         } else {
             val properties = System.getenv("properties")
             val branch = System.getenv("branch")

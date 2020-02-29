@@ -31,7 +31,7 @@ class ExperimentControllerTest : BehaviorSpec({
             }
             TestFolder.recursiveDelete(File("tmp"))
         }
-        `when`("Branch experimentation is detected") {
+        `when`("Combined experiments, Branch experimentation is detected") {
             File("tmp").mkdir()
             File("tmp/build.gradle").createNewFile()
             val testLogger = TestPodLogger()
@@ -44,7 +44,7 @@ class ExperimentControllerTest : BehaviorSpec({
             }
             TestFolder.recursiveDelete(File("tmp"))
         }
-        `when`("Gradle Wrapper experimentation is detected") {
+        `when`("Combined experiments, Gradle Wrapper experimentation is detected") {
             File("tmp").mkdir()
             File("tmp/build.gradle").createNewFile()
             File("tmp/gradle").mkdir()
@@ -61,7 +61,7 @@ class ExperimentControllerTest : BehaviorSpec({
             }
             TestFolder.recursiveDelete(File("tmp"))
         }
-        `when`("Properties experimentation is detected") {
+        `when`("Combined experiments, Properties experimentation is detected") {
             File("tmp").mkdir()
             File("tmp/build.gradle").createNewFile()
             File("tmp/gradle.properties").createNewFile()
@@ -77,7 +77,7 @@ class ExperimentControllerTest : BehaviorSpec({
             TestFolder.recursiveDelete(File("tmp"))
 
         }
-        `when`("Experimentation is composed") {
+        `when`("Incremental Experiment is composed") {
             File("tmp").mkdir()
             File("tmp/build.gradle").createNewFile()
             File("tmp/gradle.properties").createNewFile()
@@ -85,16 +85,22 @@ class ExperimentControllerTest : BehaviorSpec({
             withEnvironment(
                 mapOf(
                     "properties" to "property=1",
-                    "isComposed" to "true"
+                    "typeExperiments" to "incrementalChanges",
+                    "files" to "",
+                    "taskExperimentation" to "",
+                    "iterationsExperiments" to "20",
+                    "startingTask" to "",
+                    "startingTaskIterations" to "100",
+                    "extraLabel" to "tracking"
                 )
             ) {
                 val experimentController = ExperimentController("tmp", testLogger)
                 experimentController.init()
             }
-            then("log message for Properties experimentation is detected") {
+            then("log message for Incremental Changes experimentation is detected") {
 
-                assert(!testLogger.containsLog("Gradle Properties experimentation detected."))
-                assert(!testLogger.containsLog("Begin process RewriteProperties"))
+                assert(testLogger.containsLog("Incremental Changes experimentation detected."))
+                assert(testLogger.containsLog("Init ExecutionGenerator"))
             }
             TestFolder.recursiveDelete(File("tmp"))
 
