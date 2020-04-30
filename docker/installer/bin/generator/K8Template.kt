@@ -34,7 +34,7 @@ spec:
     imagePullPolicy: Always
     volumeMounts:
     - name: service
-      mountPath: /repo
+      mountPath: /home/bagan/repo
     - name: git-secret
       mountPath: /etc/git-secret
     env:
@@ -43,9 +43,9 @@ spec:
     - name: GIT_SYNC_BRANCH
       value: {{ .Values.branch }}
     - name: GIT_SYNC_ROOT
-      value: /repo
+      value: /home/bagan/repo
     - name: GIT_SYNC_DEST
-      value: "workspace"
+      value: "agent"
     - name: GIT_SYNC_PERMISSIONS
       value: "0777"
     - name: GIT_SYNC_ONE_TIME
@@ -60,7 +60,7 @@ spec:
     command: ["/bin/bash"]
     args: ["-c", "${ExecutorInPod.executor()}"]
     securityContext:
-      runAsUser: 0
+      runAsUser: 1714
       allowPrivilegeEscalation: true
       readOnlyRootFilesystem: false
     envFrom:
@@ -68,7 +68,7 @@ spec:
           name: {{ .Values.configMaps }}
     volumeMounts:
       - name: service
-        mountPath: /repo
+        mountPath: /home/bagan/repo
   volumes:
     - name: service
       emptyDir: {}
@@ -100,16 +100,16 @@ spec:
     imagePullPolicy: Always
     volumeMounts:
     - name: service
-      mountPath: /repo
+      mountPath: /home/bagan/repo
     env:
     - name: GIT_SYNC_REPO
       value: {{ .Values.repository }}
     - name: GIT_SYNC_BRANCH
       value: {{ .Values.branch }}
     - name: GIT_SYNC_ROOT
-      value: /repo
+      value: /home/bagan/repo
     - name: GIT_SYNC_DEST
-      value: "workspace"
+      value: "agent"
     - name: GIT_SYNC_PERMISSIONS
       value: "0777"
     - name: GIT_SYNC_ONE_TIME
@@ -124,7 +124,7 @@ spec:
     command: ["/bin/bash"]
     args: ["-c", "${ExecutorInPod.executor()}"]
     securityContext:
-      runAsUser: 0
+      runAsUser: 1714
       allowPrivilegeEscalation: true
       readOnlyRootFilesystem: false
     envFrom:
@@ -132,7 +132,7 @@ spec:
           name: {{ .Values.configMaps }}
     volumeMounts:
       - name: service
-        mountPath: /repo
+        mountPath: /home/bagan/repo
   volumes:
     - name: service
       emptyDir: {}
@@ -182,14 +182,11 @@ data:
 
 object ExecutorInPod {
     fun executor() = """
-mv *.kt /repo/workspace;
-cd /repo/workspace;
-source /root/.bashrc;
-source /usr/share/sdkman/bin/sdkman-init.sh;
-source /root/.bashrc;
+source ../.sdkman/bin/sdkman-init.sh;
+mv *.kt ../repo/agent;
+cd ../repo/agent;
 kscript ExperimentController.kt;
-for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;
-""".trimIndent()
+for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;""".trimIndent()
 }
 
 

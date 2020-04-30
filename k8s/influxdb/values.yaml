@@ -2,7 +2,6 @@
 ## ref: https://hub.docker.com/r/library/influxdb/tags/
 image:
   repository: "influxdb"
-  tag: "1.7.3-alpine"
   tag: "1.7.6-alpine"
   pullPolicy: IfNotPresent
   ## If specified, use these secrets to access the images
@@ -38,7 +37,6 @@ service:
 ## Persist data to a persistent volume
 ##
 persistence:
-  enabled: false
   enabled: true
   ## If true will use an existing PVC instead of creating one
   # useExisting: false
@@ -92,13 +90,6 @@ setDefaultUser:
 
 ## Configure resource requests and limits
 ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
-resources:
-  requests:
-    memory: 256Mi
-    cpu: 0.1
-  limits:
-    memory: 16Gi
-    cpu: 8
 resources: {}
 #  requests:
 #    memory: 256Mi
@@ -116,8 +107,8 @@ ingress:
   # secretName: my-tls-cert # only needed if tls above is true
   hostname: influxdb.foobar.com
   annotations:
-    # kubernetes.io/ingress.class: "nginx"
-    # kubernetes.io/tls-acme: "true"
+  # kubernetes.io/ingress.class: "nginx"
+  # kubernetes.io/tls-acme: "true"
 
 ## Use an alternate scheduler, e.g. "stork".
 ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
@@ -146,10 +137,9 @@ tolerations: []
 ## The InfluxDB image uses several environment variables to automatically
 ## configure certain parts of the server.
 ## Ref: https://hub.docker.com/_/influxdb/
-env:
 env: {}
   # - name: INFLUXDB_DB
-  #   value: "demo"
+#   value: "demo"
 
 ## Change InfluxDB configuration parameters below:
 ## Defaults are indicated
@@ -171,8 +161,6 @@ config:
     compact_full_write_cold_duration: 4h0m0s
     max_series_per_database: 1000000
     max_values_per_tag: 100000
-    max_series_per_database: 3000000
-    max_values_per_tag: 300000
     trace_logging_enabled: false
   coordinator:
     write_timeout: 10s
@@ -289,7 +277,6 @@ initScripts:
   enabled: false
   scripts:
     init.iql: |+
-      SHOW DATABASES
       CREATE DATABASE "telegraf" WITH DURATION 30d REPLICATION 1 NAME "rp_30d"
 
 backup:

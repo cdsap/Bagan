@@ -2,8 +2,8 @@ package com.cdsap.bagan.generator
 
 
 object Versions {
-    const val CHART_EXPERIMENT = "0.1.2"
-    const val POD_INJECTOR_VERSION = "0.1.9"
+    const val CHART_EXPERIMENT = "0.1.20"
+    const val POD_INJECTOR_VERSION = "0.1.20"
     const val POD_INJECTOR = "cdsap/bagan-pod-injector:$POD_INJECTOR_VERSION"
     const val PATH = ""
     const val TEMP_FOLDER = "tmp"

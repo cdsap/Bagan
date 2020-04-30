@@ -25,7 +25,7 @@ spec:
     imagePullPolicy: Always
     volumeMounts:
     - name: service
-      mountPath: /repo
+      mountPath: /home/bagan/repo
     - name: git-secret
       mountPath: /etc/git-secret
     env:
@@ -34,9 +34,9 @@ spec:
     - name: GIT_SYNC_BRANCH
       value: {{ .Values.branch }}
     - name: GIT_SYNC_ROOT
-      value: /repo
+      value: /home/bagan/repo
     - name: GIT_SYNC_DEST
-      value: "workspace"
+      value: "agent"
     - name: GIT_SYNC_PERMISSIONS
       value: "0777"
     - name: GIT_SYNC_ONE_TIME
@@ -49,15 +49,13 @@ spec:
   - name:  agent
     image: {{ .Values.image }}
     command: ["/bin/bash"]
-    args: ["-c", "mv *.kt /repo/workspace;
-cd /repo/workspace;
-source /root/.bashrc;
-source /usr/share/sdkman/bin/sdkman-init.sh;
-source /root/.bashrc;
+    args: ["-c", "source ../.sdkman/bin/sdkman-init.sh;
+mv *.kt ../repo/agent;
+cd ../repo/agent;
 kscript ExperimentController.kt;
 for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;"]
     securityContext:
-      runAsUser: 0
+      runAsUser: 1714
       allowPrivilegeEscalation: true
       readOnlyRootFilesystem: false
     envFrom:
@@ -65,7 +63,7 @@ for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;"]
           name: {{ .Values.configMaps }}
     volumeMounts:
       - name: service
-        mountPath: /repo
+        mountPath: /home/bagan/repo
   volumes:
     - name: service
       emptyDir: {}
@@ -75,12 +73,10 @@ for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;"]
         secretName: git-creds
 """.trimIndent()
             then("pod template have been placed with secret") {
-
                 assert(
                     values == x
                 )
             }
-
         }
 
         `when`("Parameters are defined without secret") {
@@ -106,16 +102,16 @@ spec:
     imagePullPolicy: Always
     volumeMounts:
     - name: service
-      mountPath: /repo
+      mountPath: /home/bagan/repo
     env:
     - name: GIT_SYNC_REPO
       value: {{ .Values.repository }}
     - name: GIT_SYNC_BRANCH
       value: {{ .Values.branch }}
     - name: GIT_SYNC_ROOT
-      value: /repo
+      value: /home/bagan/repo
     - name: GIT_SYNC_DEST
-      value: "workspace"
+      value: "agent"
     - name: GIT_SYNC_PERMISSIONS
       value: "0777"
     - name: GIT_SYNC_ONE_TIME
@@ -128,15 +124,13 @@ spec:
   - name:  agent
     image: {{ .Values.image }}
     command: ["/bin/bash"]
-    args: ["-c", "mv *.kt /repo/workspace;
-cd /repo/workspace;
-source /root/.bashrc;
-source /usr/share/sdkman/bin/sdkman-init.sh;
-source /root/.bashrc;
+    args: ["-c", "source ../.sdkman/bin/sdkman-init.sh;
+mv *.kt ../repo/agent;
+cd ../repo/agent;
 kscript ExperimentController.kt;
 for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;"]
     securityContext:
-      runAsUser: 0
+      runAsUser: 1714
       allowPrivilegeEscalation: true
       readOnlyRootFilesystem: false
     envFrom:
@@ -144,7 +138,7 @@ for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;"]
           name: {{ .Values.configMaps }}
     volumeMounts:
       - name: service
-        mountPath: /repo
+        mountPath: /home/bagan/repo
   volumes:
     - name: service
       emptyDir: {}

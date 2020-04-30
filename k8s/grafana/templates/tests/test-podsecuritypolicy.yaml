@@ -23,9 +23,9 @@ spec:
   runAsUser:
     rule: RunAsAny
   volumes:
-  - configMap
-  - downwardAPI
-  - emptyDir
-  - projected
-  - secret
-{{- end }}
+    - configMap
+    - downwardAPI
+    - emptyDir
+    - projected
+    - secret
+  {{- end }}

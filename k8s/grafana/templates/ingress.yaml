@@ -1,7 +1,7 @@
 {{- if .Values.ingress.enabled -}}
-{{- $fullName := include "grafana.fullname" . -}}
-{{- $servicePort := .Values.service.port -}}
-{{- $ingressPath := .Values.ingress.path -}}
+  {{- $fullName := include "grafana.fullname" . -}}
+  {{- $servicePort := .Values.service.port -}}
+  {{- $ingressPath := .Values.ingress.path -}}
 apiVersion: apps/v1
 kind: Ingress
 metadata:
@@ -12,32 +12,32 @@ metadata:
     chart: {{ template "grafana.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-{{- if .Values.ingress.labels }}
-{{ toYaml .Values.ingress.labels | indent 4 }}
-{{- end }}
-{{- with .Values.ingress.annotations }}
-  annotations:
-{{ toYaml . | indent 4 }}
-{{- end }}
+  {{- if .Values.ingress.labels }}
+  {{ toYaml .Values.ingress.labels | indent 4 }}
+  {{- end }}
+  {{- with .Values.ingress.annotations }}
+annotations:
+  {{ toYaml . | indent 4 }}
+  {{- end }}
 spec:
-{{- if .Values.ingress.tls }}
-  tls:
+  {{- if .Values.ingress.tls }}
+tls:
   {{- range .Values.ingress.tls }}
-    - hosts:
-      {{- range .hosts }}
-        - {{ . | quote }}
-      {{- end }}
-      secretName: {{ .secretName }}
+- hosts:
+  {{- range .hosts }}
+  - {{ . | quote }}
   {{- end }}
-{{- end }}
-  rules:
+  secretName: {{ .secretName }}
+  {{- end }}
+  {{- end }}
+rules:
   {{- range .Values.ingress.hosts }}
-    - host: {{ . }}
-      http:
-        paths:
-          - path: {{ $ingressPath }}
-            backend:
-              serviceName: {{ $fullName }}
-              servicePort: {{ $servicePort }}
+- host: {{ . }}
+  http:
+    paths:
+      - path: {{ $ingressPath }}
+        backend:
+          serviceName: {{ $fullName }}
+          servicePort: {{ $servicePort }}
   {{- end }}
-{{- end }}
+  {{- end }}
