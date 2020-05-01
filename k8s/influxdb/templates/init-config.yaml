@@ -9,5 +9,5 @@ metadata:
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
 data:
-  {{ toYaml .Values.initScripts.scripts | indent 2 }}
-  {{- end -}}
+{{ toYaml .Values.initScripts.scripts | indent 2 }}
+{{- end -}}

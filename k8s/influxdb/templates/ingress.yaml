@@ -9,20 +9,20 @@ metadata:
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
   annotations:
-  {{ toYaml .Values.ingress.annotations | indent 4 }}
+{{ toYaml .Values.ingress.annotations | indent 4 }}
 spec:
-  {{- if .Values.ingress.tls }}
-tls:
-  - hosts:
+{{- if .Values.ingress.tls }}
+  tls:
+    - hosts:
       - {{ .Values.ingress.hostname | quote }}
-    secretName: {{ .Values.ingress.secretName }}
-  {{- end }}
-rules:
+      secretName: {{ .Values.ingress.secretName }}
+{{- end }}
+  rules:
   - host: {{ .Values.ingress.hostname }}
     http:
       paths:
-        - path: /
-          backend:
-            serviceName: {{ template "influxdb.fullname" . }}
-            servicePort: 8086
-  {{- end -}}
+      - path: /
+        backend:
+          serviceName: {{ template "influxdb.fullname" . }}
+          servicePort: 8086
+{{- end -}}
