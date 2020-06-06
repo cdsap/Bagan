@@ -4,7 +4,7 @@
 # Used by mode gcloud, gcloud_docker and standalone.
 
 function removeExperiments(){
-  removingPreviousExperiments="helm del --purge \$( helm ls --all experimen* --short)"
+  removingPreviousExperiments="helm delete \$( helm ls --all experimen* --short)"
   echo "$removingPreviousExperiments;"
 }
 
