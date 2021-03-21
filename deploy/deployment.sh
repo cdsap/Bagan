@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="0.1.20"
+VERSION="0.1.21"
 REGISTRY=""
 IMAGE_BAGAN_INIT="cdsap/bagan-init"
 IMAGE_BAGAN_POD="cdsap/bagan-pod-injector"
