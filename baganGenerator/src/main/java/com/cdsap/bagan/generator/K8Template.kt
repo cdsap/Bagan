@@ -163,8 +163,8 @@ iterations: $iterations
 
 class ConfigMap {
     fun transform(
-        experiments: String = ""
-
+        experiments: String = "",
+        talaiotProperties: String = ""
     ) = """
 apiVersion: v1
 kind: ConfigMap
@@ -177,6 +177,7 @@ metadata:
 data:
   id: {{ .Values.name }}
   $experiments
+  $talaiotProperties
 """.trimIndent()
 }
 
@@ -194,7 +195,7 @@ object ConfigMapExperiments {
     fun branch(branch: String) = """branch: $branch"""
     fun gradleWrapperVersion(version: String) = """gradleWrapperVersion: '$version'"""
     fun properties(properties: String) =
-"""properties: |
+        """properties: |
                $properties""".trimIndent()
 
 }

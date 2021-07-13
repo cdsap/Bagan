@@ -10,7 +10,8 @@ data class Bagan(
     @Json(name = "project-id") val project_id: String?,
     val experiments: GradleExperimentsProperties,
     val iterations: Int,
-    val private: Boolean
+    val private: Boolean,
+    val talaiot: Talaiot? = Talaiot()
 )
 
 data class BaganJson(val bagan: Bagan)
@@ -22,3 +23,8 @@ data class GradleExperimentsProperties(
 )
 
 data class Property(val name: String, val options: Array<String>)
+
+data class Talaiot(
+    val publishTaskMetrics: Boolean = true,
+    val publishBuildMetrics: Boolean = true
+)
