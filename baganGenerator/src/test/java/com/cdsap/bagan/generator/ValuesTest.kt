@@ -8,7 +8,7 @@ class ValuesTest : BehaviorSpec({
         val repo = "http://git"
         val name = "experiment0"
         val command = "./gradlew command"
-        val image = "cdsap/bagan-pod-injector:0.1.4"
+        val image = "cdsap/bagan-pod-injector:0.1.5"
         val session = "xx1"
         val branch = "develop"
         val iterations = 10

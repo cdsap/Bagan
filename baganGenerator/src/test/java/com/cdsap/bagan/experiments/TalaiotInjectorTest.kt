@@ -74,14 +74,14 @@ buildscript {
       }
     }
     dependencies {
-        classpath("com.cdsap:talaiot:1.4.0")
+        classpath("io.github.cdsap:talaiot:1.5.1")
     }
 }
 
-apply<com.cdsap.talaiot.plugin.TalaiotPlugin>()
+apply<io.github.cdsap.talaiot.plugin.TalaiotPlugin>()
 
-configure<com.cdsap.talaiot.plugin.TalaiotPluginExtension>() {
-    logger = com.cdsap.talaiot.logger.LogTracker.Mode.INFO
+configure<io.github.cdsap.talaiot.plugin.TalaiotPluginExtension>() {
+    logger = io.github.cdsap.talaiot.logger.LogTracker.Mode.INFO
     metrics {
         customBuildMetrics("experiment" to  "null")
         customTaskMetrics("experiment" to  "null")

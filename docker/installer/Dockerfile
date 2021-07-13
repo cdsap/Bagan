@@ -36,5 +36,5 @@ RUN curl -o /tmp/$FILENAME ${HELM_URL} \
   && mv /tmp/linux-amd64/helm /bin/helm \
   && rm -rf /tmp
 
-RUN helm init --client-only
+#RUN helm init --client-only
 COPY bin/generator/  /usr/local/generator
