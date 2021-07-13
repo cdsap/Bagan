@@ -68,20 +68,19 @@ class TalaiotInjectorTest : BehaviorSpec({
                 val file = File("tmp/talaiot.gradle.kts")
                 val content = """
 buildscript {
-    repositories {
-        mavenCentral()
-        google()
-        mavenLocal()
-        jcenter()
+  repositories {
+    maven {
+       url = uri("https://plugins.gradle.org/m2/")
+      }
     }
     dependencies {
-        classpath("com.cdsap:talaiot:1.0.10")
+        classpath("com.cdsap:talaiot:1.4.0")
     }
 }
 
-apply<com.cdsap.talaiot.TalaiotPlugin>()
+apply<com.cdsap.talaiot.plugin.TalaiotPlugin>()
 
-configure<com.cdsap.talaiot.TalaiotExtension>() {
+configure<com.cdsap.talaiot.plugin.TalaiotPluginExtension>() {
     logger = com.cdsap.talaiot.logger.LogTracker.Mode.INFO
     metrics {
         customBuildMetrics("experiment" to  "null")
@@ -96,7 +95,8 @@ configure<com.cdsap.talaiot.TalaiotExtension>() {
             buildMetricName = "build"
         }
     }
-}""".trimIndent()
+}
+""".trimIndent()
                 file.readText() should haveSubstring(content)
             }
             TestFolder.recursiveDelete(File("tmp"))
