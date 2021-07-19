@@ -4,9 +4,9 @@ import com.cdsap.bagan.utils.TestBagan
 import com.cdsap.bagan.utils.TestExperiments
 import com.cdsap.bagan.utils.TestFolder
 import com.cdsap.bagan.utils.TestLogger
-import io.kotlintest.matchers.haveSubstring
-import io.kotlintest.should
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.should
+import io.kotest.matchers.string.haveSubstring
 import java.io.File
 
 

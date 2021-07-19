@@ -2,12 +2,13 @@ package com.cdsap.bagan.experiments
 
 import com.cdsap.bagan.utils.TestFolder
 import com.cdsap.bagan.utils.TestPodLogger
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.collections.startWith
+import io.kotest.matchers.should
+import io.kotest.matchers.string.haveSubstring
+import io.kotest.matchers.string.shouldStartWith
 
-import io.kotlintest.matchers.haveSubstring
-import io.kotlintest.matchers.startWith
-import io.kotlintest.should
-import io.kotlintest.shouldThrow
-import io.kotlintest.specs.BehaviorSpec
 import java.io.File
 import java.io.FileNotFoundException
 
@@ -22,7 +23,7 @@ class TalaiotInjectorTest : BehaviorSpec({
             val exception = shouldThrow<FileNotFoundException> { talaiotInjector.init() }
 
             then("error message") {
-                exception.message should startWith("Main Build Gradle not found")
+                exception.message.shouldStartWith("Main Build Gradle not found")
             }
             TestFolder.recursiveDelete(File("tmp"))
 

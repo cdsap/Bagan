@@ -2,7 +2,7 @@ package com.cdsap.bagan.generator
 
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.core.spec.style.BehaviorSpec
 
 class CommandExecutorTest : BehaviorSpec({
     given("CommandExecutorInstance") {

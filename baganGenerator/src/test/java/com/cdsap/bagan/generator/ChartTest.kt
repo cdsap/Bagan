@@ -1,7 +1,7 @@
 package com.cdsap.bagan.generator
 
 import com.cdsap.bagan.generator.Chart
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.core.spec.style.BehaviorSpec
 
 class ChartTest : BehaviorSpec({
     given("Chart file") {

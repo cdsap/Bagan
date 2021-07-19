@@ -1,11 +1,13 @@
 package com.cdsap.bagan.generator
 
 import io.kotest.core.spec.style.BehaviorSpec
+import java.io.File
 
 
-class PodTest : BehaviorSpec({
-    given("Pod Secure") {
-        val bagan =   Bagan(
+class PodFileScenarioTest : BehaviorSpec({
+    given("Pod Secure with File Scenario") {
+        val file = File("scenario")
+        val bagan = Bagan(
             repository = "http ://git.com",
             gradleCommand = "assemble",
             clusterName = "myCluster",
@@ -13,7 +15,9 @@ class PodTest : BehaviorSpec({
             project_id = "",
             experiments = getSimpleExperiment(),
             iterations = 10,
-            private = true
+            private = true,
+            scenarioFile = file,
+            scenarioName = "incrementalChange"
         )
         `when`("Parameters are defined with secret") {
 
@@ -63,11 +67,11 @@ spec:
     image: {{ .Values.image }}
     command: ["/bin/bash"]
     args: ["-c", "source ../.sdkman/bin/sdkman-init.sh;
-
+mv scenario ../repo/agent
 mv *.kt ../repo/agent;
 cd ../repo/agent;
 kscript ExperimentController.kt;
-gradle-profiler --benchmark --project-dir . --warmups 2 --iterations 10 assemble"]
+gradle-profiler --benchmark --project-dir . --warmups 2 --iterations 10 --scenario-file scenario incrementalChange"]
     securityContext:
       runAsUser: 1714
       allowPrivilegeEscalation: true
@@ -140,11 +144,11 @@ spec:
     image: {{ .Values.image }}
     command: ["/bin/bash"]
     args: ["-c", "source ../.sdkman/bin/sdkman-init.sh;
-
+mv scenario ../repo/agent
 mv *.kt ../repo/agent;
 cd ../repo/agent;
 kscript ExperimentController.kt;
-gradle-profiler --benchmark --project-dir . --warmups 2 --iterations 10 assemble"]
+gradle-profiler --benchmark --project-dir . --warmups 2 --iterations 10 --scenario-file scenario incrementalChange"]
     securityContext:
       runAsUser: 1714
       allowPrivilegeEscalation: true
@@ -163,7 +167,8 @@ gradle-profiler --benchmark --project-dir . --warmups 2 --iterations 10 assemble
             }
 
         }
-
+        file.delete()
     }
+
 })
 

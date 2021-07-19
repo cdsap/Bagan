@@ -2,13 +2,13 @@ package com.cdsap.bagan.experiments
 
 import com.cdsap.bagan.utils.TestFolder
 import com.cdsap.bagan.utils.TestPodLogger
-import io.kotlintest.extensions.system.withEnvironment
-import io.kotlintest.matchers.haveSubstring
-import io.kotlintest.matchers.string.shouldContain
-import io.kotlintest.should
-import io.kotlintest.shouldNot
-import io.kotlintest.shouldThrow
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.extensions.system.withEnvironment
+import io.kotest.matchers.should
+import io.kotest.matchers.shouldNot
+import io.kotest.matchers.string.haveSubstring
+import io.kotest.matchers.string.shouldContain
 import java.io.File
 import java.io.FileNotFoundException
 

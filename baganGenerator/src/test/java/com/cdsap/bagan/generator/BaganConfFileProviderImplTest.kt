@@ -2,10 +2,10 @@ package com.cdsap.bagan.generator
 
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonEncodingException
-import io.kotlintest.matchers.haveSubstring
-import io.kotlintest.should
-import io.kotlintest.shouldThrow
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.should
+import io.kotest.matchers.string.haveSubstring
 
 
 class BaganConfFileProviderImplTest : BehaviorSpec({

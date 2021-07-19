@@ -15,7 +15,7 @@ version: $version"
 }
 
 class PodSecure {
-    fun transform() = """
+    fun transform(bagan: Bagan) = """
 apiVersion: v1
 kind: Pod
 metadata:
@@ -58,7 +58,7 @@ spec:
   - name:  agent
     image: {{ .Values.image }}
     command: ["/bin/bash"]
-    args: ["-c", "${ExecutorInPod.executor()}"]
+    args: ["-c", "${ExecutorInPod.executor(bagan)}"]
     securityContext:
       runAsUser: 1714
       allowPrivilegeEscalation: true
@@ -81,7 +81,7 @@ spec:
 }
 
 class Pod {
-    fun transform() = """
+    fun transform(bagan: Bagan) = """
 apiVersion: v1
 kind: Pod
 metadata:
@@ -122,7 +122,7 @@ spec:
   - name:  agent
     image: {{ .Values.image }}
     command: ["/bin/bash"]
-    args: ["-c", "${ExecutorInPod.executor()}"]
+    args: ["-c", "${ExecutorInPod.executor(bagan)}"]
     securityContext:
       runAsUser: 1714
       allowPrivilegeEscalation: true
@@ -181,20 +181,39 @@ data:
 }
 
 object ExecutorInPod {
-    fun executor() = """
+    fun executor(bagan: Bagan) = """
 source ../.sdkman/bin/sdkman-init.sh;
+${moveIfIsRequiredScenarioFile(bagan)}
 mv *.kt ../repo/agent;
 cd ../repo/agent;
 kscript ExperimentController.kt;
-for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;""".trimIndent()
+${providerMode(bagan)}
+""".trimIndent()
 }
 
+fun providerMode(bagan: Bagan): String {
+    var scenarioString = ""
+    if (bagan.scenarioFile != null && bagan.scenarioName != null) {
+        scenarioString = "--scenario-file ${bagan.scenarioFile.name} ${bagan.scenarioName}"
+    } else {
+        scenarioString = bagan.gradleCommand
+    }
+    return "gradle-profiler --benchmark --project-dir . --warmups ${bagan.warmups} --iterations ${bagan.iterations} $scenarioString"
+}
+
+fun moveIfIsRequiredScenarioFile(bagan: Bagan): String {
+    var scenarioFile = ""
+    if (bagan.scenarioFile != null && bagan.scenarioName != null) {
+        scenarioFile = "mv ${bagan.scenarioFile} ../repo/agent"
+    }
+    return scenarioFile
+}
 
 object ConfigMapExperiments {
     fun branch(branch: String) = """branch: $branch"""
     fun gradleWrapperVersion(version: String) = """gradleWrapperVersion: '$version'"""
     fun properties(properties: String) =
-"""properties: |
+        """properties: |
                $properties""".trimIndent()
 
 }

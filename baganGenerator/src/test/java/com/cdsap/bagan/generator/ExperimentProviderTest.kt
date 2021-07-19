@@ -2,8 +2,7 @@ package com.cdsap.bagan.generator
 
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
-import io.kotlintest.matchers.collections.shouldContain
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.core.spec.style.BehaviorSpec
 
 class ExperimentProviderTest : BehaviorSpec({
     given("ExperimentProvider Instance") {

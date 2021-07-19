@@ -1,6 +1,7 @@
 package com.cdsap.bagan.generator
 
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.core.spec.style.BehaviorSpec
+
 
 class ConfigMapTest : BehaviorSpec({
     given("ConfigMap file") {
