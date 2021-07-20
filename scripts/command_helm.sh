@@ -6,13 +6,4 @@
 
 sleep10="sleep 10"
 sleep20="sleep 20"
-helm_init="helm init"
 helm_repo_update="helm repo update"
-
-function helmInstaller(){
-  echo "$helm_init;"
-}
-
-function helmInit(){
-  echo "$helm_init;"
-}

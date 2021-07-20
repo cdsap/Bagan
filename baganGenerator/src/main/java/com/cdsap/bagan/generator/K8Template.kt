@@ -194,7 +194,7 @@ ${providerMode(bagan)}
 fun providerMode(bagan: Bagan): String {
     var scenarioString = ""
     if (bagan.scenarioFile != null && bagan.scenarioName != null) {
-        scenarioString = "--scenario-file ${bagan.scenarioFile.name} ${bagan.scenarioName}"
+        scenarioString = "--scenario-file ${bagan.scenarioFile} ${bagan.scenarioName}"
     } else {
         scenarioString = bagan.gradleCommand
     }

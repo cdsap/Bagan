@@ -1,12 +1,9 @@
 package com.cdsap.bagan.generator
 
 import io.kotest.core.spec.style.BehaviorSpec
-import java.io.File
-
 
 class PodFileScenarioTest : BehaviorSpec({
     given("Pod Secure with File Scenario") {
-        val file = File("scenario")
         val bagan = Bagan(
             repository = "http ://git.com",
             gradleCommand = "assemble",
@@ -16,7 +13,7 @@ class PodFileScenarioTest : BehaviorSpec({
             experiments = getSimpleExperiment(),
             iterations = 10,
             private = true,
-            scenarioFile = file,
+            scenarioFile = "scenario",
             scenarioName = "incrementalChange"
         )
         `when`("Parameters are defined with secret") {
@@ -167,7 +164,7 @@ gradle-profiler --benchmark --project-dir . --warmups 2 --iterations 10 --scenar
             }
 
         }
-        file.delete()
+
     }
 
 })

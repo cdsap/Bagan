@@ -25,7 +25,6 @@ function standaloneExecutor(){
     eval "$(helmInstaller)"
     eval "$(endMessageSingleCommand)"
  elif [[ $command == "helm_init" ]]; then
-    eval "$(helmInit)"
     eval "$(endMessageSingleCommand)"
  elif [[ $command == "helm_clusterrolebinding" ]]; then
     eval "$(helmClusterRoleBinding)"

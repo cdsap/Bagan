@@ -16,7 +16,8 @@ machineJson=$(cat $FILE | jq -c -r  '.bagan.machine' | tr -d '\r')
 privateJson=$(cat $FILE | jq -c -r  '.bagan.private' | tr -d '\r')
 sshJson=$(cat $FILE | jq -c -r  '.bagan.ssh' | tr -d '\r')
 known_hostsJson=$(cat $FILE | jq -c -r  '.bagan.known_hosts' | tr -d '\r')
-
+scenarioFileJson=$(cat $FILE | jq -c -r '.bagan.scenarioFile' | tr -d '\r')
+scenarioNameJson=$(cat $FILE | jq -c -r '.bagan.scenarioName' | tr -d '\r')
 
 log "Json File parsed OK"
 log "Validating Json..."
@@ -96,6 +97,36 @@ else
    machine=$machineJson
 fi
 
+# Since Bagan 0.2 Gradle Profiler is used to execute the experimentation variants.
+# We allow to use scenario files.
+# Business rules to validate are:
+#  a) If "scenarioFile" is defined it must exist
+#  b) If scenarioName is empty null we need to use the gradleCommand task used in the configuration
+#  c) If scenarioName is defined we need to validate that the name is included in the scenario file
+# Check if the file exist
+
+if [ -n "$scenarioFileJson" ]; then
+  if [ -f "$scenarioFileJson" ]; then
+     echo "sllsl $scenarioNameJson"
+     if [ -n "$scenarioNameJson" ]; then
+         echo "inaki2"
+         echo "$scenarioNameJson"
+         if grep -q $scenarioNameJson "$scenarioFileJson"; then
+            scenarioName=$scenarioNameJson
+         else
+            # case c)
+            color '31;1' "Error: you have specified a scenario file $scenarioFileJson, the scenario file exists, but the scenario name $scenarioFileName does not exist"
+            exit 1
+         fi
+     fi
+     scenarioName=$gradleCommandJson
+     scenarioFile=$scenarioFileJson
+  else
+      # case a)
+      color '31;1' "Error: you have specified a scenario file $scenarioFileJson but does not exist"
+      exit 1
+  fi
+fi
 
 repository=$repositoryJson
 gradleCommand=$gradleCommandJson

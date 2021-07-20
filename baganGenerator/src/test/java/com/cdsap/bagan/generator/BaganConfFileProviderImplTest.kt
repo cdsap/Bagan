@@ -29,7 +29,8 @@ class BaganConfFileProviderImplTest : BehaviorSpec({
                 baganConfFileProvider.getBaganConf()
             }
             then("error iterations showed") {
-                exception.message should haveSubstring("Required value 'iterations'")
+                println(exception.message)
+                exception.message should haveSubstring("Required value 'private' missing at \$.bagan")
             }
         }
         `when`(

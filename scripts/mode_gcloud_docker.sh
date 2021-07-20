@@ -20,7 +20,7 @@ function gcloudDockerExecutor(){
   elif [[ $command == "helm" ]]; then
     execution="$(gcloudClusterCredentials) $(helmInstaller)"
   elif [[ $command == "helm_init" ]]; then
-    execution="$(gcloudClusterCredentials) $(helmInit)"
+    execution="$(gcloudClusterCredentials)"
   elif [[ $command == "helm_clusterrolebinding" ]]; then
     execution="$(gcloudClusterCredentials) $(helmClusterRoleBinding)"
   elif [[ $command == "infra_pods" ]]; then

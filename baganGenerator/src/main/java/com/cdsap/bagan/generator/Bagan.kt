@@ -13,7 +13,7 @@ data class Bagan(
     val iterations: Int = 10,
     val warmups: Int = 2,
     val private: Boolean,
-    val scenarioFile: File? = null,
+    val scenarioFile: String? = null,
     val scenarioName: String? = null
 )
 
