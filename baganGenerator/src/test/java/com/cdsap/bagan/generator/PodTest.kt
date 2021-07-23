@@ -1,11 +1,24 @@
 package com.cdsap.bagan.generator
 
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.core.spec.style.BehaviorSpec
+
 
 class PodTest : BehaviorSpec({
     given("Pod Secure") {
+        val bagan =   Bagan(
+            repository = "http ://git.com",
+            gradleCommand = "assemble",
+            clusterName = "myCluster",
+            zone = "myZone",
+            project_id = "",
+            experiments = getSimpleExperiment(),
+            iterations = 10,
+            private = true
+        )
         `when`("Parameters are defined with secret") {
-            val values = PodSecure().transform()
+
+
+            val values = PodSecure().transform(bagan)
             val x = """
 apiVersion: v1
 kind: Pod
@@ -50,10 +63,11 @@ spec:
     image: {{ .Values.image }}
     command: ["/bin/bash"]
     args: ["-c", "source ../.sdkman/bin/sdkman-init.sh;
+
 mv *.kt ../repo/agent;
 cd ../repo/agent;
 kscript ExperimentController.kt;
-for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;"]
+gradle-profiler --benchmark --project-dir . --warmups 2 --iterations 10 assemble"]
     securityContext:
       runAsUser: 1714
       allowPrivilegeEscalation: true
@@ -80,7 +94,8 @@ for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;"]
         }
 
         `when`("Parameters are defined without secret") {
-            val values = Pod().transform()
+            val values = Pod().transform(bagan)
+            println(values)
             then("pod template have been placed without secret") {
                 assert(
                     values.trimIndent() == """
@@ -125,10 +140,11 @@ spec:
     image: {{ .Values.image }}
     command: ["/bin/bash"]
     args: ["-c", "source ../.sdkman/bin/sdkman-init.sh;
+
 mv *.kt ../repo/agent;
 cd ../repo/agent;
 kscript ExperimentController.kt;
-for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;"]
+gradle-profiler --benchmark --project-dir . --warmups 2 --iterations 10 assemble"]
     securityContext:
       runAsUser: 1714
       allowPrivilegeEscalation: true

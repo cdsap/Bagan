@@ -54,6 +54,15 @@ log "  -zone: $zone"
 log "  -machine: $machine"
 log "  -repository: $repository"
 log "  -private repository: $private"
+log "inaki"
+log $scenarioFile
+if [ "$scenarioFile" != "null" ]; then
+  log "-scenarioFile: $scenarioFile"
+  if [ "$scenarioName" != "null" ]; then
+    log "-scenarioName: $scenarioName"
+  fi
+fi
+
 if [ "$private" == "true" ]; then
     log "  -ssh key path: $ssh"
     log "  -known hosts path: $known_hosts"

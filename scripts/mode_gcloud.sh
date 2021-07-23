@@ -6,7 +6,6 @@ function gcloudExecutor(){
       eval "$(gcloudInit)"
       eval "$(gcloudCreateCluster)"
       eval "$(gcloudClusterCredentials)"
-      eval "$(helmInstaller)"
       eval "$(infraPods)"
       eval "$(createSecret)"
       eval "$(bagan)"
@@ -39,7 +38,6 @@ function gcloudExecutor(){
       eval "$(endMessageSingleCommand)"
    elif [[ $command == "helm_init" ]]; then
       eval "$(gcloudClusterCredentials)"
-      eval "$(helmInit)"
       eval "$(endMessageSingleCommand)"
    elif [[ $command == "helm_clusterrolebinding" ]]; then
       eval "$(gcloudClusterCredentials)"

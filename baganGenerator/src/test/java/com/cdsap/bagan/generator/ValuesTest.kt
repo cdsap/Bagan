@@ -1,7 +1,7 @@
 package com.cdsap.bagan.generator
 
 import com.cdsap.bagan.generator.Values
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.core.spec.style.BehaviorSpec
 
 class ValuesTest : BehaviorSpec({
     given("Values file") {

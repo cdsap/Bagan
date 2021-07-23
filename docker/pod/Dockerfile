@@ -21,9 +21,10 @@ RUN chmod a+x "$HOME/.sdkman/bin/sdkman-init.sh"
 RUN source "$HOME/.sdkman/bin/sdkman-init.sh"
 
 RUN source "$HOME/.sdkman/bin/sdkman-init.sh" \
-    && sdk install kotlin 1.4.21 \
+    && sdk install kotlin 1.5.21 \
     && sdk install kscript 3.1.0 \
-    && sdk install java 11.0.11.hs-adpt
+    && sdk install java 11.0.11.hs-adpt \
+    && sdk install gradleprofiler
 
 ARG sdk_version=sdk-tools-linux-4333796.zip
 ARG cmdline_tools=https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip

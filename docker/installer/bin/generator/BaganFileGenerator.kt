@@ -55,7 +55,8 @@ class BaganFileGenerator(
 
         createPods(
             path = "$path/templates/pod${experiment.name}.yaml",
-            privateRepo = bagan.private
+            privateRepo = bagan.private,
+            bagan = bagan
         )
 
         createConfigMaps(
@@ -147,14 +148,15 @@ class BaganFileGenerator(
 
     private fun createPods(
         path: String,
-        privateRepo: Boolean
+        privateRepo: Boolean,
+        bagan: Bagan
     ) {
         logger.log(TAG, "creating pod file $path")
         val file = File(path)
         if (privateRepo) {
-            file.writeText(PodSecure().transform())
+            file.writeText(PodSecure().transform(bagan))
         } else {
-            file.writeText(Pod().transform())
+            file.writeText(Pod().transform(bagan))
         }
     }
 

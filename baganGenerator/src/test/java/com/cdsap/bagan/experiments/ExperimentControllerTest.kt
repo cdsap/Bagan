@@ -2,8 +2,9 @@ package com.cdsap.bagan.experiments
 
 import com.cdsap.bagan.utils.TestFolder
 import com.cdsap.bagan.utils.TestPodLogger
-import io.kotlintest.extensions.system.withEnvironment
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.extensions.system.withEnvironment
+
 import java.io.File
 
 

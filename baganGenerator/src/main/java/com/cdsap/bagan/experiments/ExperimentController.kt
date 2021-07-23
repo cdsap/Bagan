@@ -11,8 +11,14 @@ class ExperimentController(private val path: String, private val logger: LoggerP
     fun init() {
         logger.log(TAG, "Staring the process")
         injectTalaiot()
+        onBeforeExperiments()
         applyExperiment()
     }
+
+    private fun onBeforeExperiments(){
+        // used to add properties in case of private repositories
+    }
+
 
     private fun injectTalaiot() {
         TalaiotInjector(path, logger).init()
@@ -30,7 +36,6 @@ class ExperimentController(private val path: String, private val logger: LoggerP
 
         if (branch != null) {
             logger.log(TAG, "Branch experimentation detected. Experiment applied at the Pod")
-
         }
 
         if (gradleWrapperVersion != null) {

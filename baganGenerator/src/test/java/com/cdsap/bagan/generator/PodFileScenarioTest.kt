@@ -1,21 +1,26 @@
 package com.cdsap.bagan.generator
 
-class Chart {
-    fun transform(
-        id: String,
-        version: String
-    ) = """
-apiVersion: v1
-appVersion: "$version"
-description: Experiment resources like Pod and Configmap required in Bagan.
-name: $id
-version: $version"
-    """.trimIndent()
+import io.kotest.core.spec.style.BehaviorSpec
 
-}
+class PodFileScenarioTest : BehaviorSpec({
+    given("Pod Secure with File Scenario") {
+        val bagan = Bagan(
+            repository = "http ://git.com",
+            gradleCommand = "assemble",
+            clusterName = "myCluster",
+            zone = "myZone",
+            project_id = "",
+            experiments = getSimpleExperiment(),
+            iterations = 10,
+            private = true,
+            scenarioFile = "scenario",
+            scenarioName = "incrementalChange"
+        )
+        `when`("Parameters are defined with secret") {
 
-class PodSecure {
-    fun transform(bagan: Bagan) = """
+
+            val values = PodSecure().transform(bagan)
+            val x = """
 apiVersion: v1
 kind: Pod
 metadata:
@@ -58,7 +63,12 @@ spec:
   - name:  agent
     image: {{ .Values.image }}
     command: ["/bin/bash"]
-    args: ["-c", "${ExecutorInPod.executor(bagan)}"]
+    args: ["-c", "source ../.sdkman/bin/sdkman-init.sh;
+mv scenario ../repo/agent
+mv *.kt ../repo/agent;
+cd ../repo/agent;
+kscript ExperimentController.kt;
+gradle-profiler --benchmark --project-dir . --warmups 2 --iterations 10 --scenario-file scenario incrementalChange"]
     securityContext:
       runAsUser: 1714
       allowPrivilegeEscalation: true
@@ -77,11 +87,19 @@ spec:
         defaultMode: 256
         secretName: git-creds
 """.trimIndent()
+            then("pod template have been placed with secret") {
+                assert(
+                    values == x
+                )
+            }
+        }
 
-}
-
-class Pod {
-    fun transform(bagan: Bagan) = """
+        `when`("Parameters are defined without secret") {
+            val values = Pod().transform(bagan)
+            println(values)
+            then("pod template have been placed without secret") {
+                assert(
+                    values.trimIndent() == """
 apiVersion: v1
 kind: Pod
 metadata:
@@ -122,7 +140,12 @@ spec:
   - name:  agent
     image: {{ .Values.image }}
     command: ["/bin/bash"]
-    args: ["-c", "${ExecutorInPod.executor(bagan)}"]
+    args: ["-c", "source ../.sdkman/bin/sdkman-init.sh;
+mv scenario ../repo/agent
+mv *.kt ../repo/agent;
+cd ../repo/agent;
+kscript ExperimentController.kt;
+gradle-profiler --benchmark --project-dir . --warmups 2 --iterations 10 --scenario-file scenario incrementalChange"]
     securityContext:
       runAsUser: 1714
       allowPrivilegeEscalation: true
@@ -137,83 +160,12 @@ spec:
     - name: service
       emptyDir: {}
 """.trimIndent()
-}
+                )
+            }
 
-class Values {
-    fun transform(
-        repository: String,
-        name: String,
-        command: String,
-        iterations: Int,
-        image: String,
-        session: String,
-        branch: String
-    ) = """
-repository: $repository
-branch: $branch
-configMaps: configmap$name
-pod: $name
-session: $session
-name: $name
-image: $image
-command: $command
-iterations: $iterations
-""".trimIndent()
-}
+        }
 
-class ConfigMap {
-    fun transform(
-        experiments: String = ""
-
-    ) = """
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .Values.configMaps }}
-  labels:
-    app: bagan
-    type: experiment
-    session: {{ .Values.session }}
-data:
-  id: {{ .Values.name }}
-  $experiments
-""".trimIndent()
-}
-
-object ExecutorInPod {
-    fun executor(bagan: Bagan) = """
-source ../.sdkman/bin/sdkman-init.sh;
-${moveIfIsRequiredScenarioFile(bagan)}
-mv *.kt ../repo/agent;
-cd ../repo/agent;
-kscript ExperimentController.kt;
-${providerMode(bagan)}
-""".trimIndent()
-}
-
-fun providerMode(bagan: Bagan): String {
-    var scenarioString = ""
-    if (bagan.scenarioFile != null && bagan.scenarioName != null) {
-        scenarioString = "--scenario-file ${bagan.scenarioFile} ${bagan.scenarioName}"
-    } else {
-        scenarioString = bagan.gradleCommand
     }
-    return "gradle-profiler --benchmark --project-dir . --warmups ${bagan.warmups} --iterations ${bagan.iterations} $scenarioString"
-}
 
-fun moveIfIsRequiredScenarioFile(bagan: Bagan): String {
-    var scenarioFile = ""
-    if (bagan.scenarioFile != null && bagan.scenarioName != null) {
-        scenarioFile = "mv ${bagan.scenarioFile} ../repo/agent"
-    }
-    return scenarioFile
-}
+})
 
-object ConfigMapExperiments {
-    fun branch(branch: String) = """branch: $branch"""
-    fun gradleWrapperVersion(version: String) = """gradleWrapperVersion: '$version'"""
-    fun properties(properties: String) =
-        """properties: |
-               $properties""".trimIndent()
-
-}

@@ -6,11 +6,11 @@ import com.cdsap.bagan.utils.TestLogger
 import com.cdsap.bagan.utils.TestFolder
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import io.kotlintest.inspectors.*
-import io.kotlintest.matchers.string.shouldContain
-import io.kotlintest.matchers.string.shouldNotContain
-import io.kotlintest.shouldBe
-import io.kotlintest.specs.BehaviorSpec
+import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.inspectors.forExactly
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import java.io.File
 
 
