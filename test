@@ -1,0 +1,12 @@
+ssemble {
+tasks = ["clean"]
+}
+clean_build {
+versions = ["5.1"]
+tasks = ["assemble"]
+gradle-args = ["--parallel"]
+cleanup-tasks = ["clean"]
+run-using = cli
+warm-ups = 20
+}
+

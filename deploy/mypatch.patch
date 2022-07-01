@@ -1,0 +1,1233 @@
+From 5ec3ef1346b2c1b314c7f6fe419c258e1418af9d Mon Sep 17 00:00:00 2001
+From: Inaki Villar <inaki.seri@gmail.com>
+Date: Sun, 18 Jul 2021 20:55:38 -0400
+Subject: [PATCH 1/2] adding gradle profiler command
+
+---
+ baganGenerator/build.gradle.kts               |   8 +-
+ baganGenerator/buildSrc/build.gradle.kts      |   3 +-
+ .../gradle/wrapper/gradle-wrapper.properties  |   2 +-
+ .../bagan/experiments/ExperimentController.kt |   7 +-
+ .../java/com/cdsap/bagan/generator/Bagan.kt   |  14 +-
+ .../bagan/generator/BaganFileGenerator.kt     |  10 +-
+ .../com/cdsap/bagan/generator/K8Template.kt   |  33 +++-
+ .../experiments/ExperimentControllerTest.kt   |   5 +-
+ .../experiments/RewritePropertiesTest.kt      |  14 +-
+ .../bagan/experiments/TalaiotInjectorTest.kt  |  13 +-
+ .../bagan/experiments/WrapperVersionTest.kt   |  13 +-
+ .../BaganConfFileProviderImplTest.kt          |   8 +-
+ .../bagan/generator/BaganFileGeneratorTest.kt |   6 +-
+ .../com/cdsap/bagan/generator/ChartTest.kt    |   2 +-
+ .../bagan/generator/CommandExecutorTest.kt    |   2 +-
+ .../cdsap/bagan/generator/ConfigMapTest.kt    |   3 +-
+ .../bagan/generator/DashboardProviderTest.kt  |  10 +-
+ .../bagan/generator/ExperimentProviderTest.kt |   3 +-
+ .../bagan/generator/PodFileScenarioTest.kt    | 174 ++++++++++++++++++
+ .../java/com/cdsap/bagan/generator/PodTest.kt |  26 ++-
+ .../com/cdsap/bagan/generator/ValuesTest.kt   |   2 +-
+ 21 files changed, 289 insertions(+), 69 deletions(-)
+ create mode 100644 baganGenerator/src/test/java/com/cdsap/bagan/generator/PodFileScenarioTest.kt
+
+diff --git a/baganGenerator/build.gradle.kts b/baganGenerator/build.gradle.kts
+index f562c52..9b89210 100644
+--- a/baganGenerator/build.gradle.kts
++++ b/baganGenerator/build.gradle.kts
+@@ -1,6 +1,6 @@
+ buildscript {
+     repositories {
+-        jcenter()
++        mavenCentral()
+     }
+ }
+ 
+@@ -17,11 +17,11 @@ repositories {
+ }
+ 
+ dependencies {
+-    implementation(kotlin("stdlib-jdk8"))
++  //  implementation(kotlin("stdlib-jdk8"))
+     implementation("com.squareup.moshi:moshi-kotlin:1.8.0")
+     implementation("com.squareup.moshi:moshi-adapters:1.8.0")
+-    testImplementation("io.kotlintest:kotlintest-runner-junit5:3.4.0")
+-    testImplementation("io.kotlintest:kotlintest-extensions:3.4.0")
++    testImplementation("io.kotest:kotest-runner-junit5:4.6.1")
++    testImplementation("io.kotest:kotest-extensions:4.6.1")
+     testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0-RC1")
+ }
+ 
+diff --git a/baganGenerator/buildSrc/build.gradle.kts b/baganGenerator/buildSrc/build.gradle.kts
+index 178e630..1f67c08 100644
+--- a/baganGenerator/buildSrc/build.gradle.kts
++++ b/baganGenerator/buildSrc/build.gradle.kts
+@@ -5,10 +5,9 @@ plugins {
+ 
+ repositories {
+     google()
+-    jcenter()
+     mavenCentral()
+ }
+ 
+ dependencies {
+-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.31")
++    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.21")
+ }
+diff --git a/baganGenerator/gradle/wrapper/gradle-wrapper.properties b/baganGenerator/gradle/wrapper/gradle-wrapper.properties
+index 4470ea3..dff375b 100644
+--- a/baganGenerator/gradle/wrapper/gradle-wrapper.properties
++++ b/baganGenerator/gradle/wrapper/gradle-wrapper.properties
+@@ -3,4 +3,4 @@ distributionBase=GRADLE_USER_HOME
+ distributionPath=wrapper/dists
+ zipStoreBase=GRADLE_USER_HOME
+ zipStorePath=wrapper/dists
+-distributionUrl=https\://services.gradle.org/distributions/gradle-5.5-bin.zip
++distributionUrl=https\://services.gradle.org/distributions/gradle-7.1.1-bin.zip
+diff --git a/baganGenerator/src/main/java/com/cdsap/bagan/experiments/ExperimentController.kt b/baganGenerator/src/main/java/com/cdsap/bagan/experiments/ExperimentController.kt
+index 9877962..0f05752 100644
+--- a/baganGenerator/src/main/java/com/cdsap/bagan/experiments/ExperimentController.kt
++++ b/baganGenerator/src/main/java/com/cdsap/bagan/experiments/ExperimentController.kt
+@@ -11,9 +11,15 @@ class ExperimentController(private val path: String, private val logger: LoggerP
+     fun init() {
+         logger.log(TAG, "Staring the process")
+         injectTalaiot()
++        onBeforeExperiments()
+         applyExperiment()
+     }
+ 
++    private fun onBeforeExperiments(){
++        // used to add properties in case of private repositories
++    }
++
++
+     private fun injectTalaiot() {
+         TalaiotInjector(path, logger).init()
+     }
+@@ -30,7 +36,6 @@ class ExperimentController(private val path: String, private val logger: LoggerP
+ 
+         if (branch != null) {
+             logger.log(TAG, "Branch experimentation detected. Experiment applied at the Pod")
+-
+         }
+ 
+         if (gradleWrapperVersion != null) {
+diff --git a/baganGenerator/src/main/java/com/cdsap/bagan/generator/Bagan.kt b/baganGenerator/src/main/java/com/cdsap/bagan/generator/Bagan.kt
+index 859f950..9e3d9e9 100644
+--- a/baganGenerator/src/main/java/com/cdsap/bagan/generator/Bagan.kt
++++ b/baganGenerator/src/main/java/com/cdsap/bagan/generator/Bagan.kt
+@@ -1,16 +1,20 @@
+ package com.cdsap.bagan.generator
+ 
+ import com.squareup.moshi.Json
++import java.io.File
+ 
+ data class Bagan(
+     val repository: String,
++    val clusterName: String? = null,
++    val zone: String? = null,
++    @Json(name = "project-id") val project_id: String? = null,
+     val gradleCommand: String,
+-    val clusterName: String?,
+-    val zone: String?,
+-    @Json(name = "project-id") val project_id: String?,
+     val experiments: GradleExperimentsProperties,
+-    val iterations: Int,
+-    val private: Boolean
++    val iterations: Int = 10,
++    val warmups: Int = 2,
++    val private: Boolean,
++    val scenarioFile: File? = null,
++    val scenarioName: String? = null
+ )
+ 
+ data class BaganJson(val bagan: Bagan)
+diff --git a/baganGenerator/src/main/java/com/cdsap/bagan/generator/BaganFileGenerator.kt b/baganGenerator/src/main/java/com/cdsap/bagan/generator/BaganFileGenerator.kt
+index be20e54..fdf08dc 100644
+--- a/baganGenerator/src/main/java/com/cdsap/bagan/generator/BaganFileGenerator.kt
++++ b/baganGenerator/src/main/java/com/cdsap/bagan/generator/BaganFileGenerator.kt
+@@ -51,7 +51,8 @@ class BaganFileGenerator(
+ 
+         createPods(
+             path = "$path/templates/pod${experiment.name}.yaml",
+-            privateRepo = bagan.private
++            privateRepo = bagan.private,
++            bagan = bagan
+         )
+ 
+         createConfigMaps(
+@@ -143,14 +144,15 @@ class BaganFileGenerator(
+ 
+     private fun createPods(
+         path: String,
+-        privateRepo: Boolean
++        privateRepo: Boolean,
++        bagan: Bagan
+     ) {
+         logger.log(TAG, "creating pod file $path")
+         val file = File(path)
+         if (privateRepo) {
+-            file.writeText(PodSecure().transform())
++            file.writeText(PodSecure().transform(bagan))
+         } else {
+-            file.writeText(Pod().transform())
++            file.writeText(Pod().transform(bagan))
+         }
+     }
+ 
+diff --git a/baganGenerator/src/main/java/com/cdsap/bagan/generator/K8Template.kt b/baganGenerator/src/main/java/com/cdsap/bagan/generator/K8Template.kt
+index 60ea9f0..eb9c549 100644
+--- a/baganGenerator/src/main/java/com/cdsap/bagan/generator/K8Template.kt
++++ b/baganGenerator/src/main/java/com/cdsap/bagan/generator/K8Template.kt
+@@ -15,7 +15,7 @@ version: $version"
+ }
+ 
+ class PodSecure {
+-    fun transform() = """
++    fun transform(bagan: Bagan) = """
+ apiVersion: v1
+ kind: Pod
+ metadata:
+@@ -58,7 +58,7 @@ spec:
+   - name:  agent
+     image: {{ .Values.image }}
+     command: ["/bin/bash"]
+-    args: ["-c", "${ExecutorInPod.executor()}"]
++    args: ["-c", "${ExecutorInPod.executor(bagan)}"]
+     securityContext:
+       runAsUser: 1714
+       allowPrivilegeEscalation: true
+@@ -81,7 +81,7 @@ spec:
+ }
+ 
+ class Pod {
+-    fun transform() = """
++    fun transform(bagan: Bagan) = """
+ apiVersion: v1
+ kind: Pod
+ metadata:
+@@ -122,7 +122,7 @@ spec:
+   - name:  agent
+     image: {{ .Values.image }}
+     command: ["/bin/bash"]
+-    args: ["-c", "${ExecutorInPod.executor()}"]
++    args: ["-c", "${ExecutorInPod.executor(bagan)}"]
+     securityContext:
+       runAsUser: 1714
+       allowPrivilegeEscalation: true
+@@ -181,20 +181,39 @@ data:
+ }
+ 
+ object ExecutorInPod {
+-    fun executor() = """
++    fun executor(bagan: Bagan) = """
+ source ../.sdkman/bin/sdkman-init.sh;
++${moveIfIsRequiredScenarioFile(bagan)}
+ mv *.kt ../repo/agent;
+ cd ../repo/agent;
+ kscript ExperimentController.kt;
+-for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;""".trimIndent()
++${providerMode(bagan)}
++""".trimIndent()
++}
++
++fun providerMode(bagan: Bagan): String {
++    var scenarioString = ""
++    if (bagan.scenarioFile != null && bagan.scenarioName != null) {
++        scenarioString = "--scenario-file ${bagan.scenarioFile.name} ${bagan.scenarioName}"
++    } else {
++        scenarioString = bagan.gradleCommand
++    }
++    return "gradle-profiler --benchmark --project-dir . --warmups ${bagan.warmups} --iterations ${bagan.iterations} $scenarioString"
+ }
+ 
++fun moveIfIsRequiredScenarioFile(bagan: Bagan): String {
++    var scenarioFile = ""
++    if (bagan.scenarioFile != null && bagan.scenarioName != null) {
++        scenarioFile = "mv ${bagan.scenarioFile} ../repo/agent"
++    }
++    return scenarioFile
++}
+ 
+ object ConfigMapExperiments {
+     fun branch(branch: String) = """branch: $branch"""
+     fun gradleWrapperVersion(version: String) = """gradleWrapperVersion: '$version'"""
+     fun properties(properties: String) =
+-"""properties: |
++        """properties: |
+                $properties""".trimIndent()
+ 
+ }
+\ No newline at end of file
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/experiments/ExperimentControllerTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/experiments/ExperimentControllerTest.kt
+index bc17df8..6a032f7 100644
+--- a/baganGenerator/src/test/java/com/cdsap/bagan/experiments/ExperimentControllerTest.kt
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/experiments/ExperimentControllerTest.kt
+@@ -2,8 +2,9 @@ package com.cdsap.bagan.experiments
+ 
+ import com.cdsap.bagan.utils.TestFolder
+ import com.cdsap.bagan.utils.TestPodLogger
+-import io.kotlintest.extensions.system.withEnvironment
+-import io.kotlintest.specs.BehaviorSpec
++import io.kotest.core.spec.style.BehaviorSpec
++import io.kotest.extensions.system.withEnvironment
++
+ import java.io.File
+ 
+ 
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/experiments/RewritePropertiesTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/experiments/RewritePropertiesTest.kt
+index 309bfbc..552107d 100644
+--- a/baganGenerator/src/test/java/com/cdsap/bagan/experiments/RewritePropertiesTest.kt
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/experiments/RewritePropertiesTest.kt
+@@ -2,13 +2,13 @@ package com.cdsap.bagan.experiments
+ 
+ import com.cdsap.bagan.utils.TestFolder
+ import com.cdsap.bagan.utils.TestPodLogger
+-import io.kotlintest.extensions.system.withEnvironment
+-import io.kotlintest.matchers.haveSubstring
+-import io.kotlintest.matchers.string.shouldContain
+-import io.kotlintest.should
+-import io.kotlintest.shouldNot
+-import io.kotlintest.shouldThrow
+-import io.kotlintest.specs.BehaviorSpec
++import io.kotest.assertions.throwables.shouldThrow
++import io.kotest.core.spec.style.BehaviorSpec
++import io.kotest.extensions.system.withEnvironment
++import io.kotest.matchers.should
++import io.kotest.matchers.shouldNot
++import io.kotest.matchers.string.haveSubstring
++import io.kotest.matchers.string.shouldContain
+ import java.io.File
+ import java.io.FileNotFoundException
+ 
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/experiments/TalaiotInjectorTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/experiments/TalaiotInjectorTest.kt
+index b3190e3..a83db94 100644
+--- a/baganGenerator/src/test/java/com/cdsap/bagan/experiments/TalaiotInjectorTest.kt
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/experiments/TalaiotInjectorTest.kt
+@@ -2,12 +2,13 @@ package com.cdsap.bagan.experiments
+ 
+ import com.cdsap.bagan.utils.TestFolder
+ import com.cdsap.bagan.utils.TestPodLogger
++import io.kotest.assertions.throwables.shouldThrow
++import io.kotest.core.spec.style.BehaviorSpec
++import io.kotest.matchers.collections.startWith
++import io.kotest.matchers.should
++import io.kotest.matchers.string.haveSubstring
++import io.kotest.matchers.string.shouldStartWith
+ 
+-import io.kotlintest.matchers.haveSubstring
+-import io.kotlintest.matchers.startWith
+-import io.kotlintest.should
+-import io.kotlintest.shouldThrow
+-import io.kotlintest.specs.BehaviorSpec
+ import java.io.File
+ import java.io.FileNotFoundException
+ 
+@@ -22,7 +23,7 @@ class TalaiotInjectorTest : BehaviorSpec({
+             val exception = shouldThrow<FileNotFoundException> { talaiotInjector.init() }
+ 
+             then("error message") {
+-                exception.message should startWith("Main Build Gradle not found")
++                exception.message.shouldStartWith("Main Build Gradle not found")
+             }
+             TestFolder.recursiveDelete(File("tmp"))
+ 
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/experiments/WrapperVersionTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/experiments/WrapperVersionTest.kt
+index b04f15c..8d36bab 100644
+--- a/baganGenerator/src/test/java/com/cdsap/bagan/experiments/WrapperVersionTest.kt
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/experiments/WrapperVersionTest.kt
+@@ -2,13 +2,12 @@ package com.cdsap.bagan.experiments
+ 
+ import com.cdsap.bagan.utils.TestFolder
+ import com.cdsap.bagan.utils.TestPodLogger
+-import io.kotlintest.extensions.system.withEnvironment
+-
+-import io.kotlintest.matchers.haveSubstring
+-import io.kotlintest.matchers.string.shouldContain
+-import io.kotlintest.should
+-import io.kotlintest.shouldThrow
+-import io.kotlintest.specs.BehaviorSpec
++import io.kotest.assertions.throwables.shouldThrow
++import io.kotest.core.spec.style.BehaviorSpec
++import io.kotest.extensions.system.withEnvironment
++import io.kotest.matchers.should
++import io.kotest.matchers.string.haveSubstring
++import io.kotest.matchers.string.shouldContain
+ import java.io.File
+ import java.io.FileNotFoundException
+ 
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/generator/BaganConfFileProviderImplTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/generator/BaganConfFileProviderImplTest.kt
+index c8247d7..bf6a78c 100644
+--- a/baganGenerator/src/test/java/com/cdsap/bagan/generator/BaganConfFileProviderImplTest.kt
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/generator/BaganConfFileProviderImplTest.kt
+@@ -2,10 +2,10 @@ package com.cdsap.bagan.generator
+ 
+ import com.squareup.moshi.JsonDataException
+ import com.squareup.moshi.JsonEncodingException
+-import io.kotlintest.matchers.haveSubstring
+-import io.kotlintest.should
+-import io.kotlintest.shouldThrow
+-import io.kotlintest.specs.BehaviorSpec
++import io.kotest.assertions.throwables.shouldThrow
++import io.kotest.core.spec.style.BehaviorSpec
++import io.kotest.matchers.should
++import io.kotest.matchers.string.haveSubstring
+ 
+ 
+ class BaganConfFileProviderImplTest : BehaviorSpec({
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/generator/BaganFileGeneratorTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/generator/BaganFileGeneratorTest.kt
+index e1995c8..d405401 100644
+--- a/baganGenerator/src/test/java/com/cdsap/bagan/generator/BaganFileGeneratorTest.kt
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/generator/BaganFileGeneratorTest.kt
+@@ -4,9 +4,9 @@ import com.cdsap.bagan.utils.TestBagan
+ import com.cdsap.bagan.utils.TestExperiments
+ import com.cdsap.bagan.utils.TestFolder
+ import com.cdsap.bagan.utils.TestLogger
+-import io.kotlintest.matchers.haveSubstring
+-import io.kotlintest.should
+-import io.kotlintest.specs.BehaviorSpec
++import io.kotest.core.spec.style.BehaviorSpec
++import io.kotest.matchers.should
++import io.kotest.matchers.string.haveSubstring
+ import java.io.File
+ 
+ 
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/generator/ChartTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/generator/ChartTest.kt
+index 3a7fcaf..3b6fea7 100644
+--- a/baganGenerator/src/test/java/com/cdsap/bagan/generator/ChartTest.kt
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/generator/ChartTest.kt
+@@ -1,7 +1,7 @@
+ package com.cdsap.bagan.generator
+ 
+ import com.cdsap.bagan.generator.Chart
+-import io.kotlintest.specs.BehaviorSpec
++import io.kotest.core.spec.style.BehaviorSpec
+ 
+ class ChartTest : BehaviorSpec({
+     given("Chart file") {
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/generator/CommandExecutorTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/generator/CommandExecutorTest.kt
+index 1c56a60..dd0be16 100644
+--- a/baganGenerator/src/test/java/com/cdsap/bagan/generator/CommandExecutorTest.kt
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/generator/CommandExecutorTest.kt
+@@ -2,7 +2,7 @@ package com.cdsap.bagan.generator
+ 
+ import com.nhaarman.mockitokotlin2.mock
+ import com.nhaarman.mockitokotlin2.verify
+-import io.kotlintest.specs.BehaviorSpec
++import io.kotest.core.spec.style.BehaviorSpec
+ 
+ class CommandExecutorTest : BehaviorSpec({
+     given("CommandExecutorInstance") {
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/generator/ConfigMapTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/generator/ConfigMapTest.kt
+index 4330da7..780809e 100644
+--- a/baganGenerator/src/test/java/com/cdsap/bagan/generator/ConfigMapTest.kt
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/generator/ConfigMapTest.kt
+@@ -1,6 +1,7 @@
+ package com.cdsap.bagan.generator
+ 
+-import io.kotlintest.specs.BehaviorSpec
++import io.kotest.core.spec.style.BehaviorSpec
++
+ 
+ class ConfigMapTest : BehaviorSpec({
+     given("ConfigMap file") {
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/generator/DashboardProviderTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/generator/DashboardProviderTest.kt
+index d8a4147..b562d19 100644
+--- a/baganGenerator/src/test/java/com/cdsap/bagan/generator/DashboardProviderTest.kt
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/generator/DashboardProviderTest.kt
+@@ -6,11 +6,11 @@ import com.cdsap.bagan.utils.TestLogger
+ import com.cdsap.bagan.utils.TestFolder
+ import com.squareup.moshi.Moshi
+ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+-import io.kotlintest.inspectors.*
+-import io.kotlintest.matchers.string.shouldContain
+-import io.kotlintest.matchers.string.shouldNotContain
+-import io.kotlintest.shouldBe
+-import io.kotlintest.specs.BehaviorSpec
++import io.kotest.core.spec.style.BehaviorSpec
++import io.kotest.inspectors.forExactly
++import io.kotest.matchers.shouldBe
++import io.kotest.matchers.string.shouldContain
++import io.kotest.matchers.string.shouldNotContain
+ import java.io.File
+ 
+ 
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/generator/ExperimentProviderTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/generator/ExperimentProviderTest.kt
+index 63e92fd..b3d18c8 100644
+--- a/baganGenerator/src/test/java/com/cdsap/bagan/generator/ExperimentProviderTest.kt
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/generator/ExperimentProviderTest.kt
+@@ -2,8 +2,7 @@ package com.cdsap.bagan.generator
+ 
+ import com.nhaarman.mockitokotlin2.mock
+ import com.nhaarman.mockitokotlin2.whenever
+-import io.kotlintest.matchers.collections.shouldContain
+-import io.kotlintest.specs.BehaviorSpec
++import io.kotest.core.spec.style.BehaviorSpec
+ 
+ class ExperimentProviderTest : BehaviorSpec({
+     given("ExperimentProvider Instance") {
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/generator/PodFileScenarioTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/generator/PodFileScenarioTest.kt
+new file mode 100644
+index 0000000..f5d3dff
+--- /dev/null
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/generator/PodFileScenarioTest.kt
+@@ -0,0 +1,174 @@
++package com.cdsap.bagan.generator
++
++import io.kotest.core.spec.style.BehaviorSpec
++import java.io.File
++
++
++class PodFileScenarioTest : BehaviorSpec({
++    given("Pod Secure with File Scenario") {
++        val file = File("scenario")
++        val bagan = Bagan(
++            repository = "http ://git.com",
++            gradleCommand = "assemble",
++            clusterName = "myCluster",
++            zone = "myZone",
++            project_id = "",
++            experiments = getSimpleExperiment(),
++            iterations = 10,
++            private = true,
++            scenarioFile = file,
++            scenarioName = "incrementalChange"
++        )
++        `when`("Parameters are defined with secret") {
++
++
++            val values = PodSecure().transform(bagan)
++            val x = """
++apiVersion: v1
++kind: Pod
++metadata:
++  name: {{ .Values.pod }}
++  labels:
++    app: bagan
++    type: experiment
++    session: {{ .Values.session }}
++  annotations:
++    seccomp.security.alpha.kubernetes.io/pod: 'docker/default'
++spec:
++  restartPolicy: Never
++  initContainers:
++  - name: git-sync
++    image: k8s.gcr.io/git-sync-amd64:v2.0.6
++    imagePullPolicy: Always
++    volumeMounts:
++    - name: service
++      mountPath: /home/bagan/repo
++    - name: git-secret
++      mountPath: /etc/git-secret
++    env:
++    - name: GIT_SYNC_REPO
++      value: {{ .Values.repository }}
++    - name: GIT_SYNC_BRANCH
++      value: {{ .Values.branch }}
++    - name: GIT_SYNC_ROOT
++      value: /home/bagan/repo
++    - name: GIT_SYNC_DEST
++      value: "agent"
++    - name: GIT_SYNC_PERMISSIONS
++      value: "0777"
++    - name: GIT_SYNC_ONE_TIME
++      value: "true"
++    - name: GIT_SYNC_SSH
++      value: "true"
++    securityContext:
++      runAsUser: 0
++  containers:
++  - name:  agent
++    image: {{ .Values.image }}
++    command: ["/bin/bash"]
++    args: ["-c", "source ../.sdkman/bin/sdkman-init.sh;
++mv scenario ../repo/agent
++mv *.kt ../repo/agent;
++cd ../repo/agent;
++kscript ExperimentController.kt;
++gradle-profiler --benchmark --project-dir . --warmups 2 --iterations 10 --scenario-file scenario incrementalChange"]
++    securityContext:
++      runAsUser: 1714
++      allowPrivilegeEscalation: true
++      readOnlyRootFilesystem: false
++    envFrom:
++      - configMapRef:
++          name: {{ .Values.configMaps }}
++    volumeMounts:
++      - name: service
++        mountPath: /home/bagan/repo
++  volumes:
++    - name: service
++      emptyDir: {}
++    - name: git-secret
++      secret:
++        defaultMode: 256
++        secretName: git-creds
++""".trimIndent()
++            then("pod template have been placed with secret") {
++                assert(
++                    values == x
++                )
++            }
++        }
++
++        `when`("Parameters are defined without secret") {
++            val values = Pod().transform(bagan)
++            println(values)
++            then("pod template have been placed without secret") {
++                assert(
++                    values.trimIndent() == """
++apiVersion: v1
++kind: Pod
++metadata:
++  name: {{ .Values.pod }}
++  labels:
++    app: bagan
++    type: experiment
++    session: {{ .Values.session }}
++  annotations:
++    seccomp.security.alpha.kubernetes.io/pod: 'docker/default'
++spec:
++  restartPolicy: Never
++  initContainers:
++  - name: git-sync
++    image: k8s.gcr.io/git-sync-amd64:v2.0.6
++    imagePullPolicy: Always
++    volumeMounts:
++    - name: service
++      mountPath: /home/bagan/repo
++    env:
++    - name: GIT_SYNC_REPO
++      value: {{ .Values.repository }}
++    - name: GIT_SYNC_BRANCH
++      value: {{ .Values.branch }}
++    - name: GIT_SYNC_ROOT
++      value: /home/bagan/repo
++    - name: GIT_SYNC_DEST
++      value: "agent"
++    - name: GIT_SYNC_PERMISSIONS
++      value: "0777"
++    - name: GIT_SYNC_ONE_TIME
++      value: "true"
++    - name: GIT_SYNC_SSH
++      value: "false"
++    securityContext:
++      runAsUser: 0
++  containers:
++  - name:  agent
++    image: {{ .Values.image }}
++    command: ["/bin/bash"]
++    args: ["-c", "source ../.sdkman/bin/sdkman-init.sh;
++mv scenario ../repo/agent
++mv *.kt ../repo/agent;
++cd ../repo/agent;
++kscript ExperimentController.kt;
++gradle-profiler --benchmark --project-dir . --warmups 2 --iterations 10 --scenario-file scenario incrementalChange"]
++    securityContext:
++      runAsUser: 1714
++      allowPrivilegeEscalation: true
++      readOnlyRootFilesystem: false
++    envFrom:
++      - configMapRef:
++          name: {{ .Values.configMaps }}
++    volumeMounts:
++      - name: service
++        mountPath: /home/bagan/repo
++  volumes:
++    - name: service
++      emptyDir: {}
++""".trimIndent()
++                )
++            }
++
++        }
++        file.delete()
++    }
++
++})
++
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/generator/PodTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/generator/PodTest.kt
+index 461e28b..78f5a47 100644
+--- a/baganGenerator/src/test/java/com/cdsap/bagan/generator/PodTest.kt
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/generator/PodTest.kt
+@@ -1,11 +1,24 @@
+ package com.cdsap.bagan.generator
+ 
+-import io.kotlintest.specs.BehaviorSpec
++import io.kotest.core.spec.style.BehaviorSpec
++
+ 
+ class PodTest : BehaviorSpec({
+     given("Pod Secure") {
++        val bagan =   Bagan(
++            repository = "http ://git.com",
++            gradleCommand = "assemble",
++            clusterName = "myCluster",
++            zone = "myZone",
++            project_id = "",
++            experiments = getSimpleExperiment(),
++            iterations = 10,
++            private = true
++        )
+         `when`("Parameters are defined with secret") {
+-            val values = PodSecure().transform()
++
++
++            val values = PodSecure().transform(bagan)
+             val x = """
+ apiVersion: v1
+ kind: Pod
+@@ -50,10 +63,11 @@ spec:
+     image: {{ .Values.image }}
+     command: ["/bin/bash"]
+     args: ["-c", "source ../.sdkman/bin/sdkman-init.sh;
++
+ mv *.kt ../repo/agent;
+ cd ../repo/agent;
+ kscript ExperimentController.kt;
+-for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;"]
++gradle-profiler --benchmark --project-dir . --warmups 2 --iterations 10 assemble"]
+     securityContext:
+       runAsUser: 1714
+       allowPrivilegeEscalation: true
+@@ -80,7 +94,8 @@ for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;"]
+         }
+ 
+         `when`("Parameters are defined without secret") {
+-            val values = Pod().transform()
++            val values = Pod().transform(bagan)
++            println(values)
+             then("pod template have been placed without secret") {
+                 assert(
+                     values.trimIndent() == """
+@@ -125,10 +140,11 @@ spec:
+     image: {{ .Values.image }}
+     command: ["/bin/bash"]
+     args: ["-c", "source ../.sdkman/bin/sdkman-init.sh;
++
+ mv *.kt ../repo/agent;
+ cd ../repo/agent;
+ kscript ExperimentController.kt;
+-for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;"]
++gradle-profiler --benchmark --project-dir . --warmups 2 --iterations 10 assemble"]
+     securityContext:
+       runAsUser: 1714
+       allowPrivilegeEscalation: true
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/generator/ValuesTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/generator/ValuesTest.kt
+index d53b14c..70bcc43 100644
+--- a/baganGenerator/src/test/java/com/cdsap/bagan/generator/ValuesTest.kt
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/generator/ValuesTest.kt
+@@ -1,7 +1,7 @@
+ package com.cdsap.bagan.generator
+ 
+ import com.cdsap.bagan.generator.Values
+-import io.kotlintest.specs.BehaviorSpec
++import io.kotest.core.spec.style.BehaviorSpec
+ 
+ class ValuesTest : BehaviorSpec({
+     given("Values file") {
+-- 
+2.23.0
+
+
+From 320c9529582e7649bb33412b5e159606310c8556 Mon Sep 17 00:00:00 2001
+From: Inaki Villar <inaki.seri@gmail.com>
+Date: Tue, 20 Jul 2021 19:26:17 +0200
+Subject: [PATCH 2/2] adding gradle profiler
+
+---
+ bagan                                         |  9 +++++
+ baganGenerator/.kotlintest/spec_failures      |  2 ++
+ baganGenerator/build.gradle.kts               |  6 ++--
+ .../java/com/cdsap/bagan/generator/Bagan.kt   |  2 +-
+ .../com/cdsap/bagan/generator/K8Template.kt   |  2 +-
+ .../BaganConfFileProviderImplTest.kt          |  3 +-
+ .../bagan/generator/PodFileScenarioTest.kt    |  7 ++--
+ bagan_conf.json                               | 12 +++----
+ docker/installer/Dockerfile                   |  2 +-
+ docker/installer/bin/generator/Bagan.kt       | 14 +++++---
+ .../bin/generator/BaganFileGenerator.kt       | 10 +++---
+ docker/installer/bin/generator/K8Template.kt  | 33 +++++++++++++++----
+ docker/pod/Dockerfile                         |  5 +--
+ .../bin/experiments/ExperimentController.kt   |  7 +++-
+ scripts/command_helm.sh                       |  9 -----
+ scripts/mode_gcloud.sh                        |  2 --
+ scripts/mode_gcloud_docker.sh                 |  2 +-
+ scripts/mode_standalone.sh                    |  1 -
+ scripts/validate_json.sh                      | 33 ++++++++++++++++++-
+ 19 files changed, 109 insertions(+), 52 deletions(-)
+
+diff --git a/bagan b/bagan
+index 707a680..5b0bf1d 100755
+--- a/bagan
++++ b/bagan
+@@ -54,6 +54,15 @@ log "  -zone: $zone"
+ log "  -machine: $machine"
+ log "  -repository: $repository"
+ log "  -private repository: $private"
++log "inaki"
++log $scenarioFile
++if [ "$scenarioFile" != "null" ]; then
++  log "-scenarioFile: $scenarioFile"
++  if [ "$scenarioName" != "null" ]; then
++    log "-scenarioName: $scenarioName"
++  fi
++fi
++
+ if [ "$private" == "true" ]; then
+     log "  -ssh key path: $ssh"
+     log "  -known hosts path: $known_hosts"
+diff --git a/baganGenerator/.kotlintest/spec_failures b/baganGenerator/.kotlintest/spec_failures
+index e69de29..e31e50b 100644
+--- a/baganGenerator/.kotlintest/spec_failures
++++ b/baganGenerator/.kotlintest/spec_failures
+@@ -0,0 +1,2 @@
++com.cdsap.bagan.generator.BaganConfFileProviderImplTest
++com.cdsap.bagan.generator.PodTest
+\ No newline at end of file
+diff --git a/baganGenerator/build.gradle.kts b/baganGenerator/build.gradle.kts
+index 9b89210..c15c246 100644
+--- a/baganGenerator/build.gradle.kts
++++ b/baganGenerator/build.gradle.kts
+@@ -17,9 +17,9 @@ repositories {
+ }
+ 
+ dependencies {
+-  //  implementation(kotlin("stdlib-jdk8"))
+-    implementation("com.squareup.moshi:moshi-kotlin:1.8.0")
+-    implementation("com.squareup.moshi:moshi-adapters:1.8.0")
++    implementation(kotlin("stdlib-jdk8"))
++    implementation("com.squareup.moshi:moshi-kotlin:1.12.0")
++    implementation("com.squareup.moshi:moshi-adapters:1.12.0")
+     testImplementation("io.kotest:kotest-runner-junit5:4.6.1")
+     testImplementation("io.kotest:kotest-extensions:4.6.1")
+     testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0-RC1")
+diff --git a/baganGenerator/src/main/java/com/cdsap/bagan/generator/Bagan.kt b/baganGenerator/src/main/java/com/cdsap/bagan/generator/Bagan.kt
+index 9e3d9e9..efae5db 100644
+--- a/baganGenerator/src/main/java/com/cdsap/bagan/generator/Bagan.kt
++++ b/baganGenerator/src/main/java/com/cdsap/bagan/generator/Bagan.kt
+@@ -13,7 +13,7 @@ data class Bagan(
+     val iterations: Int = 10,
+     val warmups: Int = 2,
+     val private: Boolean,
+-    val scenarioFile: File? = null,
++    val scenarioFile: String? = null,
+     val scenarioName: String? = null
+ )
+ 
+diff --git a/baganGenerator/src/main/java/com/cdsap/bagan/generator/K8Template.kt b/baganGenerator/src/main/java/com/cdsap/bagan/generator/K8Template.kt
+index eb9c549..55fab71 100644
+--- a/baganGenerator/src/main/java/com/cdsap/bagan/generator/K8Template.kt
++++ b/baganGenerator/src/main/java/com/cdsap/bagan/generator/K8Template.kt
+@@ -194,7 +194,7 @@ ${providerMode(bagan)}
+ fun providerMode(bagan: Bagan): String {
+     var scenarioString = ""
+     if (bagan.scenarioFile != null && bagan.scenarioName != null) {
+-        scenarioString = "--scenario-file ${bagan.scenarioFile.name} ${bagan.scenarioName}"
++        scenarioString = "--scenario-file ${bagan.scenarioFile} ${bagan.scenarioName}"
+     } else {
+         scenarioString = bagan.gradleCommand
+     }
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/generator/BaganConfFileProviderImplTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/generator/BaganConfFileProviderImplTest.kt
+index bf6a78c..1c3baf2 100644
+--- a/baganGenerator/src/test/java/com/cdsap/bagan/generator/BaganConfFileProviderImplTest.kt
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/generator/BaganConfFileProviderImplTest.kt
+@@ -29,7 +29,8 @@ class BaganConfFileProviderImplTest : BehaviorSpec({
+                 baganConfFileProvider.getBaganConf()
+             }
+             then("error iterations showed") {
+-                exception.message should haveSubstring("Required value 'iterations'")
++                println(exception.message)
++                exception.message should haveSubstring("Required value 'private' missing at \$.bagan")
+             }
+         }
+         `when`(
+diff --git a/baganGenerator/src/test/java/com/cdsap/bagan/generator/PodFileScenarioTest.kt b/baganGenerator/src/test/java/com/cdsap/bagan/generator/PodFileScenarioTest.kt
+index f5d3dff..6247d61 100644
+--- a/baganGenerator/src/test/java/com/cdsap/bagan/generator/PodFileScenarioTest.kt
++++ b/baganGenerator/src/test/java/com/cdsap/bagan/generator/PodFileScenarioTest.kt
+@@ -1,12 +1,9 @@
+ package com.cdsap.bagan.generator
+ 
+ import io.kotest.core.spec.style.BehaviorSpec
+-import java.io.File
+-
+ 
+ class PodFileScenarioTest : BehaviorSpec({
+     given("Pod Secure with File Scenario") {
+-        val file = File("scenario")
+         val bagan = Bagan(
+             repository = "http ://git.com",
+             gradleCommand = "assemble",
+@@ -16,7 +13,7 @@ class PodFileScenarioTest : BehaviorSpec({
+             experiments = getSimpleExperiment(),
+             iterations = 10,
+             private = true,
+-            scenarioFile = file,
++            scenarioFile = "scenario",
+             scenarioName = "incrementalChange"
+         )
+         `when`("Parameters are defined with secret") {
+@@ -167,7 +164,7 @@ gradle-profiler --benchmark --project-dir . --warmups 2 --iterations 10 --scenar
+             }
+ 
+         }
+-        file.delete()
++
+     }
+ 
+ })
+diff --git a/bagan_conf.json b/bagan_conf.json
+index f026da5..621d514 100644
+--- a/bagan_conf.json
++++ b/bagan_conf.json
+@@ -1,25 +1,23 @@
+ {
+    "bagan": {
+       "repository": "https://github.com/android/plaid.git",
+-      "gradleCommand": "./gradlew clean assembleDebug",
+       "clusterName": "bagan",
+-      "machine": "n1-standard-8",
++      "machine": "n1-standard-4",
+       "zone": "us-west2",
+       "private": false,
+       "ssh": "",
+       "known_hosts": "",
+       "iterations": 20,
++      "gradleCommand": "assembleDebug",
+       "experiments": {
+          "properties": [
+             {
+                "name": "org.gradle.jvmargs",
+                "options": ["-Xmx4g","-Xmx6g"]
+-            },
+-            {
+-               "name": "org.gradle.workers.max",
+-               "options": ["1","3"]
+             }
+          ]
+-      }
++      },
++      "scenarioFile": "test",
++      "scenarioName": "clean_build"
+    }
+ }
+diff --git a/docker/installer/Dockerfile b/docker/installer/Dockerfile
+index 4102536..94c3497 100644
+--- a/docker/installer/Dockerfile
++++ b/docker/installer/Dockerfile
+@@ -12,7 +12,7 @@ RUN set -x \
+     && echo "sdkman_insecure_ssl=false" >> $SDKMAN_DIR/etc/config
+ 
+ RUN source "$HOME/.sdkman/bin/sdkman-init.sh" \
+-    && sdk install kotlin 1.4.21
++    && sdk install kotlin 1.5.21
+ 
+ RUN source "$HOME/.sdkman/bin/sdkman-init.sh" \
+     && sdk install kscript 3.1.0
+diff --git a/docker/installer/bin/generator/Bagan.kt b/docker/installer/bin/generator/Bagan.kt
+index 96982e5..656d28d 100644
+--- a/docker/installer/bin/generator/Bagan.kt
++++ b/docker/installer/bin/generator/Bagan.kt
+@@ -4,16 +4,20 @@
+ package com.cdsap.bagan.generator
+ 
+ import com.squareup.moshi.Json
++import java.io.File
+ 
+ data class Bagan(
+     val repository: String,
++    val clusterName: String? = null,
++    val zone: String? = null,
++    @Json(name = "project-id") val project_id: String? = null,
+     val gradleCommand: String,
+-    val clusterName: String?,
+-    val zone: String?,
+-    @Json(name = "project-id") val project_id: String?,
+     val experiments: GradleExperimentsProperties,
+-    val iterations: Int,
+-    val private: Boolean
++    val iterations: Int = 10,
++    val warmups: Int = 2,
++    val private: Boolean,
++    val scenarioFile: String? = null,
++    val scenarioName: String? = null
+ )
+ 
+ data class BaganJson(val bagan: Bagan)
+diff --git a/docker/installer/bin/generator/BaganFileGenerator.kt b/docker/installer/bin/generator/BaganFileGenerator.kt
+index 4b96352..5d2c56a 100644
+--- a/docker/installer/bin/generator/BaganFileGenerator.kt
++++ b/docker/installer/bin/generator/BaganFileGenerator.kt
+@@ -55,7 +55,8 @@ class BaganFileGenerator(
+ 
+         createPods(
+             path = "$path/templates/pod${experiment.name}.yaml",
+-            privateRepo = bagan.private
++            privateRepo = bagan.private,
++            bagan = bagan
+         )
+ 
+         createConfigMaps(
+@@ -147,14 +148,15 @@ class BaganFileGenerator(
+ 
+     private fun createPods(
+         path: String,
+-        privateRepo: Boolean
++        privateRepo: Boolean,
++        bagan: Bagan
+     ) {
+         logger.log(TAG, "creating pod file $path")
+         val file = File(path)
+         if (privateRepo) {
+-            file.writeText(PodSecure().transform())
++            file.writeText(PodSecure().transform(bagan))
+         } else {
+-            file.writeText(Pod().transform())
++            file.writeText(Pod().transform(bagan))
+         }
+     }
+ 
+diff --git a/docker/installer/bin/generator/K8Template.kt b/docker/installer/bin/generator/K8Template.kt
+index 60ea9f0..55fab71 100644
+--- a/docker/installer/bin/generator/K8Template.kt
++++ b/docker/installer/bin/generator/K8Template.kt
+@@ -15,7 +15,7 @@ version: $version"
+ }
+ 
+ class PodSecure {
+-    fun transform() = """
++    fun transform(bagan: Bagan) = """
+ apiVersion: v1
+ kind: Pod
+ metadata:
+@@ -58,7 +58,7 @@ spec:
+   - name:  agent
+     image: {{ .Values.image }}
+     command: ["/bin/bash"]
+-    args: ["-c", "${ExecutorInPod.executor()}"]
++    args: ["-c", "${ExecutorInPod.executor(bagan)}"]
+     securityContext:
+       runAsUser: 1714
+       allowPrivilegeEscalation: true
+@@ -81,7 +81,7 @@ spec:
+ }
+ 
+ class Pod {
+-    fun transform() = """
++    fun transform(bagan: Bagan) = """
+ apiVersion: v1
+ kind: Pod
+ metadata:
+@@ -122,7 +122,7 @@ spec:
+   - name:  agent
+     image: {{ .Values.image }}
+     command: ["/bin/bash"]
+-    args: ["-c", "${ExecutorInPod.executor()}"]
++    args: ["-c", "${ExecutorInPod.executor(bagan)}"]
+     securityContext:
+       runAsUser: 1714
+       allowPrivilegeEscalation: true
+@@ -181,20 +181,39 @@ data:
+ }
+ 
+ object ExecutorInPod {
+-    fun executor() = """
++    fun executor(bagan: Bagan) = """
+ source ../.sdkman/bin/sdkman-init.sh;
++${moveIfIsRequiredScenarioFile(bagan)}
+ mv *.kt ../repo/agent;
+ cd ../repo/agent;
+ kscript ExperimentController.kt;
+-for i in `seq 1 {{ .Values.iterations }}`; do {{ .Values.command }}; done;""".trimIndent()
++${providerMode(bagan)}
++""".trimIndent()
++}
++
++fun providerMode(bagan: Bagan): String {
++    var scenarioString = ""
++    if (bagan.scenarioFile != null && bagan.scenarioName != null) {
++        scenarioString = "--scenario-file ${bagan.scenarioFile} ${bagan.scenarioName}"
++    } else {
++        scenarioString = bagan.gradleCommand
++    }
++    return "gradle-profiler --benchmark --project-dir . --warmups ${bagan.warmups} --iterations ${bagan.iterations} $scenarioString"
+ }
+ 
++fun moveIfIsRequiredScenarioFile(bagan: Bagan): String {
++    var scenarioFile = ""
++    if (bagan.scenarioFile != null && bagan.scenarioName != null) {
++        scenarioFile = "mv ${bagan.scenarioFile} ../repo/agent"
++    }
++    return scenarioFile
++}
+ 
+ object ConfigMapExperiments {
+     fun branch(branch: String) = """branch: $branch"""
+     fun gradleWrapperVersion(version: String) = """gradleWrapperVersion: '$version'"""
+     fun properties(properties: String) =
+-"""properties: |
++        """properties: |
+                $properties""".trimIndent()
+ 
+ }
+\ No newline at end of file
+diff --git a/docker/pod/Dockerfile b/docker/pod/Dockerfile
+index d138d6a..02ca529 100644
+--- a/docker/pod/Dockerfile
++++ b/docker/pod/Dockerfile
+@@ -21,9 +21,10 @@ RUN chmod a+x "$HOME/.sdkman/bin/sdkman-init.sh"
+ RUN source "$HOME/.sdkman/bin/sdkman-init.sh"
+ 
+ RUN source "$HOME/.sdkman/bin/sdkman-init.sh" \
+-    && sdk install kotlin 1.4.21 \
++    && sdk install kotlin 1.5.21 \
+     && sdk install kscript 3.1.0 \
+-    && sdk install java 11.0.11.hs-adpt
++    && sdk install java 11.0.11.hs-adpt \
++    && sdk install gradleprofiler
+ 
+ ARG sdk_version=sdk-tools-linux-4333796.zip
+ ARG cmdline_tools=https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip
+diff --git a/docker/pod/bin/experiments/ExperimentController.kt b/docker/pod/bin/experiments/ExperimentController.kt
+index 1460b60..c5ab3ca 100644
+--- a/docker/pod/bin/experiments/ExperimentController.kt
++++ b/docker/pod/bin/experiments/ExperimentController.kt
+@@ -17,9 +17,15 @@ class ExperimentController(private val path: String, private val logger: LoggerP
+     fun init() {
+         logger.log(TAG, "Staring the process")
+         injectTalaiot()
++        onBeforeExperiments()
+         applyExperiment()
+     }
+ 
++    private fun onBeforeExperiments(){
++        // used to add properties in case of private repositories
++    }
++
++
+     private fun injectTalaiot() {
+         TalaiotInjector(path, logger).init()
+     }
+@@ -36,7 +42,6 @@ class ExperimentController(private val path: String, private val logger: LoggerP
+ 
+         if (branch != null) {
+             logger.log(TAG, "Branch experimentation detected. Experiment applied at the Pod")
+-
+         }
+ 
+         if (gradleWrapperVersion != null) {
+diff --git a/scripts/command_helm.sh b/scripts/command_helm.sh
+index c7b6884..e0611ad 100644
+--- a/scripts/command_helm.sh
++++ b/scripts/command_helm.sh
+@@ -6,13 +6,4 @@
+ 
+ sleep10="sleep 10"
+ sleep20="sleep 20"
+-helm_init="helm init"
+ helm_repo_update="helm repo update"
+-
+-function helmInstaller(){
+-  echo "$helm_init;"
+-}
+-
+-function helmInit(){
+-  echo "$helm_init;"
+-}
+diff --git a/scripts/mode_gcloud.sh b/scripts/mode_gcloud.sh
+index 6ee3ab4..522315e 100644
+--- a/scripts/mode_gcloud.sh
++++ b/scripts/mode_gcloud.sh
+@@ -6,7 +6,6 @@ function gcloudExecutor(){
+       eval "$(gcloudInit)"
+       eval "$(gcloudCreateCluster)"
+       eval "$(gcloudClusterCredentials)"
+-      eval "$(helmInstaller)"
+       eval "$(infraPods)"
+       eval "$(createSecret)"
+       eval "$(bagan)"
+@@ -39,7 +38,6 @@ function gcloudExecutor(){
+       eval "$(endMessageSingleCommand)"
+    elif [[ $command == "helm_init" ]]; then
+       eval "$(gcloudClusterCredentials)"
+-      eval "$(helmInit)"
+       eval "$(endMessageSingleCommand)"
+    elif [[ $command == "helm_clusterrolebinding" ]]; then
+       eval "$(gcloudClusterCredentials)"
+diff --git a/scripts/mode_gcloud_docker.sh b/scripts/mode_gcloud_docker.sh
+index 1423af8..d9a0c97 100644
+--- a/scripts/mode_gcloud_docker.sh
++++ b/scripts/mode_gcloud_docker.sh
+@@ -20,7 +20,7 @@ function gcloudDockerExecutor(){
+   elif [[ $command == "helm" ]]; then
+     execution="$(gcloudClusterCredentials) $(helmInstaller)"
+   elif [[ $command == "helm_init" ]]; then
+-    execution="$(gcloudClusterCredentials) $(helmInit)"
++    execution="$(gcloudClusterCredentials)"
+   elif [[ $command == "helm_clusterrolebinding" ]]; then
+     execution="$(gcloudClusterCredentials) $(helmClusterRoleBinding)"
+   elif [[ $command == "infra_pods" ]]; then
+diff --git a/scripts/mode_standalone.sh b/scripts/mode_standalone.sh
+index 3cd4a7a..aa588b2 100644
+--- a/scripts/mode_standalone.sh
++++ b/scripts/mode_standalone.sh
+@@ -25,7 +25,6 @@ function standaloneExecutor(){
+     eval "$(helmInstaller)"
+     eval "$(endMessageSingleCommand)"
+  elif [[ $command == "helm_init" ]]; then
+-    eval "$(helmInit)"
+     eval "$(endMessageSingleCommand)"
+  elif [[ $command == "helm_clusterrolebinding" ]]; then
+     eval "$(helmClusterRoleBinding)"
+diff --git a/scripts/validate_json.sh b/scripts/validate_json.sh
+index 4fd6f28..e3912e6 100644
+--- a/scripts/validate_json.sh
++++ b/scripts/validate_json.sh
+@@ -16,7 +16,8 @@ machineJson=$(cat $FILE | jq -c -r  '.bagan.machine' | tr -d '\r')
+ privateJson=$(cat $FILE | jq -c -r  '.bagan.private' | tr -d '\r')
+ sshJson=$(cat $FILE | jq -c -r  '.bagan.ssh' | tr -d '\r')
+ known_hostsJson=$(cat $FILE | jq -c -r  '.bagan.known_hosts' | tr -d '\r')
+-
++scenarioFileJson=$(cat $FILE | jq -c -r '.bagan.scenarioFile' | tr -d '\r')
++scenarioNameJson=$(cat $FILE | jq -c -r '.bagan.scenarioName' | tr -d '\r')
+ 
+ log "Json File parsed OK"
+ log "Validating Json..."
+@@ -96,6 +97,36 @@ else
+    machine=$machineJson
+ fi
+ 
++# Since Bagan 0.2 Gradle Profiler is used to execute the experimentation variants.
++# We allow to use scenario files.
++# Business rules to validate are:
++#  a) If "scenarioFile" is defined it must exist
++#  b) If scenarioName is empty null we need to use the gradleCommand task used in the configuration
++#  c) If scenarioName is defined we need to validate that the name is included in the scenario file
++# Check if the file exist
++
++if [ -n "$scenarioFileJson" ]; then
++  if [ -f "$scenarioFileJson" ]; then
++     echo "sllsl $scenarioNameJson"
++     if [ -n "$scenarioNameJson" ]; then
++         echo "inaki2"
++         echo "$scenarioNameJson"
++         if grep -q $scenarioNameJson "$scenarioFileJson"; then
++            scenarioName=$scenarioNameJson
++         else
++            # case c)
++            color '31;1' "Error: you have specified a scenario file $scenarioFileJson, the scenario file exists, but the scenario name $scenarioFileName does not exist"
++            exit 1
++         fi
++     fi
++     scenarioName=$gradleCommandJson
++     scenarioFile=$scenarioFileJson
++  else
++      # case a)
++      color '31;1' "Error: you have specified a scenario file $scenarioFileJson but does not exist"
++      exit 1
++  fi
++fi
+ 
+ repository=$repositoryJson
+ gradleCommand=$gradleCommandJson
+-- 
+2.23.0
+
